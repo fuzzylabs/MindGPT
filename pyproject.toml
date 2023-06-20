@@ -8,14 +8,17 @@ readme = "README.md"
 
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = ">=3.8,<3.11"
+zenml = {version = "0.36.1", extras = ["server"]}
+pandas = "1.5.2"
+pandas-stubs = "^2.0.2.230605"
 
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.1.1"
 pytest = "^7.2.2"
 pytest-cov = "^4.0.0"
-mypy = "^1.1.1"
+mypy = "1.1.1"
 
 
 [build-system]
