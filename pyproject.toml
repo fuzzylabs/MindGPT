@@ -1,0 +1,95 @@
+[tool.poetry]
+name = "MindGPT"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+license = "Apache-2.0 license"
+readme = "README.md"
+
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.1.1"
+pytest = "^7.2.2"
+pytest-cov = "^4.0.0"
+mypy = "^1.1.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.mypy]
+show_error_codes = true
+exclude = ["docs", "test"]
+strict = true
+namespace_packages = true
+
+
+[tool.ruff]
+# use Python 3.8 as the minimum version for autofixing
+target-version = "py38"
+
+select = [
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    "Q",    # flake8-quotes
+    "ISC",  # flake8-implicit-str-concat
+    "F",    # pyflakes
+    "D",    # pydocstyle
+    "E",    # pycodestyle error
+    "W",    # pycodestyle warning
+    "N",    # pep8-naming
+    "I",    # isort
+    "PL",   # pylint rules from categories "Convention", "Error", and "Warning"
+    "PLE",  # ruff currently implements only a subset of pylint's rules
+    "PLW",  # pylint warning
+    "PLR",  # pylint refactor
+    "UP",   # pyupgrade
+    "C",    # Complexity (mccabe+) & comprehensions
+]
+
+# Match black. Note that this also checks comment line length, but black does not format comments.
+line-length = 88
+
+show-fixes = true
+
+ignore = [
+    "E501",  # Line too long
+    "UP006", # See https://github.com/bokeh/bokeh/issues/13143
+    "UP007" # See https://github.com/bokeh/bokeh/pull/13144
+]
+
+ignore-init-module-imports = true
+
+# Allow imports relative to the "src" and "test" directories.
+src = ["src", "test"]
+
+[tool.ruff.mccabe]
+max-complexity = 18
+
+
+[tool.ruff.pydocstyle]
+# Use Google-style docstrings.
+convention = "google"
+
+
+[tool.black]
+line-length = 88
+include = '\.pyi?$'
+exclude = '''
+/(
+	\.git
+| \.hg
+| \.mypy_cache
+| \.tox
+| \.venv
+| _build
+| buck-out
+| build
+)/
+'''
