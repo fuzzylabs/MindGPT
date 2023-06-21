@@ -5,7 +5,7 @@ from zenml.steps import step
 
 @step
 def scrape_nhs_data() -> pd.DataFrame:
-    """Scrape data from nhs.
+    """Scrape data from NHS.
 
     Returns:
         pd.DataFrame: data scarped.
