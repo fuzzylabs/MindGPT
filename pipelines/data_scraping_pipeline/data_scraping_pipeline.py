@@ -1,15 +1,18 @@
 """Data scraping pipeline."""
+from collections.abc import Callable
+
 from zenml.logger import get_logger
 from zenml.pipelines import pipeline
+from zenml.steps import BaseStep
 
 logger = get_logger(__name__)
 
 
-@pipeline  # type: ignore
-def data_scraping_pipeline(  # Okay! # For mypy to ignore arg type hint
-    scrape_nhs_data,
-    scrape_mind_data,
-    save_data,
+@pipeline
+def data_scraping_pipeline(
+    scrape_nhs_data: Callable[[], BaseStep._OutputArtifact],
+    scrape_mind_data: Callable[[], BaseStep._OutputArtifact],
+    save_data: Callable[[BaseStep._OutputArtifact, BaseStep._OutputArtifact], None],
 ) -> None:
     """The data scraping pipeline.
 
