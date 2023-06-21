@@ -8,10 +8,10 @@ readme = "README.md"
 
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
+python = ">=3.8,<3.11" # ZenML requires <3.11
 zenml = {version = "0.36.1", extras = ["server"]}
 pandas = "1.5.2"
-pandas-stubs = "^2.0.2.230605"
+pandas-stubs = "^2.0.2.230605" # required by mypy
 
 
 [tool.poetry.group.dev.dependencies]
