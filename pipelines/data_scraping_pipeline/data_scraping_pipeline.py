@@ -1,6 +1,4 @@
 """Data scraping pipeline."""
-from collections.abc import Callable
-
 from zenml.logger import get_logger
 from zenml.pipelines import pipeline
 from zenml.steps import BaseStep
@@ -10,9 +8,9 @@ logger = get_logger(__name__)
 
 @pipeline
 def data_scraping_pipeline(
-    scrape_nhs_data: Callable[[], BaseStep._OutputArtifact],
-    scrape_mind_data: Callable[[], BaseStep._OutputArtifact],
-    save_data: Callable[[BaseStep._OutputArtifact, BaseStep._OutputArtifact], None],
+    scrape_nhs_data: BaseStep,
+    scrape_mind_data: BaseStep,
+    save_data: BaseStep,
 ) -> None:
     """The data scraping pipeline.
 

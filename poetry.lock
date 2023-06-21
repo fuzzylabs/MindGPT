@@ -206,6 +206,70 @@ tests = ["attrs[tests-no-zope]", "zope-interface"]
 tests-no-zope = ["cloudpickle", "hypothesis", "mypy (>=1.1.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
 
 [[package]]
+name = "azure-common"
+version = "1.1.28"
+description = "Microsoft Azure Client Library for Python (Common)"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "azure-common-1.1.28.zip", hash = "sha256:4ac0cd3214e36b6a1b6a442686722a5d8cc449603aa833f3f0f40bda836704a3"},
+    {file = "azure_common-1.1.28-py2.py3-none-any.whl", hash = "sha256:5c12d3dcf4ec20599ca6b0d3e09e86e146353d443e7fcc050c9a19c1f9df20ad"},
+]
+
+[[package]]
+name = "azure-core"
+version = "1.27.1"
+description = "Microsoft Azure Core Library for Python"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "azure-core-1.27.1.zip", hash = "sha256:5975c20808fa388243f01a8b79021bfbe114f503a27c543f002c5fc8bbdd73dd"},
+    {file = "azure_core-1.27.1-py3-none-any.whl", hash = "sha256:1b4b19f455eb7b4332c6f92adc2c669353ded07c2722eb436165f0c253737792"},
+]
+
+[package.dependencies]
+requests = ">=2.18.4"
+six = ">=1.11.0"
+typing-extensions = ">=4.3.0"
+
+[package.extras]
+aio = ["aiohttp (>=3.0)"]
+
+[[package]]
+name = "azure-mgmt-core"
+version = "1.4.0"
+description = "Microsoft Azure Management Core Library for Python"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "azure-mgmt-core-1.4.0.zip", hash = "sha256:d195208340094f98e5a6661b781cde6f6a051e79ce317caabd8ff97030a9b3ae"},
+    {file = "azure_mgmt_core-1.4.0-py3-none-any.whl", hash = "sha256:81071675f186a585555ef01816f2774d49c1c9024cb76e5720c3c0f6b337bb7d"},
+]
+
+[package.dependencies]
+azure-core = ">=1.26.2,<2.0.0"
+
+[[package]]
+name = "azure-mgmt-resource"
+version = "23.0.1"
+description = "Microsoft Azure Resource Management Client Library for Python"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "azure-mgmt-resource-23.0.1.zip", hash = "sha256:c2ba6cfd99df95f55f36eadc4245e3dc713257302a1fd0277756d94bd8cb28e0"},
+    {file = "azure_mgmt_resource-23.0.1-py3-none-any.whl", hash = "sha256:f185eec72bbc39f42bcb83ae6f1bad744f0e3f20a12d9b2b3e70d16c74ad9cc0"},
+]
+
+[package.dependencies]
+azure-common = ">=1.1,<2.0"
+azure-mgmt-core = ">=1.3.2,<2.0.0"
+isodate = ">=0.6.1,<1.0.0"
+
+[[package]]
 name = "backcall"
 version = "0.2.0"
 description = "Specifications for callback functions passed in to an API"
@@ -520,6 +584,18 @@ click = ">=7.0,<9.0"
 validators = ">=0.18,<0.19"
 
 [[package]]
+name = "cloudpickle"
+version = "2.2.1"
+description = "Extended pickling support for Python objects"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "cloudpickle-2.2.1-py3-none-any.whl", hash = "sha256:61f594d1f4c295fa5cd9014ceb3a1fc4a70b0de1164b94fbc2d854ccba056f9f"},
+    {file = "cloudpickle-2.2.1.tar.gz", hash = "sha256:d89684b8de9e34a2a43b3460fbca07d09d6e25ce858df4d5a44240403b6178f5"},
+]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
@@ -762,14 +838,14 @@ files = [
 
 [[package]]
 name = "docker"
-version = "6.0.1"
+version = "6.1.3"
 description = "A Python library for the Docker Engine API."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "docker-6.0.1-py3-none-any.whl", hash = "sha256:dbcb3bd2fa80dca0788ed908218bf43972772009b881ed1e20dfc29a65e49782"},
-    {file = "docker-6.0.1.tar.gz", hash = "sha256:896c4282e5c7af5c45e8b683b0b0c33932974fe6e50fc6906a0a83616ab3da97"},
+    {file = "docker-6.1.3-py3-none-any.whl", hash = "sha256:aecd2277b8bf8e506e484f6ab7aec39abe0038e29fa4a6d3ba86c3fe01844ed9"},
+    {file = "docker-6.1.3.tar.gz", hash = "sha256:aa6d17830045ba5ef0168d5eaa34d37beeb113948c413affe1d5991fc11f9a20"},
 ]
 
 [package.dependencies]
@@ -1284,6 +1360,21 @@ widgetsnbextension = ">=3.6.4,<3.7.0"
 
 [package.extras]
 test = ["ipykernel", "mock", "pytest (>=3.6.0)", "pytest-cov"]
+
+[[package]]
+name = "isodate"
+version = "0.6.1"
+description = "An ISO 8601 date/time/duration parser and formatter"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "isodate-0.6.1-py2.py3-none-any.whl", hash = "sha256:0751eece944162659049d35f4f549ed815792b38793f07cf73381c1c87cbed96"},
+    {file = "isodate-0.6.1.tar.gz", hash = "sha256:48c5881de7e8b0a0d648cb024c8062dc84e7b840ed81e864c7614fd3c127bde9"},
+]
+
+[package.dependencies]
+six = "*"
 
 [[package]]
 name = "isoduration"
@@ -2180,14 +2271,14 @@ files = [
 
 [[package]]
 name = "platformdirs"
-version = "3.6.0"
+version = "3.7.0"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "platformdirs-3.6.0-py3-none-any.whl", hash = "sha256:ffa199e3fbab8365778c4a10e1fbf1b9cd50707de826eb304b50e57ec0cc8d38"},
-    {file = "platformdirs-3.6.0.tar.gz", hash = "sha256:57e28820ca8094678b807ff529196506d7a21e17156cb1cddb3e74cebce54640"},
+    {file = "platformdirs-3.7.0-py3-none-any.whl", hash = "sha256:cfd065ba43133ff103ab3bd10aecb095c2a0035fcd1f07217c9376900d94ba07"},
+    {file = "platformdirs-3.7.0.tar.gz", hash = "sha256:87fbf6473e87c078d536980ba970a472422e94f17b752cfad17024c18876d481"},
 ]
 
 [package.extras]
@@ -2196,14 +2287,14 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.3.1)", "pytest-
 
 [[package]]
 name = "pluggy"
-version = "1.0.0"
+version = "1.2.0"
 description = "plugin and hook calling mechanisms for python"
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
-    {file = "pluggy-1.0.0.tar.gz", hash = "sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159"},
+    {file = "pluggy-1.2.0-py3-none-any.whl", hash = "sha256:c2fd55a7d7a3863cba1a013e4e2414658b1d07b6bc57b3919e0c63c9abb99849"},
+    {file = "pluggy-1.2.0.tar.gz", hash = "sha256:d12f0c4b579b15f5e054301bb226ee85eeeba08ffec228092f8defbaa3a4c4b3"},
 ]
 
 [package.extras]
@@ -3240,18 +3331,18 @@ files = [
 
 [[package]]
 name = "uri-template"
-version = "1.2.0"
+version = "1.3.0"
 description = "RFC 6570 URI Template Processor"
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "uri_template-1.2.0-py3-none-any.whl", hash = "sha256:f1699c77b73b925cf4937eae31ab282a86dc885c333f2e942513f08f691fc7db"},
-    {file = "uri_template-1.2.0.tar.gz", hash = "sha256:934e4d09d108b70eb8a24410af8615294d09d279ce0e7cbcdaef1bd21f932b06"},
+    {file = "uri-template-1.3.0.tar.gz", hash = "sha256:0e00f8eb65e18c7de20d595a14336e9f337ead580c70934141624b6d1ffdacc7"},
+    {file = "uri_template-1.3.0-py3-none-any.whl", hash = "sha256:a44a133ea12d44a0c0f06d7d42a52d71282e77e2f937d8abd5655b8d56fc1363"},
 ]
 
 [package.extras]
-dev = ["flake8 (<4.0.0)", "flake8-annotations", "flake8-bugbear", "flake8-commas", "flake8-comprehensions", "flake8-continuation", "flake8-datetimez", "flake8-docstrings", "flake8-import-order", "flake8-literal", "flake8-noqa", "flake8-requirements", "flake8-type-annotations", "flake8-use-fstring", "mypy", "pep8-naming"]
+dev = ["flake8", "flake8-annotations", "flake8-bandit", "flake8-bugbear", "flake8-commas", "flake8-comprehensions", "flake8-continuation", "flake8-datetimez", "flake8-docstrings", "flake8-import-order", "flake8-literal", "flake8-modern-annotations", "flake8-noqa", "flake8-pyproject", "flake8-requirements", "flake8-typechecking-import", "flake8-use-fstring", "mypy", "pep8-naming", "types-PyYAML"]
 
 [[package]]
 name = "urllib3"
@@ -3552,29 +3643,31 @@ notebook = ">=4.4.1"
 
 [[package]]
 name = "zenml"
-version = "0.36.1"
+version = "0.40.3"
 description = "ZenML: Write production-ready ML code."
 category = "main"
 optional = false
 python-versions = ">=3.7.1,<3.11"
 files = [
-    {file = "zenml-0.36.1-py3-none-any.whl", hash = "sha256:cb0c6154d289ae68169ab1fff09d86e0da55770c6c7fedeb82b9ed9aa25cdb05"},
-    {file = "zenml-0.36.1.tar.gz", hash = "sha256:0a61fb359ef230df06490b5bbce1cf92718ea372eb300310884afc26a1137d7a"},
+    {file = "zenml-0.40.3-py3-none-any.whl", hash = "sha256:137872d875c07dde3d7dab7159e4eb57a5ed576faffd8f115306085751c4b3b2"},
+    {file = "zenml-0.40.3.tar.gz", hash = "sha256:43a74ecef9fa6ee48b1d4797d1aad8bacf7ad8f0ad278e541c92e86a90606798"},
 ]
 
 [package.dependencies]
 alembic = ">=1.8.1,<1.9.0"
 analytics-python = ">=1.4.0,<2.0.0"
+azure-mgmt-resource = ">=21.0.0"
 click = ">=8.0.1,<9.0.0"
 click-params = ">=0.3.0,<0.4.0"
+cloudpickle = ">=2.0.0,<3"
 distro = ">=1.6.0,<2.0.0"
-docker = ">=6.0.0,<6.1.0"
+docker = ">=6.1.0,<6.2.0"
 fastapi = {version = ">=0.75.0,<0.76.0", optional = true, markers = "extra == \"server\""}
 fastapi-utils = {version = ">=0.2.1,<0.3.0", optional = true, markers = "extra == \"server\""}
 gitpython = ">=3.1.18,<4.0.0"
 httplib2 = ">=0.19.1,<0.20"
 orjson = {version = ">=3.8.3,<3.9.0", optional = true, markers = "extra == \"server\""}
-pandas = ">=1.1.5,<2.0.0"
+pandas = ">=1.1.5"
 passlib = {version = ">=1.7.4,<1.8.0", extras = ["bcrypt"]}
 pydantic = ">=1.9.0,<1.11"
 pymysql = ">=1.0.2,<1.1.0"
@@ -3590,13 +3683,20 @@ sqlmodel = ">=0.0.8,<0.1.0"
 uvicorn = {version = ">=0.17.5,<0.18.0", extras = ["standard"], optional = true, markers = "extra == \"server\""}
 
 [package.extras]
-dev = ["black (>=22.3.0,<23.0.0)", "coverage[toml] (>=5.5,<6.0)", "darglint (>=1.8.1,<2.0.0)", "docker-compose (>=1.28,<2.0)", "hypothesis (>=6.43.1,<7.0.0)", "mike (>=1.1.2,<2.0.0)", "mkdocs (>=1.2.3,<2.0.0)", "mkdocs-awesome-pages-plugin (>=2.6.1,<3.0.0)", "mkdocs-material (>=8.1.7,<9.0.0)", "mkdocstrings (>=0.17.0,<0.18.0)", "mypy (==1.0.0)", "pre-commit (>=2.14.0,<3.0.0)", "pyment (>=0.3.3,<0.4.0)", "pytest (>=6.2.4,<7.0.0)", "pytest-clarity (>=1.0.1,<2.0.0)", "pytest-mock (>=3.6.1,<4.0.0)", "pytest-randomly (>=3.10.1,<4.0.0)", "ruff (>=0.0.255,<0.0.256)", "tox (>=3.24.3,<4.0.0)", "types-Markdown (>=3.3.6,<4.0.0)", "types-Pillow (>=9.2.1,<10.0.0)", "types-PyMySQL (>=1.0.4,<2.0.0)", "types-PyYAML (>=6.0.0,<7.0.0)", "types-certifi (>=2021.10.8.0,<2022.0.0.0)", "types-croniter (>=1.0.2,<2.0.0)", "types-futures (>=3.3.1,<4.0.0)", "types-protobuf (>=3.18.0,<4.0.0)", "types-psutil (>=5.8.13,<6.0.0)", "types-python-dateutil (>=2.8.2,<3.0.0)", "types-python-slugify (>=5.0.2,<6.0.0)", "types-redis (>=4.1.19,<5.0.0)", "types-requests (>=2.27.11,<3.0.0)", "types-setuptools (>=57.4.2,<58.0.0)", "types-six (>=1.16.2,<2.0.0)", "types-termcolor (>=1.1.2,<2.0.0)", "typing-extensions (>=3.7.4)"]
-secrets-aws = ["boto3 (>=1.16.0)"]
+adlfs = ["adlfs (>=2021.10.0)"]
+connectors-aws = ["boto3 (>=1.16.0,<=1.24.59)", "kubernetes (>=18.20.0)"]
+connectors-azure = ["azure-identity (>=1.4.0)", "azure-mgmt-containerregistry (>=10.0.0)", "azure-mgmt-containerservice (>=20.0.0)", "azure-mgmt-storage (>=20.0.0)", "azure-storage-blob (>=12.0.0)", "kubernetes (>=18.20.0)"]
+connectors-gcp = ["google-cloud-container (>=2.21.0)", "google-cloud-storage (>=2.9.0)", "kubernetes (>=18.20.0)"]
+connectors-kubernetes = ["kubernetes (>=18.20.0)"]
+dev = ["black (>=23.3.0,<24.0.0)", "coverage[toml] (>=5.5,<6.0)", "darglint (>=1.8.1,<2.0.0)", "docker-compose (>=1.28,<2.0)", "hypothesis (>=6.43.1,<7.0.0)", "mike (>=1.1.2,<2.0.0)", "mkdocs (>=1.2.3,<2.0.0)", "mkdocs-awesome-pages-plugin (>=2.6.1,<3.0.0)", "mkdocs-material (>=8.1.7,<9.0.0)", "mkdocstrings (>=0.17.0,<0.18.0)", "mypy (==1.3.0)", "pre-commit (>=2.14.0,<3.0.0)", "pyment (>=0.3.3,<0.4.0)", "pytest (>=6.2.4,<7.0.0)", "pytest-clarity (>=1.0.1,<2.0.0)", "pytest-mock (>=3.6.1,<4.0.0)", "pytest-randomly (>=3.10.1,<4.0.0)", "ruff (>=0.0.270,<0.0.271)", "tox (>=3.24.3,<4.0.0)", "types-Markdown (>=3.3.6,<4.0.0)", "types-Pillow (>=9.2.1,<10.0.0)", "types-PyMySQL (>=1.0.4,<2.0.0)", "types-PyYAML (>=6.0.0,<7.0.0)", "types-certifi (>=2021.10.8.0,<2022.0.0.0)", "types-croniter (>=1.0.2,<2.0.0)", "types-futures (>=3.3.1,<4.0.0)", "types-protobuf (>=3.18.0,<4.0.0)", "types-psutil (>=5.8.13,<6.0.0)", "types-python-dateutil (>=2.8.2,<3.0.0)", "types-python-slugify (>=5.0.2,<6.0.0)", "types-redis (>=4.1.19,<5.0.0)", "types-requests (>=2.27.11,<3.0.0)", "types-setuptools (>=57.4.2,<58.0.0)", "types-six (>=1.16.2,<2.0.0)", "types-termcolor (>=1.1.2,<2.0.0)", "typing-extensions (>=3.7.4)"]
+gcsfs = ["gcsfs (==2022.11.0)"]
+s3fs = ["s3fs (==2022.11.0)"]
+secrets-aws = ["boto3 (>=1.16.0,<=1.24.59)"]
 secrets-azure = ["azure-identity (>=1.4.0)", "azure-keyvault-secrets (>=4.0.0)"]
 secrets-gcp = ["google-cloud-secret-manager (>=2.12.5)"]
 secrets-hashicorp = ["hvac (>=0.11.2)"]
 server = ["fastapi (>=0.75.0,<0.76.0)", "fastapi-utils (>=0.2.1,<0.3.0)", "orjson (>=3.8.3,<3.9.0)", "python-jose[cryptography] (>=3.3.0,<3.4.0)", "python-multipart (>=0.0.5,<0.1.0)", "uvicorn[standard] (>=0.17.5,<0.18.0)"]
-templates = ["black (>=22.3.0,<23.0.0)", "copier (>=7.0.0)", "jinja2-time (>=0.2.0,<0.3.0)", "ruff (>=0.0.255,<0.0.256)"]
+templates = ["black (>=23.3.0,<24.0.0)", "copier (>=7.0.0)", "jinja2-time (>=0.2.0,<0.3.0)", "ruff (>=0.0.270,<0.0.271)"]
 
 [[package]]
 name = "zipp"
@@ -3616,5 +3716,5 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.8,<3.11"
-content-hash = "193ea8b8f773705fd99193cb9b893443a4612c2c28a3a57daf793b546e52b72a"
+python-versions = ">=3.8,<3.11" # ZenML requires <3.11
+content-hash = "203fef082118b8026e7cbf58100931853733467b56930db689227d942aa062aa"
