@@ -24,7 +24,11 @@ def run_data_scrapping_pipeline() -> None:
 @click.command()
 @click.option("--scrape", "-s", is_flag=True, help="Run data scraping pipeline")
 def main(scrape: bool) -> None:
-    """Run all pipelines."""
+    """Run all pipelines.
+
+    Args:
+        scrape (bool): run the data scraping pipeline when True.
+    """
     if scrape:
         logger.info("Running data scraping pipeline.")
         run_data_scrapping_pipeline()
