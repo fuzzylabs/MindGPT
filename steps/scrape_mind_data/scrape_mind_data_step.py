@@ -197,15 +197,99 @@ class Scraper(BaseScraper):
         date_of_today = date.today().strftime("%Y%m%d")
         df = pd.DataFrame(data.items(), columns=["URL", "TextScraped"])
 
-        # Using WayBack Machine API to obtain a archived URL if exists
-        df["ArchivedURL"] = df.apply(
-            lambda row: self.get_archived_url(row["URL"], date_of_today), axis=1
+        # Using WayBack Machine API to obtain an archived URL if it exists
+        df["ArchivedURL"] = df["URL"].apply(
+            lambda url: self.get_archived_url(url, date_of_today)
         )
         df["TimeStamp"] = date_of_today
 
         df = df[["TextScraped", "TimeStamp", "URL", "ArchivedURL"]]  # Rearrange Columns
 
         return df
+
+
+def scrape_conditions_and_drugs_sections(
+    scraper: Scraper, data: Dict[str, str]
+) -> Dict[str, str]:
+    """Scrapes data for the 'Types of mental health problems' and 'Drugs and treatments' sections.
+
+    Args:
+        scraper (Scraper): a scraper object.
+        data (Union[Dict[str, str], Dict]): empty or existing dataset.
+
+    Returns:
+        Dict[str, str]: scraped data.
+    """
+    urls = [
+        "https://www.mind.org.uk/information-support/types-of-mental-health-problems/",
+        "https://www.mind.org.uk/information-support/drugs-and-treatments/",
+    ]
+
+    logger.info(
+        "Scraping data from the 'Types of mental health problems' and 'Drugs and treatments' section"
+    )
+
+    for url in urls:
+        logger.info(f"\nScraping data from {url}\n")
+        objects = scraper.extract_section_list(url)
+
+        logger.info(f"Found {len(objects)} objects")
+
+        for obj, obj_url in objects.items():
+            logger.info(f"Scraping data for the {obj} object")
+            sub_page_urls = scraper.get_object_side_bar_urls(obj_url, "a-z/")
+            column_class = "col-md-8 column" if sub_page_urls else "col-md-12 column"
+
+            for sub_page_url in sub_page_urls:
+                sub_page_data = scraper.scrape_sub_page_data(sub_page_url, column_class)
+                sub_page_data_string = "\n".join(sub_page_data)
+                full_url = scraper.build_subpage_url(sub_page_url)
+                data[full_url] = sub_page_data_string
+
+    logger.info(
+        "\nFinish scraping data from the 'Types of mental health problems' and 'Drugs and treatments' section\n"
+    )
+
+    return data
+
+
+def scrape_helping_someone_section(
+    scraper: Scraper, data: Dict[str, str]
+) -> Dict[str, str]:
+    """Scrapes data for the 'Helping someone else' sections.
+
+    Args:
+        scraper (Scraper): a scraper object.
+        data (Union[Dict[str, str], Dict]): empty or existing dataset.
+
+    Returns:
+        Dict[str, str]: scraped data.
+    """
+    urls = [
+        "/information-support/types-of-mental-health-problems/mental-health-problems-introduction/for-friends-family/",
+        "/information-support/guides-to-support-and-services/seeking-help-for-a-mental-health-problem/helping-someone-else-seek-help/",
+        "/information-support/helping-someone-else/carers-friends-family-coping-support/am-i-a-carer/",
+        "/information-support/tips-for-everyday-living/student-life/for-friends-and-family/",
+        "/information-support/tips-for-everyday-living/lgbtqia-mental-health/supporting-someone-who-is-lgbtqia/",
+    ]
+
+    logger.info("Scraping data from the 'Helping someone else' section\n")
+
+    for url in urls:
+        logger.info(f"Scraping data from {url}")
+        sub_page_urls = scraper.get_object_side_bar_urls(url, "a-z/")
+
+        column_class = "col-md-8 column" if sub_page_urls else "col-md-12 column"
+
+        for sub_page_url in sub_page_urls:
+            sub_page_data = scraper.scrape_sub_page_data(sub_page_url, column_class)
+            sub_page_data_string = "\n".join(sub_page_data)
+            full_url = scraper.build_subpage_url(sub_page_url)
+            data[full_url] = sub_page_data_string
+
+    logger.info("\nFinish scraping data from the 'Helping someone else' section\n")
+
+    return data
 
 
 @step
@@ -215,29 +299,15 @@ def scrape_mind_data() -> pd.DataFrame:
     Returns:
         pd.DataFrame: data scraped.
     """
-    url = "https://www.mind.org.uk/information-support/types-of-mental-health-problems/"
     scraper = Scraper()
+    data: Dict[str, str] = {}
 
-    objects = scraper.extract_section_list(url)
+    data = scrape_conditions_and_drugs_sections(scraper, data)
+    data = scrape_helping_someone_section(scraper, data)
 
-    logger.info(f"Found {len(objects)} objects from {url}")
-    data = {}
+    logger.info("Finish scraping data for all sections\n")
 
-    for obj, url in objects.items():
-        logger.info(f"Scraping data for the {obj} object")
-        sub_page_urls = scraper.get_object_side_bar_urls(url, "a-z/")
-        column_class = "col-md-8 column" if sub_page_urls else "col-md-12 column"
-
-        for sub_page_url in sub_page_urls:
-            sub_page_data = scraper.scrape_sub_page_data(sub_page_url, column_class)
-            sub_page_data_string = "\n".join(sub_page_data)
-            full_url = scraper.build_subpage_url(sub_page_url)
-            data[full_url] = sub_page_data_string
-
-    logger.info("Finish scraping data")
-
-    logger.info("Creating dataframe")
+    logger.info(f"Creating dataframe with {len(data)} rows of data")
     df = scraper.create_dataframe(data)
-    print(df.head())
 
     return df
