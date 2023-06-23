@@ -62,7 +62,7 @@ class Scraper(BaseScraper):
     sub-sections from the "Helping someone else" as they all share the same HTML structure under.
 
     Args:
-        BaseScraper (_type_): _description_
+        BaseScraper: the class to inherits from. BaseScraper contains essential methods that are required to scrape data for any sections or webpage.
     """
 
     def extract_section_list(self, url: str) -> Dict[str, str]:
@@ -215,7 +215,7 @@ def scrape_conditions_and_drugs_sections(
 
     Args:
         scraper (Scraper): a scraper object.
-        data (Union[Dict[str, str], Dict]): empty or existing dataset.
+        data (Dict[str, str]): empty or existing dataset.
 
     Returns:
         Dict[str, str]: scraped data.
@@ -260,7 +260,7 @@ def scrape_helping_someone_section(
 
     Args:
         scraper (Scraper): a scraper object.
-        data (Union[Dict[str, str], Dict]): empty or existing dataset.
+        data (Dict[str, str]): empty or existing dataset.
 
     Returns:
         Dict[str, str]: scraped data.
