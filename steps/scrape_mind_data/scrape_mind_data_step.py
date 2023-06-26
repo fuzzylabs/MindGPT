@@ -105,7 +105,7 @@ class Scraper(BaseScraper):
     """This class inherits the essential methods for data scraping from the BaseScraper class.
 
     This class aims to scrape data from the "Types of mental health problems", "Drugs and treatments" and the
-    sub-sections from the "Helping someone else" as they all share the same HTML structure under.
+    sub-sections from the "Helping someone else" as they all share the same HTML structure.
 
     Args:
         BaseScraper: the class to inherits from. BaseScraper contains essential methods that are required to scrape data for any sections or webpage.
@@ -254,7 +254,7 @@ def scrape_conditions_and_drugs_sections(
                 data[full_url] = single_page_data_string
 
     logger.info(
-        "\nFinish scraping data from the 'Types of mental health problems' and 'Drugs and treatments' section\n"
+        "\nFinised scraping data from the 'Types of mental health problems' and 'Drugs and treatments' section\n"
     )
 
     return data
@@ -300,7 +300,7 @@ def scrape_helping_someone_section(
             full_url = scraper.build_subpage_url(url)
             data[full_url] = single_page_data_string
 
-    logger.info("\nFinish scraping data from the 'Helping someone else' section\n")
+    logger.info("\nFinished scraping data from the 'Helping someone else' section\n")
 
     return data
 
@@ -318,7 +318,7 @@ def scrape_mind_data() -> pd.DataFrame:
     data = scrape_conditions_and_drugs_sections(scraper, data)
     data = scrape_helping_someone_section(scraper, data)
 
-    logger.info("Finish scraping data for all sections\n")
+    logger.info("Finished scraping data for all sections\n")
 
     logger.info(f"Creating dataframe with {len(data)} rows of data")
     df = scraper.create_dataframe(data)
