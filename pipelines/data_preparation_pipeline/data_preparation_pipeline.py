@@ -19,7 +19,7 @@ def data_preparation_pipeline(
         clean_data: BaseStep,
         validate_data: BaseStep,
         version_data: BaseStep,
-) -> pd.DataFrame:
+) -> None:
     """The data preparation pipeline.
 
     Args:

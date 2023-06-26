@@ -19,20 +19,20 @@ def remove_duplicates(data: pd.DataFrame) -> pd.DataFrame:
 
 
 @step
-def load_data(data_path) -> pd.DataFrame:
-    ...
+def load_data() -> pd.DataFrame:
+    return pd.DataFrame()
 
 
 @step
 def clean_data(data: pd.DataFrame) -> pd.DataFrame:
-    ...
+    return pd.DataFrame()
 
 
 @step
 def validate_data(data: pd.DataFrame) -> pd.DataFrame:
-    ...
+    return pd.DataFrame()
 
 
 @step
 def version_data(data: pd.DataFrame) -> pd.DataFrame:
-    ...
+    return pd.DataFrame()
