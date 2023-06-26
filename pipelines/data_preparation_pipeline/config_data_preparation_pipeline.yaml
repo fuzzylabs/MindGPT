@@ -1,0 +1,7 @@
+steps:
+  clean_data:
+    enable_cache: False
+  validate_data:
+    enable_cache: False
+  version_data:
+    enable_cache: False
