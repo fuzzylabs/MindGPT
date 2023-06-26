@@ -2,7 +2,6 @@ from zenml.steps import step
 import pandas as pd
 
 
-
 def case_normalize_data(data: pd.DataFrame) -> pd.DataFrame:
     ...
 
@@ -23,6 +22,7 @@ def remove_duplicates(data: pd.DataFrame) -> pd.DataFrame:
 def load_data(data_path) -> pd.DataFrame:
     ...
 
+
 @step
 def clean_data(data: pd.DataFrame) -> pd.DataFrame:
     ...
@@ -36,4 +36,3 @@ def validate_data(data: pd.DataFrame) -> pd.DataFrame:
 @step
 def version_data(data: pd.DataFrame) -> pd.DataFrame:
     ...
-
