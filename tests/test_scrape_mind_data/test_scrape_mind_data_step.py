@@ -1,1 +1,246 @@
 """Unit tests for scrape mind data step."""
+from unittest.mock import MagicMock
+
+import pandas as pd
+import pytest
+from bs4 import BeautifulSoup
+from freezegun import freeze_time
+from pandas.testing import assert_frame_equal
+from steps.scrape_mind_data.scrape_mind_data_step import (
+    BaseScraper,
+    Scraper,
+    scrape_conditions_and_drugs_sections,
+    scrape_helping_someone_section,
+    scrape_mind_data,
+)
+
+
+@pytest.fixture()
+def base_scraper() -> BaseScraper:
+    """A fixture for an instance of the BaseScraper class.
+
+    Returns:
+        BaseScraper: a BaseScraper instance for testing.
+    """
+    return BaseScraper()
+
+
+@pytest.fixture
+def scraper() -> Scraper:
+    """A fixture for an instance of the Scraper class.
+
+    Returns:
+        BaseScraper: a Scraper instance for testing.
+    """
+    return Scraper()
+
+
+def test_get_html_text(base_scraper: BaseScraper, mocked_html_text: str):
+    """Test if whether get().text from the HTMLSession class returns the mocked HTML text.
+
+    Args:
+        base_scraper (BaseScraper): a BaseScraper instance.
+        mocked_html_text (str): the mocked html texts from conftest.
+    """
+    result = base_scraper.get_html_text("test_url")
+    assert result == mocked_html_text
+
+
+def test_create_soup(base_scraper: BaseScraper, mocked_html_session_get: MagicMock):
+    """Test that the create_soup function is returning a BeautifulSoup object with the expected html text.
+
+    Args:
+        base_scraper (BaseScraper): a BaseScraper instance.
+        mocked_html_session_get (str): the mocked html texts from conftest.
+    """
+    soup = base_scraper.create_soup("test_url")
+
+    mocked_html_session_get.assert_called_with("test_url")
+    assert isinstance(soup, BeautifulSoup)
+
+
+def test_build_subpage_url(base_scraper: BaseScraper):
+    """Test that the build_subpage_url function returns the expected url.
+
+    Args:
+        base_scraper (BaseScraper): a BaseScraper instance.
+    """
+    expected_result = "https://www.mind.org.uk/test_subpage_url"
+    result = base_scraper.build_subpage_url("/test_subpage_url")
+
+    assert isinstance(result, str)
+    assert result == expected_result
+
+
+def test_get_archived_url(base_scraper: BaseScraper):
+    """Test that the get_archived_url function is returning the expected api answer.
+
+    Args:
+        base_scraper (BaseScraper): a BaseScraper instance.
+    """
+    archived_url = base_scraper.get_archived_url("test_url", "test_time_stamps")
+
+    expected_result = "test_archived_url"
+    assert archived_url == expected_result
+
+
+@freeze_time("2023-06-25")
+def test_create_dataframe(base_scraper: BaseScraper):
+    """Test that the create_dataframe function creates a pandas dataframe with th 4 expected columns and contains the expected data.
+
+    Args:
+        base_scraper (BaseScraper): a BaseScraper instance.
+    """
+    mocked_data = {"mocked_url": "mocked_text_scraped"}
+
+    result_df = base_scraper.create_dataframe(mocked_data)
+
+    expected_df = pd.DataFrame(
+        {
+            "TextScraped": ["mocked_text_scraped"],
+            "TimeStamp": ["20230625"],
+            "URL": ["mocked_url"],
+            "ArchivedURL": ["test_archived_url"],
+        }
+    )
+
+    assert isinstance(result_df, pd.DataFrame)
+    assert_frame_equal(result_df, expected_df)
+
+
+def test_extract_section_list(scraper: Scraper):
+    """Test that the extract_section_list function returns the expected dictionary.
+
+    Based on the mocked html text defined in conftest. We should expected the dictionary returned to have two objects.
+
+    Args:
+        scraper (Scraper): a Scraper instance.
+    """
+    objects_dict = scraper.extract_section_list("test_url")
+
+    expected_objects_dict = {
+        "Test Title 1": "/test_href_1/",
+        "Test Title 2": "/test_href_2/",
+    }
+    assert isinstance(objects_dict, dict)
+    assert objects_dict == expected_objects_dict
+
+
+def test_get_object_side_bar_urls(scraper: Scraper):
+    """Test that the get_object_side_bar_urls function is able to get the side bar urls based on the tags that side bars have.
+
+    Args:
+        scraper (Scraper): a Scraper instance.
+    """
+    side_bar_urls = scraper.get_object_side_bar_urls("test_url", "exclude_me/")
+
+    expected_side_bar_urls = [
+        "/test_side_bar_object_1_url/",
+        "/test_side_bar_object_2_url/",
+    ]
+    assert isinstance(side_bar_urls, list)
+    assert side_bar_urls == expected_side_bar_urls
+
+
+def test_scrape_sub_page_data(scraper: Scraper):
+    """Test that the scrape_sub_page_data function is able to scrape data from a webpage given a url and the class name that contents have.
+
+    Args:
+        scraper (Scraper): a Scraper instance.
+    """
+    sub_page_data = scraper.scrape_sub_page_data(
+        "test_sub_page_url", "test_content_class"
+    )
+
+    expected_sub_page_data = [
+        "Test h2 text",
+        "Test p text",
+        "Text li text",
+        "Test h3 text",
+        "Test p text",
+        "Text li text",
+    ]
+    assert isinstance(expected_sub_page_data, list)
+    assert sub_page_data == expected_sub_page_data
+
+
+def test_scrape_conditions_and_drugs_sections(scraper: Scraper):
+    """Test that the scrape_conditions_and_drugs_sections function is able to scrape the expected data from the mocked html text.
+
+    The way Mind structure their webpage is that if a pages contains side bar, content will be under the "col-md-8 column" class, otherwise, the "col-md-12 column" class.
+
+    Args:
+        scraper (Scraper): a Scraper instance.
+    """
+    data_scraped = scrape_conditions_and_drugs_sections(scraper, {})
+
+    # If get_object_side_bar_urls() returns a list of side bar urls, it will scrape data with the "col-md-8 column" class name as this is how mind structured their webpage.
+    expected_data_scraped = {
+        "https://www.mind.org.uk/test_side_bar_object_1_url/": "Test h2 text\nTest p text\nText li text",
+        "https://www.mind.org.uk/test_side_bar_exclude_me/": "Test h2 text\nTest p text\nText li text",
+        "https://www.mind.org.uk/test_side_bar_object_2_url/": "Test h2 text\nTest p text\nText li text",
+    }
+    assert isinstance(expected_data_scraped, dict)
+    assert data_scraped == expected_data_scraped
+
+    scraper.get_object_side_bar_urls = MagicMock(return_value=None)
+    # If get_object_side_bar_urls() returns None, it will scrape data with the "col-md-12 column" class name as this is how mind structured their webpage.
+    data_scraped = scrape_conditions_and_drugs_sections(scraper, {})
+
+    expected_data_scraped = {
+        "https://www.mind.org.uk/test_href_1/": "Test h3 text\nTest p text\nText li text",
+        "https://www.mind.org.uk/test_href_2/": "Test h3 text\nTest p text\nText li text",
+    }
+    assert isinstance(expected_data_scraped, dict)
+    assert data_scraped == expected_data_scraped
+
+
+def test_scrape_helping_someone_section(scraper: Scraper):
+    """Test that the scrape_helping_someone_section function is able to scrape the expected data from the mocked html text.
+
+    The way Mind structure their webpage is that if a pages contains side bar, content will be under the "col-md-8 column" class, otherwise, the "col-md-12 column" class.
+
+    Args:
+        scraper (Scraper): a Scraper instance.
+    """
+    data_scraped = scrape_helping_someone_section(scraper, {})
+
+    expected_dict_values = {"Test h2 text\nTest p text\nText li text"}
+    assert isinstance(data_scraped, dict)
+    assert set(data_scraped.values()) == expected_dict_values
+
+    scraper.get_object_side_bar_urls = MagicMock(return_value=None)
+    data_scraped = scrape_helping_someone_section(scraper, {})
+
+    expected_dict_values = {"Test h3 text\nTest p text\nText li text"}
+    assert isinstance(data_scraped, dict)
+    assert set(data_scraped.values()) == expected_dict_values
+
+
+@freeze_time("2023-06-25")
+def test_scrape_mind_data():
+    """Test that the scrape_mind_data step returns the expected dataframe."""
+    result_df = scrape_mind_data.entrypoint()
+
+    expected_df = pd.DataFrame(
+        {
+            "TextScraped": [
+                "Test h2 text\nTest p text\nText li text",
+                "Test h2 text\nTest p text\nText li text",
+                "Test h2 text\nTest p text\nText li text",
+            ],
+            "TimeStamp": ["20230625", "20230625", "20230625"],
+            "URL": [
+                "https://www.mind.org.uk/test_side_bar_object_1_url/",
+                "https://www.mind.org.uk/test_side_bar_exclude_me/",
+                "https://www.mind.org.uk/test_side_bar_object_2_url/",
+            ],
+            "ArchivedURL": [
+                "test_archived_url",
+                "test_archived_url",
+                "test_archived_url",
+            ],
+        }
+    )
+
+    assert_frame_equal(result_df, expected_df)

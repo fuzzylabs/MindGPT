@@ -54,6 +54,52 @@ class BaseScraper:
         """
         return str(self.mind_url + sub_page_url)
 
+    def get_archived_url(self, url: str, time_stamp: str) -> str:
+        """Retrieve the archived URL of a webpage snapshot using the Wayback Machine API.
+
+        Args:
+            url (str): The URL of the webpage.
+            time_stamp (str): The timestamp of the desired snapshot.
+
+        Returns:
+            str: The archived URL of the snapshot.
+        """
+        api_link = (
+            f"http://archive.org/wayback/available?url={url}&timestamp={time_stamp}"
+        )
+
+        answer = requests.get(api_link)
+        json_answer: Dict[str, Any] = answer.json()
+
+        if bool(json_answer["archived_snapshots"]):  # Whether the URL is archived.
+            archived_url = json_answer["archived_snapshots"]["closest"]["url"]
+        else:
+            return "URL not archived"
+
+        return archived_url  # type: ignore
+
+    def create_dataframe(self, data: Dict[str, str]) -> pd.DataFrame:
+        """Create a pandas DataFrame from the given data.
+
+        Args:
+            data (dict): A dictionary containing URL and TextScraped pairs.
+
+        Returns:
+            pd.DataFrame: The created DataFrame with columns TextScraped, TimeStamp, URL, and ArchivedURL.
+        """
+        date_of_today = date.today().strftime("%Y%m%d")
+        df = pd.DataFrame(data.items(), columns=["URL", "TextScraped"])
+
+        # Using WayBack Machine API to obtain an archived URL if it exists
+        df["ArchivedURL"] = df["URL"].apply(
+            lambda url: self.get_archived_url(url, date_of_today)
+        )
+        df["TimeStamp"] = date_of_today
+
+        df = df[["TextScraped", "TimeStamp", "URL", "ArchivedURL"]]  # Rearrange Columns
+
+        return df
+
 
 class Scraper(BaseScraper):
     """This class inherits the essential methods for data scraping from the BaseScraper class.
@@ -78,23 +124,22 @@ class Scraper(BaseScraper):
         """
         soup = self.create_soup(url)
 
-        conditions: Dict[str, str] = {}
-
+        objects: Dict[str, str] = {}
         for div in soup.find_all(
             "div", class_="content-area bg-white"
         ):  # Where the list starts
             for a_tag in div.find_all("a"):
-                condition_name = a_tag.get_text(strip=True)
+                object_name = a_tag.get_text(strip=True)
                 href = a_tag["href"]
 
                 if (
-                    condition_name == "Yes"
-                ):  # The class content-area bg-white contains some non related text
-                    return conditions
+                    object_name == "Yes"
+                ):  # The class content-area bg-white contains some non related text such as the "Yes" section
+                    return objects
 
-                conditions[condition_name] = href
+                objects[object_name] = href
 
-        return conditions
+        return objects
 
     def get_object_side_bar_urls(
         self, url: str, side_bar_url_to_exclude: Optional[str]
@@ -161,52 +206,6 @@ class Scraper(BaseScraper):
 
         return sub_page_data
 
-    def get_archived_url(self, url: str, time_stamp: str) -> str:
-        """Retrieve the archived URL of a webpage snapshot using the Wayback Machine API.
-
-        Args:
-            url (str): The URL of the webpage.
-            time_stamp (str): The timestamp of the desired snapshot.
-
-        Returns:
-            str: The archived URL of the snapshot.
-        """
-        api_link = (
-            f"http://archive.org/wayback/available?url={url}&timestamp={time_stamp}"
-        )
-
-        answer = requests.get(api_link)
-        json_answer: Dict[str, Any] = answer.json()
-
-        if bool(json_answer["archived_snapshots"]):  # Whether the URL is archived.
-            archived_url = json_answer["archived_snapshots"]["closest"]["url"]
-        else:
-            return "URL not archived"
-
-        return archived_url  # type: ignore
-
-    def create_dataframe(self, data: Dict[str, str]) -> pd.DataFrame:
-        """Create a pandas DataFrame from the given data.
-
-        Args:
-            data (dict): A dictionary containing URL and TextScraped pairs.
-
-        Returns:
-            pd.DataFrame: The created DataFrame with columns TextScraped, TimeStamp, URL, and ArchivedURL.
-        """
-        date_of_today = date.today().strftime("%Y%m%d")
-        df = pd.DataFrame(data.items(), columns=["URL", "TextScraped"])
-
-        # Using WayBack Machine API to obtain an archived URL if it exists
-        df["ArchivedURL"] = df["URL"].apply(
-            lambda url: self.get_archived_url(url, date_of_today)
-        )
-        df["TimeStamp"] = date_of_today
-
-        df = df[["TextScraped", "TimeStamp", "URL", "ArchivedURL"]]  # Rearrange Columns
-
-        return df
-
 
 def scrape_conditions_and_drugs_sections(
     scraper: Scraper, data: Dict[str, str]
@@ -240,11 +239,19 @@ def scrape_conditions_and_drugs_sections(
             sub_page_urls = scraper.get_object_side_bar_urls(obj_url, "a-z/")
             column_class = "col-md-8 column" if sub_page_urls else "col-md-12 column"
 
-            for sub_page_url in sub_page_urls:
-                sub_page_data = scraper.scrape_sub_page_data(sub_page_url, column_class)
-                sub_page_data_string = "\n".join(sub_page_data)
-                full_url = scraper.build_subpage_url(sub_page_url)
-                data[full_url] = sub_page_data_string
+            if sub_page_urls:
+                for sub_page_url in sub_page_urls:
+                    sub_page_data = scraper.scrape_sub_page_data(
+                        sub_page_url, column_class
+                    )
+                    sub_page_data_string = "\n".join(sub_page_data)
+                    full_url = scraper.build_subpage_url(sub_page_url)
+                    data[full_url] = sub_page_data_string
+            else:
+                single_page_data = scraper.scrape_sub_page_data(obj_url, column_class)
+                single_page_data_string = "\n".join(single_page_data)
+                full_url = scraper.build_subpage_url(obj_url)
+                data[full_url] = single_page_data_string
 
     logger.info(
         "\nFinish scraping data from the 'Types of mental health problems' and 'Drugs and treatments' section\n"
@@ -281,11 +288,17 @@ def scrape_helping_someone_section(
 
         column_class = "col-md-8 column" if sub_page_urls else "col-md-12 column"
 
-        for sub_page_url in sub_page_urls:
-            sub_page_data = scraper.scrape_sub_page_data(sub_page_url, column_class)
-            sub_page_data_string = "\n".join(sub_page_data)
-            full_url = scraper.build_subpage_url(sub_page_url)
-            data[full_url] = sub_page_data_string
+        if sub_page_urls:
+            for sub_page_url in sub_page_urls:
+                sub_page_data = scraper.scrape_sub_page_data(sub_page_url, column_class)
+                sub_page_data_string = "\n".join(sub_page_data)
+                full_url = scraper.build_subpage_url(sub_page_url)
+                data[full_url] = sub_page_data_string
+        else:
+            single_page_data = scraper.scrape_sub_page_data(url, column_class)
+            single_page_data_string = "\n".join(single_page_data)
+            full_url = scraper.build_subpage_url(url)
+            data[full_url] = single_page_data_string
 
     logger.info("\nFinish scraping data from the 'Helping someone else' section\n")
 
