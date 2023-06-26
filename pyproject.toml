@@ -36,9 +36,6 @@ exclude = ["docs", "test"]
 strict = true
 namespace_packages = true
 
-# [tool.mypy.]
-# ignore_missing_imports = true
-
 
 [tool.ruff]
 # use Python 3.8 as the minimum version for autofixing
