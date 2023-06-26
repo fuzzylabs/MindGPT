@@ -10,12 +10,11 @@ from zenml.steps import BaseParameters, step
 class SaveDataParameters(BaseParameters):
     """Save Data parameters."""
 
-    # TODO: Add this to yaml
     # Path to the data folder to save the data within the Azure Blob Storage container
-    data_base_dir: str
+    data_base_dir: str = "raw_scraped_data"
 
     # Name of the Azure Blob Storage container
-    container: str
+    container: str = "scraped_data_store"
 
 
 @step
@@ -31,7 +30,6 @@ def save_data(
         mind_data_scraped (pd.DataFrame): Mind data to push.
         params (SaveDataParameters): ZenML step parameters.
     """
-    # azure_upload_df(params.container, nhs_data_scraped, "raw_scraped_data", "nhs")
     azure_upload_df(params.container, nhs_data_scraped, params.data_base_dir, "nhs")
     azure_upload_df(params.container, mind_data_scraped, params.data_base_dir, "mind")
 
@@ -47,7 +45,7 @@ def azure_upload_df(
     data_path (str): the path to save the data within the blob storage container
     filename (str): the filename to use for the blob
     """
-    if all([container, len(dataframe), filename]):
+    if all([container, len(dataframe), data_path, filename]):
         upload_file_path = os.path.join(data_path, f"{filename}.csv")
         connect_str = get_azure_connection_string()
         blob_service_client = BlobServiceClient.from_connection_string(connect_str)
@@ -60,7 +58,7 @@ def azure_upload_df(
 
 
 def get_azure_connection_string() -> str:
-    """Gets the Azure Storage connection string.
+    """Gets the Azure Storage connection string from Terraform outputs.
 
     TODO: Move to a utils/common functions file
 
