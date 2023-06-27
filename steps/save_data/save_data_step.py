@@ -40,10 +40,10 @@ def azure_upload_df(
     """Upload Pandas DataFrame as a csv to Azure Blob Storage container.
 
     Args:
-    container (str): the container name
-    dataframe (pd.DataFrame): the DataFrame object
-    data_path (str): the path to save the data within the blob storage container
-    filename (str): the filename to use for the blob
+        container (str): the container name
+        dataframe (pd.DataFrame): the DataFrame object
+        data_path (str): the path to save the data within the blob storage container
+        filename (str): the filename to use for the blob
     """
     if all([container, len(dataframe), data_path, filename]):
         upload_file_path = os.path.join(data_path, f"{filename}.csv")
