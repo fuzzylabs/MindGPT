@@ -1,10 +1,5 @@
 """Data preparation pipeline."""
 
-import pandas as pd
-from steps.data_preparation_step.data_preparation_step import (
-    clean_data,
-    validate_data,
-)
 from steps.save_data.save_data_step import save_data
 from zenml.pipelines import pipeline
 from zenml.logger import get_logger

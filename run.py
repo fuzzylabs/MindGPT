@@ -10,11 +10,10 @@ from steps.scrape_nhs_data.scrape_nhs_data_step import scrape_nhs_data
 from pipelines.data_preparation_pipeline.data_preparation_pipeline import (
     data_preparation_pipeline,
 )
-from steps.data_preparation_step.data_preparation_step import (
+from steps.data_preparation_step import (
     load_data,
     clean_data,
     validate_data,
-    version_data,
 )
 from zenml.logger import get_logger
 
@@ -34,7 +33,7 @@ def run_data_scrapping_pipeline() -> None:
 def run_data_preparation_pipeline() -> None:
     """Run all steps in the data preparation pipeline."""
     pipeline = data_preparation_pipeline(
-        load_data(), clean_data(), validate_data(), version_data()
+        load_data(), clean_data(), validate_data()
     )
     pipeline.run(
         config_path="pipelines/data_preparation_pipeline/config_data_preparation_pipeline.yaml"
