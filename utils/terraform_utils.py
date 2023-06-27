@@ -29,7 +29,7 @@ class TerraformVariables:
         Raises:
             TerraformOutputNotFoundError: if specific Terraform outputs are not found
         """
-        working_dir = (os.path.join("terraform"),)
+        working_dir = os.path.join("terraform")
         var_file = os.path.join("terraform", "terraform.tfvars.json")
 
         self.terraform_client = Terraform(working_dir, var_file)
