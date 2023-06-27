@@ -1,11 +1,11 @@
 """Data preparation pipeline."""
 
 import pandas as pd
-from steps.data_preparation.data_preparation import (
+from steps.data_preparation_step.data_preparation_step import (
     clean_data,
     validate_data,
-    version_data
 )
+from steps.save_data.save_data_step import save_data
 from zenml.pipelines import pipeline
 from zenml.logger import get_logger
 from zenml.steps import BaseStep
@@ -15,11 +15,10 @@ logger = get_logger(__name__)
 
 @pipeline
 def data_preparation_pipeline(
-        load_data: BaseStep,
-        clean_data: BaseStep,
-        validate_data: BaseStep,
-        version_data: BaseStep,
-) -> pd.DataFrame:
+    load_data: BaseStep,
+    clean_data: BaseStep,
+    validate_data: BaseStep,
+) -> None:
     """The data preparation pipeline.
 
     Args:
@@ -28,11 +27,7 @@ def data_preparation_pipeline(
         validate_data: A ZenML step which validates the cleaned data.
         version_data: A ZenML step which versions the cleaned and validated data.
     """
-    data = version_data(
-        validate_data(
-            clean_data(
-                load_data()
-            )
-        )
-    )
-    return data
+    data = load_data()
+    data = clean_data(data)
+    data = validate_data(data)
+    save_data(data)

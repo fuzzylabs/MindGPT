@@ -10,7 +10,7 @@ from steps.scrape_nhs_data.scrape_nhs_data_step import scrape_nhs_data
 from pipelines.data_preparation_pipeline.data_preparation_pipeline import (
     data_preparation_pipeline,
 )
-from steps.data_preparation.data_preparation import (
+from steps.data_preparation_step.data_preparation_step import (
     load_data,
     clean_data,
     validate_data,
