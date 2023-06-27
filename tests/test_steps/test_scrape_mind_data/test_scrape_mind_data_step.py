@@ -143,9 +143,9 @@ def test_create_dataframe(scraper: Scraper):
 
     expected_df = pd.DataFrame(
         {
-            "TextScraped": ["mocked_text_scraped"],
-            "TimeStamp": ["20230625"],
-            "URL": ["mocked_url"],
+            "text_scraped": ["mocked_text_scraped"],
+            "timestamp": ["20230625"],
+            "url": ["mocked_url"],
         }
     )
 
@@ -269,13 +269,13 @@ def test_scrape_mind_data():
 
     expected_df = pd.DataFrame(
         {
-            "TextScraped": [
+            "text_scraped": [
                 "Test h2 text\nTest p text\nText li text",
                 "Test h2 text\nTest p text\nText li text",
                 "Test h2 text\nTest p text\nText li text",
             ],
-            "TimeStamp": ["20230625", "20230625", "20230625"],
-            "URL": [
+            "timestamp": ["20230625", "20230625", "20230625"],
+            "url": [
                 "https://www.mind.org.uk/test_side_bar_object_1_url/",
                 "https://www.mind.org.uk/test_side_bar_exclude_me/",
                 "https://www.mind.org.uk/test_side_bar_object_2_url/",

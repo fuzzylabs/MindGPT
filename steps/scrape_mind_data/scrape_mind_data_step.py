@@ -77,12 +77,12 @@ class Scraper:
         Returns:
             pd.DataFrame: The created DataFrame with columns TextScraped, TimeStamp, URL, and ArchivedURL.
         """
-        df = pd.DataFrame(data.items(), columns=["URL", "TextScraped"])
+        df = pd.DataFrame(data.items(), columns=["url", "text_scraped"])
 
         date_of_today = date.today().strftime("%Y%m%d")
-        df["TimeStamp"] = date_of_today
+        df["timestamp"] = date_of_today
 
-        df = df[["TextScraped", "TimeStamp", "URL"]]  # Rearrange Columns
+        df = df[["text_scraped", "timestamp", "url"]]  # Rearrange Columns
 
         return df
 
