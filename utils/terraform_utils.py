@@ -18,6 +18,9 @@ class TerraformVariables:
         Args:
             working_dir (str): Path to Terraform working directory.
             var_file (str): Path to Terraform variables file.
+
+        Raises:
+            Exception: if specific Terraform outputs are not found
         """
         self.terraform_client = Terraform(working_dir, var_file)
 
