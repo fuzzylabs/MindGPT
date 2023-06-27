@@ -1,6 +1,5 @@
 """Data preparation pipeline."""
 
-from steps.save_data.save_data_step import save_data
 from zenml.pipelines import pipeline
 from zenml.logger import get_logger
 from zenml.steps import BaseStep
