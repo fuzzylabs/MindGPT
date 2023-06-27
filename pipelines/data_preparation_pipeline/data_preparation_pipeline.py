@@ -13,6 +13,7 @@ def data_preparation_pipeline(
     load_data: BaseStep,
     clean_data: BaseStep,
     validate_data: BaseStep,
+    save_data: BaseStep,
 ) -> None:
     """The data preparation pipeline.
 
@@ -25,4 +26,4 @@ def data_preparation_pipeline(
     data = load_data()
     data = clean_data(data)
     data = validate_data(data)
-    save_data(data)
+    save_data(prepared_data=data)

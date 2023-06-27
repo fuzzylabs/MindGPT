@@ -33,7 +33,7 @@ def run_data_scrapping_pipeline() -> None:
 def run_data_preparation_pipeline() -> None:
     """Run all steps in the data preparation pipeline."""
     pipeline = data_preparation_pipeline(
-        load_data(), clean_data(), validate_data()
+        load_data(), clean_data(), validate_data(), save_data()
     )
     pipeline.run(
         config_path="pipelines/data_preparation_pipeline/config_data_preparation_pipeline.yaml"
