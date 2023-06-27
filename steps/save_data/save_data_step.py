@@ -32,10 +32,7 @@ def azure_upload_df(
     """
     if len(dataframe):
         upload_file_path = os.path.join(data_path, f"{filename}.csv")
-        terraform_vars = TerraformVariables(
-            working_dir=os.path.join("terraform"),
-            var_file=os.path.join("terraform", "terraform.tfvars.json"),
-        )
+        terraform_vars = TerraformVariables()
         connect_str = terraform_vars.storage_connection_string
         blob_service_client = BlobServiceClient.from_connection_string(connect_str)
         blob_client = blob_service_client.get_blob_client(

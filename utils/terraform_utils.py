@@ -1,4 +1,5 @@
 """Terraform utils file."""
+import os
 from dataclasses import dataclass
 from typing import Optional
 
@@ -22,16 +23,15 @@ class TerraformVariables:
     storage_connection_string: str
     terraform_client: Optional[Terraform] = None
 
-    def __init__(self, working_dir: str, var_file: str):
+    def __init__(self) -> None:
         """TerraformVariables constructor.
-
-        Args:
-            working_dir (str): Path to Terraform working directory.
-            var_file (str): Path to Terraform variables file.
 
         Raises:
             Exception: if specific Terraform outputs are not found
         """
+        working_dir = (os.path.join("terraform"),)
+        var_file = os.path.join("terraform", "terraform.tfvars.json")
+
         self.terraform_client = Terraform(working_dir, var_file)
 
         tf_output = self.terraform_client.output()
