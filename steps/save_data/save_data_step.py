@@ -3,7 +3,7 @@ import os
 
 import pandas as pd
 from azure.storage.blob import BlobServiceClient
-from python_terraform import Terraform
+from utils.terraform_utils import TerraformVariables
 from zenml.steps import BaseParameters, step
 
 
@@ -15,31 +15,6 @@ class SaveDataParameters(BaseParameters):
 
     # Name of the Azure Blob Storage container
     container: str = "scraped-data-store"
-
-
-def get_azure_connection_string() -> str:
-    """Gets the Azure Storage connection string from Terraform outputs.
-
-    TODO: Move to a utils/common functions file
-
-    Returns:
-        str: Azure connection string for accessing the provisioned blob storage
-    """
-    terraform_client = Terraform(
-        working_dir=os.path.join("terraform"),
-        var_file=os.path.join("terraform", "terraform.tfvars.json"),
-    )
-
-    tf_output = terraform_client.output()
-
-    if tf_output is not None:
-        return str(
-            tf_output.get("azure_storage_primary_connection_string").get("value")
-        )
-
-    raise Exception(
-        "Unable to fetch Azure storage connection string, ensure the storage account is deployed"
-    )
 
 
 def azure_upload_df(
@@ -55,7 +30,11 @@ def azure_upload_df(
     """
     if len(dataframe):
         upload_file_path = os.path.join(data_path, f"{filename}.csv")
-        connect_str = get_azure_connection_string()
+        terraform_vars = TerraformVariables(
+            working_dir=os.path.join("terraform"),
+            var_file=os.path.join("terraform", "terraform.tfvars.json"),
+        )
+        connect_str = terraform_vars.storage_connection_string
         blob_service_client = BlobServiceClient.from_connection_string(connect_str)
         blob_client = blob_service_client.get_blob_client(
             container=container, blob=upload_file_path

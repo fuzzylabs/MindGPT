@@ -1,6 +1,6 @@
 """Tests for save_data_step."""
 from contextlib import nullcontext as does_not_raise
-from unittest.mock import call, patch
+from unittest.mock import MagicMock, call, patch
 
 import pandas as pd
 import pytest
@@ -10,6 +10,23 @@ from steps.save_data.save_data_step import (
     azure_upload_df,
     save_data,
 )
+from utils.terraform_utils import TerraformVariables
+
+
+@pytest.fixture(autouse=True)
+def mock_terraform_variables() -> TerraformVariables:
+    """Fixture for mocked Terraform output variables.
+
+    Yields:
+        TerraformVariables: Mock Terraform output variables
+    """
+    with patch(
+        "steps.save_data.save_data_step.TerraformVariables"
+    ) as mock_terraform_variables:
+        mock_instance = MagicMock()
+        mock_terraform_variables.return_value = mock_instance
+        mock_instance.connection_string = "azure-connection-string"
+        yield mock_terraform_variables
 
 
 @pytest.fixture(autouse=True)
@@ -29,23 +46,7 @@ def mock_blob_client() -> BlobClient:
         yield mock_blob_client
 
 
-@pytest.fixture
-def mock_get_azure_connection_string() -> str:
-    """Fixture for mocked Azure Storage connection string.
-
-    Yields:
-        str: Mock connection string
-    """
-    with patch(
-        "steps.save_data.save_data_step.get_azure_connection_string"
-    ) as get_azure_connection_string:
-        get_azure_connection_string.return_value = "azure-connection-string"
-        yield get_azure_connection_string
-
-
-def test_azure_upload_df(
-    mock_blob_client: BlobClient, mock_get_azure_connection_string: str
-):
+def test_azure_upload_df(mock_blob_client: BlobClient):
     """Test AzureStorage upload file function.
 
     Args:
@@ -61,9 +62,7 @@ def test_azure_upload_df(
     )
 
 
-def test_save_data_step(
-    mock_blob_client: BlobClient, mock_get_azure_connection_string: str
-):
+def test_save_data_step(mock_blob_client: BlobClient):
     """Test save data step works as expected.
 
     Args:
