@@ -17,23 +17,6 @@ class SaveDataParameters(BaseParameters):
     container: str = "scraped-data-store"
 
 
-@step
-def save_data(
-    nhs_data_scraped: pd.DataFrame,
-    mind_data_scraped: pd.DataFrame,
-    params: SaveDataParameters,
-) -> None:
-    """Save data as CSVs and push to storage bucket.
-
-    Args:
-        nhs_data_scraped (pd.DataFrame): NHS data to push.
-        mind_data_scraped (pd.DataFrame): Mind data to push.
-        params (SaveDataParameters): ZenML step parameters.
-    """
-    azure_upload_df(params.container, nhs_data_scraped, params.data_base_dir, "nhs")
-    azure_upload_df(params.container, mind_data_scraped, params.data_base_dir, "mind")
-
-
 def azure_upload_df(
     container: str, dataframe: pd.DataFrame, data_path: str, filename: str
 ) -> None:
@@ -80,3 +63,20 @@ def get_azure_connection_string() -> str:
     raise Exception(
         "Unable to fetch Azure storage connection string, ensure the storage account is deployed"
     )
+
+
+@step
+def save_data(
+    nhs_data_scraped: pd.DataFrame,
+    mind_data_scraped: pd.DataFrame,
+    params: SaveDataParameters,
+) -> None:
+    """Save data as CSVs and push to storage bucket.
+
+    Args:
+        nhs_data_scraped (pd.DataFrame): NHS data to push.
+        mind_data_scraped (pd.DataFrame): Mind data to push.
+        params (SaveDataParameters): ZenML step parameters.
+    """
+    azure_upload_df(params.container, nhs_data_scraped, params.data_base_dir, "nhs")
+    azure_upload_df(params.container, mind_data_scraped, params.data_base_dir, "mind")
