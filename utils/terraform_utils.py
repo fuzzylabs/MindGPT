@@ -34,14 +34,17 @@ class TerraformVariables:
         self.terraform_client = Terraform(working_dir, var_file)
 
         tf_output = self.terraform_client.output()
-        if (
-            tf_output is not None
-            and tf_output.get("azure_storage_primary_connection_string") is not None
-        ):
-            self.storage_connection_string = str(
-                tf_output.get("azure_storage_primary_connection_string").get("value")
-            )
-        else:
+
+        if tf_output is None:
             raise TerraformOutputNotFoundError(
                 "Required Terraform outputs were not found. Ensure the required resources have been provisioned."
+            )
+
+        self.storage_connection_string = tf_output.get(
+            "azure_storage_primary_connection_string", {}
+        ).get("value")
+
+        if self.storage_connection_string is None:
+            raise TerraformOutputNotFoundError(
+                "Azure Storage Connection String was not found. Ensure the required resources have been provisioned."
             )
