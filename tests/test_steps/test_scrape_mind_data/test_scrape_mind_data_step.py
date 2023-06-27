@@ -8,7 +8,6 @@ from freezegun import freeze_time
 from pandas.testing import assert_frame_equal
 from requests_html import HTMLSession
 from steps.scrape_mind_data.scrape_mind_data_step import (
-    BaseScraper,
     Scraper,
     scrape_conditions_and_drugs_sections,
     scrape_helping_someone_section,
@@ -29,16 +28,6 @@ def mocked_html_session_get(mocked_html_text: str) -> MagicMock:
     with patch.object(HTMLSession, "get") as mock_method:
         mock_method.return_value.text = mocked_html_text
         yield mock_method
-
-
-@pytest.fixture
-def base_scraper() -> BaseScraper:
-    """A fixture for an instance of the BaseScraper class.
-
-    Returns:
-        BaseScraper: a BaseScraper instance for testing.
-    """
-    return BaseScraper()
 
 
 @pytest.fixture
@@ -104,53 +93,53 @@ def mocked_html_text() -> str:
     return html_text
 
 
-def test_get_html_text(base_scraper: BaseScraper, mocked_html_text: str):
+def test_get_html_text(scraper: Scraper, mocked_html_text: str):
     """Test if whether get().text from the HTMLSession class returns the mocked HTML text.
 
     Args:
-        base_scraper (BaseScraper): a BaseScraper instance.
+        scraper (Scraper): a Scraper instance.
         mocked_html_text (str): the mocked html texts from conftest.
     """
-    result = base_scraper.get_html_text("test_url")
+    result = scraper.get_html_text("test_url")
     assert result == mocked_html_text
 
 
-def test_create_soup(base_scraper: BaseScraper, mocked_html_session_get: MagicMock):
+def test_create_soup(scraper: Scraper, mocked_html_session_get: MagicMock):
     """Test that the create_soup function is returning a BeautifulSoup object with the expected html text.
 
     Args:
-        base_scraper (BaseScraper): a BaseScraper instance.
+        scraper (Scraper): a Scraper instance.
         mocked_html_session_get (str): the mocked html texts from conftest.
     """
-    soup = base_scraper.create_soup("test_url")
+    soup = scraper.create_soup("test_url")
 
     mocked_html_session_get.assert_called_with("test_url")
     assert isinstance(soup, BeautifulSoup)
 
 
-def test_build_subpage_url(base_scraper: BaseScraper):
+def test_build_subpage_url(scraper: Scraper):
     """Test that the build_subpage_url function returns the expected url.
 
     Args:
-        base_scraper (BaseScraper): a BaseScraper instance.
+        scraper (Scraper): a BaseScraper instance.
     """
     expected_result = "https://www.mind.org.uk/test_subpage_url"
-    result = base_scraper.build_subpage_url("/test_subpage_url")
+    result = scraper.build_subpage_url("/test_subpage_url")
 
     assert isinstance(result, str)
     assert result == expected_result
 
 
 @freeze_time("2023-06-25")
-def test_create_dataframe(base_scraper: BaseScraper):
+def test_create_dataframe(scraper: Scraper):
     """Test that the create_dataframe function creates a pandas dataframe with th 4 expected columns and contains the expected data.
 
     Args:
-        base_scraper (BaseScraper): a BaseScraper instance.
+        scraper (Scraper): a BaseScraper instance.
     """
     mocked_data = {"mocked_url": "mocked_text_scraped"}
 
-    result_df = base_scraper.create_dataframe(mocked_data)
+    result_df = scraper.create_dataframe(mocked_data)
 
     expected_df = pd.DataFrame(
         {

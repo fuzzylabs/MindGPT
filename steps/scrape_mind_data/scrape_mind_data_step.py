@@ -13,8 +13,22 @@ logger = get_logger(__name__)
 MIND_URL = "https://www.mind.org.uk"
 
 
-class BaseScraper:
-    """Base data scraper class."""
+class Scraper:
+    """This class aims to scrape data from the "Types of mental health problems", "Drugs and treatments" and the sub-sections from the "Helping someone else" as they all share the same HTML structure."""
+
+    urls = {
+        "conditions_and_drugs": [
+            "https://www.mind.org.uk/information-support/types-of-mental-health-problems/",
+            "https://www.mind.org.uk/information-support/drugs-and-treatments/",
+        ],
+        "helping_someone": [
+            "/information-support/types-of-mental-health-problems/mental-health-problems-introduction/for-friends-family/",
+            "/information-support/guides-to-support-and-services/seeking-help-for-a-mental-health-problem/helping-someone-else-seek-help/",
+            "/information-support/helping-someone-else/carers-friends-family-coping-support/am-i-a-carer/",
+            "/information-support/tips-for-everyday-living/student-life/for-friends-and-family/",
+            "/information-support/tips-for-everyday-living/lgbtqia-mental-health/supporting-someone-who-is-lgbtqia/",
+        ],
+    }
 
     session = HTMLSession()
 
@@ -71,31 +85,6 @@ class BaseScraper:
         df = df[["TextScraped", "TimeStamp", "URL"]]  # Rearrange Columns
 
         return df
-
-
-class Scraper(BaseScraper):
-    """This class inherits the essential methods for data scraping from the BaseScraper class.
-
-    This class aims to scrape data from the "Types of mental health problems", "Drugs and treatments" and the
-    sub-sections from the "Helping someone else" as they all share the same HTML structure.
-
-    Args:
-        BaseScraper: the class to inherits from. BaseScraper contains essential methods that are required to scrape data for any sections or webpage.
-    """
-
-    urls = {
-        "conditions_and_drugs": [
-            "https://www.mind.org.uk/information-support/types-of-mental-health-problems/",
-            "https://www.mind.org.uk/information-support/drugs-and-treatments/",
-        ],
-        "helping_someone": [
-            "/information-support/types-of-mental-health-problems/mental-health-problems-introduction/for-friends-family/",
-            "/information-support/guides-to-support-and-services/seeking-help-for-a-mental-health-problem/helping-someone-else-seek-help/",
-            "/information-support/helping-someone-else/carers-friends-family-coping-support/am-i-a-carer/",
-            "/information-support/tips-for-everyday-living/student-life/for-friends-and-family/",
-            "/information-support/tips-for-everyday-living/lgbtqia-mental-health/supporting-someone-who-is-lgbtqia/",
-        ],
-    }
 
     def extract_section_list(self, url: str) -> Dict[str, str]:
         """Extracts a dictionary of object names and their corresponding sub-URLs.
