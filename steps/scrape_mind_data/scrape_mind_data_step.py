@@ -10,11 +10,12 @@ from zenml.steps import step
 
 logger = get_logger(__name__)
 
+MIND_URL = "https://www.mind.org.uk"
+
 
 class BaseScraper:
     """Base data scraper class."""
 
-    mind_url = "https://www.mind.org.uk"
     session = HTMLSession()
 
     def get_html_text(self, url: str) -> str:
@@ -51,7 +52,7 @@ class BaseScraper:
         Returns:
             str: The complete URL for the subpage.
         """
-        return str(self.mind_url + sub_page_url)
+        return str(MIND_URL + sub_page_url)
 
     def create_dataframe(self, data: Dict[str, str]) -> pd.DataFrame:
         """Create a pandas DataFrame from the given data.
@@ -81,6 +82,20 @@ class Scraper(BaseScraper):
     Args:
         BaseScraper: the class to inherits from. BaseScraper contains essential methods that are required to scrape data for any sections or webpage.
     """
+
+    urls = {
+        "conditions_and_drugs": [
+            "https://www.mind.org.uk/information-support/types-of-mental-health-problems/",
+            "https://www.mind.org.uk/information-support/drugs-and-treatments/",
+        ],
+        "helping_someone": [
+            "/information-support/types-of-mental-health-problems/mental-health-problems-introduction/for-friends-family/",
+            "/information-support/guides-to-support-and-services/seeking-help-for-a-mental-health-problem/helping-someone-else-seek-help/",
+            "/information-support/helping-someone-else/carers-friends-family-coping-support/am-i-a-carer/",
+            "/information-support/tips-for-everyday-living/student-life/for-friends-and-family/",
+            "/information-support/tips-for-everyday-living/lgbtqia-mental-health/supporting-someone-who-is-lgbtqia/",
+        ],
+    }
 
     def extract_section_list(self, url: str) -> Dict[str, str]:
         """Extracts a dictionary of object names and their corresponding sub-URLs.
@@ -113,13 +128,13 @@ class Scraper(BaseScraper):
         return objects
 
     def get_object_side_bar_urls(
-        self, url: str, side_bar_url_to_exclude: Optional[str]
+        self, url: str, side_bar_url_to_exclude: Optional[str] = None
     ) -> List[str]:
         """This function should return the side bar urls for each object found with the extract_section_list() function.
 
         Args:
             url (str): object's url. E.g. The URL to the anger condition page or URL to the Antidepressants page.
-            side_bar_url_to_exclude (Optional[str]): sidebar url to exclude if needed. E.g. Antidepressants contains URL Antidepressants A–Z which is also an object on its own.
+            side_bar_url_to_exclude (Optional[str]): sidebar url to exclude if needed. E.g. Antidepressants contains URL Antidepressants A–Z which is also an object on its own. Defaults to None.
 
 
         Returns:
@@ -190,16 +205,11 @@ def scrape_conditions_and_drugs_sections(
     Returns:
         Dict[str, str]: scraped data.
     """
-    urls = [
-        "https://www.mind.org.uk/information-support/types-of-mental-health-problems/",
-        "https://www.mind.org.uk/information-support/drugs-and-treatments/",
-    ]
-
     logger.info(
         "Scraping data from the 'Types of mental health problems' and 'Drugs and treatments' section"
     )
 
-    for url in urls:
+    for url in scraper.urls["conditions_and_drugs"]:
         logger.info(f"\nScraping data from {url}\n")
         objects = scraper.extract_section_list(url)
 
@@ -243,17 +253,9 @@ def scrape_helping_someone_section(
     Returns:
         Dict[str, str]: scraped data.
     """
-    urls = [
-        "/information-support/types-of-mental-health-problems/mental-health-problems-introduction/for-friends-family/",
-        "/information-support/guides-to-support-and-services/seeking-help-for-a-mental-health-problem/helping-someone-else-seek-help/",
-        "/information-support/helping-someone-else/carers-friends-family-coping-support/am-i-a-carer/",
-        "/information-support/tips-for-everyday-living/student-life/for-friends-and-family/",
-        "/information-support/tips-for-everyday-living/lgbtqia-mental-health/supporting-someone-who-is-lgbtqia/",
-    ]
-
     logger.info("Scraping data from the 'Helping someone else' section\n")
 
-    for url in urls:
+    for url in scraper.urls["helping_someone"]:
         logger.info(f"Scraping data from {url}")
         sub_page_urls = scraper.get_object_side_bar_urls(url, "a-z/")
 

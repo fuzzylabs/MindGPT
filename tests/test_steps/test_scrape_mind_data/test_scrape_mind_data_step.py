@@ -16,7 +16,22 @@ from steps.scrape_mind_data.scrape_mind_data_step import (
 )
 
 
-@pytest.fixture()
+@pytest.fixture(autouse=True)
+def mocked_html_session_get(mocked_html_text: str) -> MagicMock:
+    """A fixture that mock the result of session.get(url).text.
+
+    Args:
+        mocked_html_text (str): the mocked html text.
+
+    Yields:
+        MagicMock: the mocked method.
+    """
+    with patch.object(HTMLSession, "get") as mock_method:
+        mock_method.return_value.text = mocked_html_text
+        yield mock_method
+
+
+@pytest.fixture
 def base_scraper() -> BaseScraper:
     """A fixture for an instance of the BaseScraper class.
 
@@ -87,21 +102,6 @@ def mocked_html_text() -> str:
     """
 
     return html_text
-
-
-@pytest.fixture(autouse=True)
-def mocked_html_session_get(mocked_html_text: str) -> MagicMock:
-    """A fixture that mock the result of session.get(url).text.
-
-    Args:
-        mocked_html_text (str): the mocked html text.
-
-    Yields:
-        MagicMock: the mocked method.
-    """
-    with patch.object(HTMLSession, "get") as mock_method:
-        mock_method.return_value.text = mocked_html_text
-        yield mock_method
 
 
 def test_get_html_text(base_scraper: BaseScraper, mocked_html_text: str):
