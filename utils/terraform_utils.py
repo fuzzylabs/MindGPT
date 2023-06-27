@@ -5,6 +5,16 @@ from typing import Optional
 from python_terraform import Terraform
 
 
+class TerraformOutputNotFoundError(Exception):
+    """Terraform output not found exception, is raised when a required variable does not exist in the tf output.
+
+    Args:
+        Exception: Inherits from the exception class.
+    """
+
+    pass
+
+
 @dataclass
 class TerraformVariables:
     """TerraformVariables dataclass used for accessing Terraform output variables."""
@@ -33,6 +43,6 @@ class TerraformVariables:
                 tf_output.get("azure_storage_primary_connection_string").get("value")
             )
         else:
-            raise Exception(
+            raise TerraformOutputNotFoundError(
                 "Required Terraform outputs were not found. Ensure the required resources have been provisioned."
             )

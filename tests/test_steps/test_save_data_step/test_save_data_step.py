@@ -31,7 +31,7 @@ def mock_terraform_variables() -> TerraformVariables:
 
 @pytest.fixture()
 def mock_blob_client() -> BlobClient:
-    """Pytest fixture for mocking a blob client and connection string.
+    """Pytest fixture for mocking an Azure blob client and connection string.
 
     Yields:
         BlobClient: Mocked Azure blob client
@@ -70,7 +70,7 @@ def test_azure_upload_df(mock_blob_client: BlobClient, nhs_dataframe: pd.DataFra
     """Test AzureStorage upload file function.
 
     Args:
-        mock_blob_client (BlobClient): Mocked blob client
+        mock_blob_client (BlobClient): Mocked Azure blob client
         nhs_dataframe (pd.DataFrame): Mocked "NHS" data in dataframe
     """
     azure_upload_df("scraped-data-store", nhs_dataframe, "data", "nhs")
@@ -89,7 +89,7 @@ def test_save_data_step(
     """Test save data step works as expected.
 
     Args:
-        mock_blob_client (BlobClient): Mocked blob client
+        mock_blob_client (BlobClient): Mocked Azure blob client
         nhs_dataframe (pd.DataFrame): Mocked "NHS" data in dataframe
         mind_dataframe (pd.DataFrame): Mocked "Mind" data in dataframe
     """
@@ -102,3 +102,16 @@ def test_save_data_step(
     ]
 
     mock_blob_client.upload_blob.assert_has_calls(calls)
+
+
+def test_empty_dataframe_not_uploaded(mock_blob_client: BlobClient):
+    """Assert that empty dataframes are not uploaded to Azure.
+
+    Args:
+        mock_blob_client (BlobClient): Mocked Azure blob client
+    """
+    df = pd.DataFrame()
+    with does_not_raise():
+        azure_upload_df("scraped-data-store", df, "data", "nhs")
+
+    mock_blob_client.upload_blob.assert_not_called()
