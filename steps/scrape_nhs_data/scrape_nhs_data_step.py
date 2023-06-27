@@ -6,6 +6,7 @@ from typing import Dict, Optional
 import pandas as pd
 from bs4 import BeautifulSoup, NavigableString, Tag
 from requests_html import HTMLSession  # type: ignore
+from zenml import step
 
 
 class NHSMentalHealthScraper:
@@ -120,21 +121,12 @@ class NHSMentalHealthScraper:
                 self.df = pd.concat([self.df, nhs_mental_health_scraper.df])
 
 
-nhs_scraper = NHSMentalHealthScraper(
-    url="https://www.nhs.uk/mental-health/",
-    attributes={"class": "nhsuk-main-wrapper"},
-)
-nhs_scraper.scrape_recursively()
-print(nhs_scraper.df)
-with open("/Users/callumwells/Documents/MindGPT/test.csv", "w") as f:
-    nhs_scraper.df.to_csv(f)
-
-# @step
-# def scrape_nhs_data() -> pd.DataFrame:
-#     """A ZenML pipeline step for scraping the NHS Mental Health website."""
-#     nhs_scraper = NHSMentalHealthScraper(
-#         url="https://www.nhs.uk/mental-health/",
-#         attributes={"class": "nhsuk-main-wrapper"},
-#     )
-#     df = nhs_scraper.scrape_recursively()
-#     return df
+@step
+def scrape_nhs_data() -> pd.DataFrame:
+    """A ZenML pipeline step for scraping the NHS Mental Health website."""
+    nhs_scraper = NHSMentalHealthScraper(
+        url="https://www.nhs.uk/mental-health/",
+        attributes={"class": "nhsuk-main-wrapper"},
+    )
+    nhs_scraper.scrape_recursively()
+    return nhs_scraper.df
