@@ -141,18 +141,6 @@ def test_build_subpage_url(base_scraper: BaseScraper):
     assert result == expected_result
 
 
-def test_get_archived_url(base_scraper: BaseScraper):
-    """Test that the get_archived_url function is returning the expected api answer.
-
-    Args:
-        base_scraper (BaseScraper): a BaseScraper instance.
-    """
-    archived_url = base_scraper.get_archived_url("test_url", "test_time_stamps")
-
-    expected_result = "test_archived_url"
-    assert archived_url == expected_result
-
-
 @freeze_time("2023-06-25")
 def test_create_dataframe(base_scraper: BaseScraper):
     """Test that the create_dataframe function creates a pandas dataframe with th 4 expected columns and contains the expected data.
@@ -169,7 +157,6 @@ def test_create_dataframe(base_scraper: BaseScraper):
             "TextScraped": ["mocked_text_scraped"],
             "TimeStamp": ["20230625"],
             "URL": ["mocked_url"],
-            "ArchivedURL": ["test_archived_url"],
         }
     )
 
@@ -303,11 +290,6 @@ def test_scrape_mind_data():
                 "https://www.mind.org.uk/test_side_bar_object_1_url/",
                 "https://www.mind.org.uk/test_side_bar_exclude_me/",
                 "https://www.mind.org.uk/test_side_bar_object_2_url/",
-            ],
-            "ArchivedURL": [
-                "test_archived_url",
-                "test_archived_url",
-                "test_archived_url",
             ],
         }
     )
