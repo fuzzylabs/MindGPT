@@ -27,7 +27,7 @@ class TerraformVariables:
         """TerraformVariables constructor.
 
         Raises:
-            Exception: if specific Terraform outputs are not found
+            TerraformOutputNotFoundError: if specific Terraform outputs are not found
         """
         working_dir = (os.path.join("terraform"),)
         var_file = os.path.join("terraform", "terraform.tfvars.json")
