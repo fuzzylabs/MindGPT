@@ -1,7 +1,6 @@
 """Terraform utils file."""
 import os
 from dataclasses import dataclass
-from typing import Optional
 
 from python_terraform import Terraform
 
@@ -21,7 +20,7 @@ class TerraformVariables:
     """TerraformVariables dataclass used for accessing Terraform output variables."""
 
     storage_connection_string: str
-    terraform_client: Optional[Terraform] = None
+    terraform_client: Terraform
 
     def __init__(self) -> None:
         """TerraformVariables constructor.
