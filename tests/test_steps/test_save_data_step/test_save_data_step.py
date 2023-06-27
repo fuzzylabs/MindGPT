@@ -49,7 +49,7 @@ def test_azure_upload_df(
     """Test AzureStorage upload file function.
 
     Args:
-        mock_blob_client (BlobServiceClient): Mocked blob service client
+        mock_blob_client (BlobClient): Mocked blob client
         mock_get_azure_connection_string (str): Mocked Azure Storage connection string
     """
     df = pd.DataFrame({"col1": [1, 2], "col2": [3, 4]})
@@ -67,7 +67,7 @@ def test_save_data_step(
     """Test save data step works as expected.
 
     Args:
-        mock_blob_client (BlobServiceClient): Mocked blob service client
+        mock_blob_client (BlobClient): Mocked blob client
         mock_get_azure_connection_string (str): Mocked Azure Storage connection string
     """
     nhs_df = pd.DataFrame({"NHS1": [1, 2], "NHS2": [3, 4]})

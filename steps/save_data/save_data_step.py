@@ -14,7 +14,7 @@ class SaveDataParameters(BaseParameters):
     data_base_dir: str = "raw_scraped_data"
 
     # Name of the Azure Blob Storage container
-    container: str = "scraped_data_store"
+    container: str = "scraped-data-store"
 
 
 @step
