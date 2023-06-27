@@ -29,7 +29,7 @@ def mock_terraform_variables() -> TerraformVariables:
         yield mock_terraform_variables
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def mock_blob_client() -> BlobClient:
     """Pytest fixture for mocking a blob client and connection string.
 
@@ -44,6 +44,26 @@ def mock_blob_client() -> BlobClient:
         mock_blob_client = mock_container_client.get_blob_client.return_value
 
         yield mock_blob_client
+
+
+@pytest.fixture()
+def nhs_dataframe() -> pd.DataFrame:
+    """_summary_.
+
+    Returns:
+        pd.DataFrame: _description_
+    """
+    return pd.DataFrame({"NHS1": [1, 2], "NHS2": [3, 4]})
+
+
+@pytest.fixture()
+def mind_dataframe() -> pd.DataFrame:
+    """_summary_.
+
+    Returns:
+        pd.DataFrame: _description_
+    """
+    return pd.DataFrame({"MIND1": [100, 200], "MIND2": [300, 400]})
 
 
 def test_azure_upload_df(mock_blob_client: BlobClient):

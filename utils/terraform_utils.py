@@ -29,3 +29,7 @@ class TerraformVariables:
             self.storage_connection_string = str(
                 tf_output.get("azure_storage_primary_connection_string").get("value")
             )
+        else:
+            raise Exception(
+                "Required Terraform outputs were not found. Ensure the required resources have been provisioned."
+            )

@@ -1,8 +1,10 @@
 """Save the scraped data as CSV and push to bucket."""
 import os
+from datetime import datetime
 
 import pandas as pd
 from azure.storage.blob import BlobServiceClient
+from utils.constants import DATE_TIME_FORMAT
 from utils.terraform_utils import TerraformVariables
 from zenml.steps import BaseParameters, step
 
@@ -57,5 +59,9 @@ def save_data(
         mind_data_scraped (pd.DataFrame): Mind data to push.
         params (SaveDataParameters): ZenML step parameters.
     """
-    azure_upload_df(params.container, nhs_data_scraped, params.data_base_dir, "nhs")
-    azure_upload_df(params.container, mind_data_scraped, params.data_base_dir, "mind")
+    # Add DateTime directory to where the data will be saved
+    current_datetime = datetime.now().strftime(DATE_TIME_FORMAT)
+    data_base_dir = os.path.join(params.data_base_dir, str(current_datetime))
+
+    azure_upload_df(params.container, nhs_data_scraped, data_base_dir, "nhs")
+    azure_upload_df(params.container, mind_data_scraped, data_base_dir, "mind")
