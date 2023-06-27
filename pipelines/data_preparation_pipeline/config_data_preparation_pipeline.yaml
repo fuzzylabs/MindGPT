@@ -1,5 +1,9 @@
 steps:
+  load_data:
+    enable_cache: False
   clean_data:
     enable_cache: False
   validate_data:
+    enable_cache: False
+  save_prepared_data:
     enable_cache: False
