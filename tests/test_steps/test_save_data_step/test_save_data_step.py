@@ -4,7 +4,7 @@ from unittest.mock import call, patch
 
 import pandas as pd
 import pytest
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobClient
 from steps.save_data.save_data_step import (
     SaveDataParameters,
     azure_upload_df,
@@ -12,15 +12,21 @@ from steps.save_data.save_data_step import (
 )
 
 
-@pytest.fixture
-def mock_blob_service() -> BlobServiceClient:
-    """Pytest fixture for mocking a blob service client and connection string.
+@pytest.fixture(autouse=True)
+def mock_blob_client() -> BlobClient:
+    """Pytest fixture for mocking a blob client and connection string.
 
     Yields:
-        BlobServiceClient: Mocked blob service client
+        BlobClient: Mocked Azure blob client
     """
     with patch("steps.save_data.save_data_step.BlobServiceClient") as mock_blob_service:
-        yield mock_blob_service
+        # Mock container client
+        mock_container_client = mock_blob_service.from_connection_string.return_value
+
+        # Mock blob client for the container
+        mock_blob_client = mock_container_client.get_blob_client.return_value
+
+        yield mock_blob_client
 
 
 @pytest.fixture
@@ -38,20 +44,14 @@ def mock_get_azure_connection_string() -> str:
 
 
 def test_azure_upload_df(
-    mock_blob_service: BlobServiceClient, mock_get_azure_connection_string: str
+    mock_blob_client: BlobClient, mock_get_azure_connection_string: str
 ):
     """Test AzureStorage upload file function.
 
     Args:
-        mock_blob_service (BlobServiceClient): Mocked blob service client
+        mock_blob_client (BlobServiceClient): Mocked blob service client
         mock_get_azure_connection_string (str): Mocked Azure Storage connection string
     """
-    # Mock container client
-    mock_container_client = mock_blob_service.from_connection_string.return_value
-
-    # Mock blob client
-    mock_blob_client = mock_container_client.get_blob_client.return_value
-
     df = pd.DataFrame({"col1": [1, 2], "col2": [3, 4]})
     azure_upload_df("scraped-data-store", df, "data", "nhs")
 
@@ -62,20 +62,14 @@ def test_azure_upload_df(
 
 
 def test_save_data_step(
-    mock_blob_service: BlobServiceClient, mock_get_azure_connection_string: str
+    mock_blob_client: BlobClient, mock_get_azure_connection_string: str
 ):
     """Test save data step works as expected.
 
     Args:
-        mock_blob_service (BlobServiceClient): Mocked blob service client
+        mock_blob_client (BlobServiceClient): Mocked blob service client
         mock_get_azure_connection_string (str): Mocked Azure Storage connection string
     """
-    # Mock container client
-    mock_container_client = mock_blob_service.from_connection_string.return_value
-
-    # Mock blob client
-    mock_blob_client = mock_container_client.get_blob_client.return_value
-
     nhs_df = pd.DataFrame({"NHS1": [1, 2], "NHS2": [3, 4]})
     mind_df = pd.DataFrame({"MIND1": [100, 200], "MIND2": [300, 400]})
 

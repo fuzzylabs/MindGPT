@@ -36,15 +36,3 @@ output "secondary_connection_string" {
   value       = azurerm_storage_account.storage_account.secondary_connection_string
   sensitive   = true
 }
-
-output "primary_blob_connection_string" {
-  description = "Azure Storage Account - Primary Blob service connection string"
-  value       = azurerm_storage_account.storage_account.primary_blob_connection_string
-  sensitive   = true
-}
-
-output "secondary_blob_connection_string" {
-  description = "Azure Storage Account - Secondary Blob service connection string"
-  value       = azurerm_storage_account.storage_account.secondary_blob_connection_string
-  sensitive   = true
-}
