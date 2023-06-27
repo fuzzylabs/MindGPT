@@ -1,96 +1,22 @@
 """Scrape data from the NHS website."""
-from abc import ABC
-from datetime import datetime
+import re
+from datetime import date
 from typing import Dict, Optional
 
 import pandas as pd
 from bs4 import BeautifulSoup, NavigableString, Tag
-from requests import post
 from requests_html import HTMLSession  # type: ignore
 
 
-class Scraper(ABC):
-    """A base scraper class that can be extended to create specific scrapers."""
-
-    def __init__(
-        self,
-        url: str,
-        tag: Optional[str] = None,
-        attribute: Optional[Dict[str, str]] = None,
-    ) -> None:
-        """Constructor for the Scraper class.
-
-        The scraper constructor takes a URL for the target website to be scraped, alongside optional tag and attribute arguments that are used to identify a specific tag (i.e. subset of a page) to be scraped.
-
-        Args:
-            url (str): the target URL for the scraper.
-            tag (Optional[str]): the target HTML tag for the scraper.
-            attribute (Optional[Dict[str, str]]): the target attributes for scraper.
-        """
-        self._url = url
-        self._tag = tag
-        self._attribute = attribute
-        self._session = HTMLSession()
-        self._request = self._session.get(self._url)
-        self._html_text = self._request.text
-        self._soup = BeautifulSoup(self._html_text, "lxml")
-
-    def _identify_target(self) -> Tag | NavigableString | None | BeautifulSoup:
-        """A method to identify the HTML elements to scrape.
-
-        Returns:
-        (Tag | NavigableString | None | BeautifulSoup): if a tag or attribute is passed, the relevant Tag or NavigableString will be returned if present, otherwise None will be returned. If no tag or attribute is passed, a BeautifulSoup object representing the target URL will be returned.
-        """
-        if self._tag and self._attribute:
-            return self._soup.find(name=self._tag, attrs=self._attribute)
-        elif self._tag:
-            return self._soup.find(name=self._tag)
-        elif self._attribute:
-            return self._soup.find(attrs=self._attribute)
-        else:
-            return self._soup
-
-    def get_links(self) -> list[str]:
-        """A method to extract all links present within the target tag or page.
-
-        Returns:
-        (list[str]): a list containing strings representing all links found within the target tag or page.
-        """
-        target = self._identify_target()
-        a_tags = target.find_all(name="a", recursive=True)  # type: ignore
-        return [a_tag.get("href") for a_tag in a_tags]
-
-    def scrape(self) -> pd.DataFrame:
-        """A method for scraping the text from target pages.
-
-        Returns:
-        (DataFrame): a Pandas DataFrame with four columns ("text_scraped", "timestamp", "url", "archived_url") and a single record representing the results of the scrape.
-        """
-        timestamp = datetime.now()
-        wayback_timestamp = timestamp.strftime("%Y%m%d%H%M%S")
-        archived_url = f"https://web.archive.org/web/{wayback_timestamp}/{self._url}"
-        target = self._identify_target()
-        _ = post("https://web.archive.org/save", data={"url": self._url})
-        return pd.DataFrame(
-            [
-                {
-                    "text_scraped": target.get_text(" "),  # type: ignore
-                    "timestamp": timestamp,
-                    "url": self._url,
-                    "archived_url": archived_url,
-                }
-            ]
-        )
-
-
-class NHSMentalHealthScraper(Scraper):
+class NHSMentalHealthScraper:
     """A scraper class for scraping the NHS Mental Health (https://www.nhs.uk/mental-health/) website."""
 
     def __init__(
         self,
         url: str,
         tag: Optional[str] = None,
-        attribute: Optional[Dict[str, str]] = None,
+        attributes: Optional[Dict[str, str]] = None,
+        scraped_list: Optional[list[str]] = None,
     ) -> None:
         """Constructor for the NHSMentalHealthScraper class.
 
@@ -99,19 +25,116 @@ class NHSMentalHealthScraper(Scraper):
         Args:
             url (str): the target URL for the scraper.
             tag (Optional[str]): the target HTML tag for the scraper.
-            attribute (Optional[Dict[str, str]]): the target attributes for scraper.
+            attributes (Optional[Dict[str, str]]): the target attributes for scraper.
+            scraped_list (list[str]): the list containing previously scraped URLs.
         """
-        super().__init__(url=url, tag=tag, attribute=attribute)
+        self._url = url
+        self._tag = tag
+        self._attributes = attributes
+        self._scraped_list = scraped_list
+        self._session = HTMLSession()
+        self._response = self._session.get(self._url)
+        self._html_text = self._response.text
+        self._soup = BeautifulSoup(self._html_text, "lxml")
+        self.links = self.get_links()
+        self.df = self.scrape()
+
+        if self._scraped_list is None:
+            self._scraped_list = [self._url]
+
+    def _identify_target(self) -> Tag | NavigableString | BeautifulSoup:
+        """A method to identify the HTML elements to scrape.
+
+        Returns:
+            (Tag | NavigableString | BeautifulSoup): if a tag or attribute is passed, the relevant Tag or NavigableString will be returned if present. If no tag or attribute is passed, a BeautifulSoup object representing the target URL will be returned.
+        """
+        target = None
+        if self._tag and self._attributes:
+            target = self._soup.find(name=self._tag, attrs=self._attributes)
+        elif self._tag:
+            target = self._soup.find(name=self._tag)
+        elif self._attributes:
+            target = self._soup.find(attrs=self._attributes)
+        else:
+            target = self._soup
+
+        if target:
+            return target
+        else:
+            return self._soup
+
+    def get_links(self) -> list[str]:
+        """A method to extract all links present within the target tag or page.
+
+        Returns:
+            (list[str]): a list containing strings representing all links found within the target tag or page.
+        """
+        target = self._identify_target()
+        a_tags = target.find_all(name="a")  # type: ignore
+        return [a_tag.get("href") for a_tag in a_tags]
+
+    def scrape(self) -> pd.DataFrame:
+        """A method for scraping the text from target pages.
+
+        Returns:
+            (DataFrame): a Pandas DataFrame with four columns ("text_scraped", "timestamp", "url", "archived_url") and a single record representing the results of the scrape.
+        """
+        timestamp = date.today()
+        target = self._identify_target()
+        return pd.DataFrame(
+            [
+                {
+                    "text_scraped": target.get_text(" "),
+                    "timestamp": timestamp,
+                    "url": self._url,
+                }
+            ]
+        )
+
+    def scrape_recursively(self) -> None:
+        """A method for recursivley scraping all nested links found within a target website or Tag subject to conditions.
+
+        Conditions:
+        - the URL begins "https://www.nhs.uk/mental-health
+        - the URL has not previously been scraped.
+        """
+        for link in self.links:
+            # some links on the NHS Mental Health website do not follow the typical (i.e. https://www.nhs.uk/mental-health) format, and are truncated (e.g. /mental-health/...). The below conditional enforces a consistent format.
+            if re.match(r"^(\/mental-health){1}.+", link):
+                valid_link = f"https://www.nhs.uk{link}"
+            else:
+                valid_link = link
+            # if the link has a URL beginning https://www.nhs.uk/mental-health and has not already been scraped, it will be scraped recursivley.
+            if (
+                re.match(r"^(https:\/\/www.nhs.uk\/mental-health){1}.+", valid_link)
+                and valid_link not in self._scraped_list  # type: ignore
+            ):
+                self._scraped_list.append(valid_link)  # type: ignore
+                nhs_mental_health_scraper = NHSMentalHealthScraper(
+                    url=valid_link,
+                    tag=self._tag,
+                    attributes=self._attributes,
+                    scraped_list=self._scraped_list,
+                )
+                nhs_mental_health_scraper.scrape_recursively()
+                self.df = pd.concat([self.df, nhs_mental_health_scraper.df])
 
 
-scraper = NHSMentalHealthScraper(
+nhs_scraper = NHSMentalHealthScraper(
     url="https://www.nhs.uk/mental-health/",
-    tag="main",
-    attribute={"class": "nhsuk-main-wrapper"},
+    attributes={"class": "nhsuk-main-wrapper"},
 )
-
+nhs_scraper.scrape_recursively()
+print(nhs_scraper.df)
+with open("/Users/callumwells/Documents/MindGPT/test.csv", "w") as f:
+    nhs_scraper.df.to_csv(f)
 
 # @step
 # def scrape_nhs_data() -> pd.DataFrame:
-#     """..."""
-#     ...
+#     """A ZenML pipeline step for scraping the NHS Mental Health website."""
+#     nhs_scraper = NHSMentalHealthScraper(
+#         url="https://www.nhs.uk/mental-health/",
+#         attributes={"class": "nhsuk-main-wrapper"},
+#     )
+#     df = nhs_scraper.scrape_recursively()
+#     return df
