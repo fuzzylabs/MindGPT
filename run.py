@@ -1,24 +1,18 @@
 """Run all pipeline."""
 import click
-from pipelines.data_scraping_pipeline import data_scraping_pipeline
-from pipelines.data_preparation_pipeline import data_preparation_pipeline
 from steps.data_scraping_steps import scrape_mind_data, scrape_nhs_data
-from steps.data_preparation_steps import (
-    load_data,
 from pipelines.data_preparation_pipeline.data_preparation_pipeline import (
     data_preparation_pipeline,
 )
 from pipelines.data_scraping_pipeline.data_scraping_pipeline import (
     data_scraping_pipeline,
 )
-from steps.data_preparation_step import (
+from steps.data_preparation_steps import (
+    load_data,
     clean_data,
-    validate_data,
     save_prepared_data,
     validate_data,
 )
-from steps.scrape_mind_data.scrape_mind_data_step import scrape_mind_data
-from steps.scrape_nhs_data.scrape_nhs_data_step import scrape_nhs_data
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
