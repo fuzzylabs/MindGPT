@@ -3,5 +3,3 @@ steps:
     enable_cache: False
   scrape_mind_data:
     enable_cache: False
-  save_data:
-    enable_cache: False
