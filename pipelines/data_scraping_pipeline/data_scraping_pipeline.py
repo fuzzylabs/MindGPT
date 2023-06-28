@@ -19,6 +19,3 @@ def data_scraping_pipeline(
     """
     nhs_data = scrape_nhs_data()  # NOQA
     mind_data = scrape_mind_data()  # NOQA
-
-    #logger.info(f"'NHS' dataset has {len(nhs_data.index)} rows.")
-    #logger.info(f"'Mind' dataset has {len(mind_data.index)} rows.")
