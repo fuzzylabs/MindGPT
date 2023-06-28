@@ -27,7 +27,7 @@ class NHSMentalHealthScraper:
             url (str): the target URL for the scraper.
             tag (Optional[str]): the target HTML tag for the scraper.
             attributes (Optional[Dict[str, str]]): the target attributes for scraper.
-            scraped_list (list[str]): the list containing previously scraped URLs.
+            scraped_list (List[str]): the list containing previously scraped URLs.
         """
         self._url = url
         self._tag = tag
@@ -47,7 +47,7 @@ class NHSMentalHealthScraper:
         """A method to identify the HTML elements to scrape.
 
         Returns:
-            (Tag | NavigableString | BeautifulSoup): if a tag or attribute is passed, the relevant Tag or NavigableString will be returned if present. If no tag or attribute is passed, a BeautifulSoup object representing the target URL will be returned.
+            (Union[Tag, NavigableString, BeautifulSoup]): if a tag or attribute is passed, the relevant Tag or NavigableString will be returned if present. If no tag or attribute is passed, a BeautifulSoup object representing the target URL will be returned.
         """
         target = None
         if self._tag and self._attributes:
@@ -64,11 +64,11 @@ class NHSMentalHealthScraper:
         else:
             return self._soup
 
-    def get_links(self) -> list[str]:
+    def get_links(self) -> List[str]:
         """A method to extract all links present within the target tag or page.
 
         Returns:
-            (list[str]): a list containing strings representing all links found within the target tag or page.
+            (List[str]): a list containing strings representing all links found within the target tag or page.
         """
         target = self._identify_target()
         a_tags = target.find_all(name="a")  # type: ignore
