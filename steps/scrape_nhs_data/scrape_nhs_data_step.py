@@ -1,7 +1,7 @@
 """Scrape data from the NHS website."""
 import re
 from datetime import date
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import pandas as pd
 from bs4 import BeautifulSoup, NavigableString, Tag
@@ -17,7 +17,7 @@ class NHSMentalHealthScraper:
         url: str,
         tag: Optional[str] = None,
         attributes: Optional[Dict[str, str]] = None,
-        scraped_list: Optional[list[str]] = None,
+        scraped_list: Optional[List[str]] = None,
     ) -> None:
         """Constructor for the NHSMentalHealthScraper class.
 
