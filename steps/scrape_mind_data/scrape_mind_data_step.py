@@ -12,23 +12,23 @@ logger = get_logger(__name__)
 
 MIND_URL = "https://www.mind.org.uk"
 
+URLS = {
+    "conditions_and_drugs": [
+        "https://www.mind.org.uk/information-support/types-of-mental-health-problems/",
+        "https://www.mind.org.uk/information-support/drugs-and-treatments/",
+    ],
+    "helping_someone": [
+        "/information-support/types-of-mental-health-problems/mental-health-problems-introduction/for-friends-family/",
+        "/information-support/guides-to-support-and-services/seeking-help-for-a-mental-health-problem/helping-someone-else-seek-help/",
+        "/information-support/helping-someone-else/carers-friends-family-coping-support/am-i-a-carer/",
+        "/information-support/tips-for-everyday-living/student-life/for-friends-and-family/",
+        "/information-support/tips-for-everyday-living/lgbtqia-mental-health/supporting-someone-who-is-lgbtqia/",
+    ],
+}
+
 
 class Scraper:
     """This class aims to scrape data from the "Types of mental health problems", "Drugs and treatments" and the sub-sections from the "Helping someone else" as they all share the same HTML structure."""
-
-    URLS = {
-        "conditions_and_drugs": [
-            "https://www.mind.org.uk/information-support/types-of-mental-health-problems/",
-            "https://www.mind.org.uk/information-support/drugs-and-treatments/",
-        ],
-        "helping_someone": [
-            "/information-support/types-of-mental-health-problems/mental-health-problems-introduction/for-friends-family/",
-            "/information-support/guides-to-support-and-services/seeking-help-for-a-mental-health-problem/helping-someone-else-seek-help/",
-            "/information-support/helping-someone-else/carers-friends-family-coping-support/am-i-a-carer/",
-            "/information-support/tips-for-everyday-living/student-life/for-friends-and-family/",
-            "/information-support/tips-for-everyday-living/lgbtqia-mental-health/supporting-someone-who-is-lgbtqia/",
-        ],
-    }
 
     session = HTMLSession()
 
@@ -198,7 +198,7 @@ def scrape_conditions_and_drugs_sections(
         "Scraping data from the 'Types of mental health problems' and 'Drugs and treatments' section"
     )
 
-    for url in scraper.URLS["conditions_and_drugs"]:
+    for url in URLS["conditions_and_drugs"]:
         logger.info(f"\nScraping data from {url}\n")
         objects = scraper.extract_section_list(url)
 
@@ -244,7 +244,7 @@ def scrape_helping_someone_section(
     """
     logger.info("Scraping data from the 'Helping someone else' section\n")
 
-    for url in scraper.URLS["helping_someone"]:
+    for url in URLS["helping_someone"]:
         logger.info(f"Scraping data from {url}")
         sub_page_urls = scraper.get_object_side_bar_urls(url, "a-z/")
 
