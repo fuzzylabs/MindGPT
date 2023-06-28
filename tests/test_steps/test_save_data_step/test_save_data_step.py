@@ -70,7 +70,7 @@ def mock_blob_client() -> BlobClient:
         yield mock_blob_client
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def mock_save_data_parameters() -> SaveDataParameters:
     """Mock step parameters.
 
