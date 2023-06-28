@@ -43,9 +43,7 @@ def mock_local_testing_directory() -> Iterator[str]:
         str: a path to temporary directory for storing and moving files from tests.
     """
     temp_dir = tempfile.TemporaryDirectory()
-    original_working_directory = (
-        os.getcwd()
-    )  # save in case a test changes to temp directory which will be deleted
+    original_working_directory = os.getcwd()
 
     # tests are executed at this point
     yield temp_dir.name
