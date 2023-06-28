@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Union
 import pandas as pd
 from bs4 import BeautifulSoup, NavigableString, Tag
 from requests_html import HTMLSession  # type: ignore
-from zenml import step
+from zenml.steps import step
 
 
 class NHSMentalHealthScraper:
@@ -17,7 +17,7 @@ class NHSMentalHealthScraper:
         url: str,
         tag: Optional[str] = None,
         attributes: Optional[Dict[str, str]] = None,
-        scraped_list: Optional[List[str]] = None,
+        scraped_list: List[str] = [],
     ) -> None:
         """Constructor for the NHSMentalHealthScraper class.
 
@@ -40,7 +40,7 @@ class NHSMentalHealthScraper:
         self.links = self.get_links()
         self.df = self.scrape()
 
-        if self._scraped_list is None:
+        if self._scraped_list == []:
             self._scraped_list = [self._url]
 
     def _identify_target(self) -> Union[Tag, NavigableString, BeautifulSoup]:
@@ -96,21 +96,21 @@ class NHSMentalHealthScraper:
         """A method for recursivley scraping all nested links found within a target website or Tag subject to conditions.
 
         Conditions:
-        - the URL begins "https://www.nhs.uk/mental-health
-        - the URL has not previously been scraped.
+            - the URL begins "https://www.nhs.uk/mental-health
+            - the URL has not previously been scraped.
         """
         for link in self.links:
             # some links on the NHS Mental Health website do not follow the typical (i.e. https://www.nhs.uk/mental-health) format, and are truncated (e.g. /mental-health/...). The below conditional enforces a consistent format.
             if re.match(r"^(\/mental-health){1}.+", link):
-                valid_link = f"https://www.nhs.uk{link}"
+                valid_link = str(f"https://www.nhs.uk{link}")
             else:
-                valid_link = link
+                valid_link = str(link)
             # if the link has a URL beginning https://www.nhs.uk/mental-health and has not already been scraped, it will be scraped recursivley.
             if (
                 re.match(r"^(https:\/\/www.nhs.uk\/mental-health){1}.+", valid_link)
-                and valid_link not in self._scraped_list  # type: ignore
+                and valid_link not in self._scraped_list
             ):
-                self._scraped_list.append(valid_link)  # type: ignore
+                self._scraped_list.append(valid_link)
                 nhs_mental_health_scraper = NHSMentalHealthScraper(
                     url=valid_link,
                     tag=self._tag,
