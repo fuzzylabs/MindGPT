@@ -14,6 +14,7 @@ pandas = "1.5.2"
 pandas-stubs = "^2.0.2.230605" # required by mypy
 python-terraform = "^0.10.1"
 azure-storage-blob = "^12.16.0"
+freezegun = "^1.2.2"
 
 
 [tool.poetry.group.dev.dependencies]
