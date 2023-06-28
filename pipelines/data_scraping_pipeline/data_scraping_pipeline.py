@@ -17,5 +17,8 @@ def data_scraping_pipeline(
         scrape_nhs_data: This step should scrape data from NHS Mental health conditions page.
         scrape_mind_data: This step should scrape data from the Mind Types of mental health problems page.
     """
-    scrape_nhs_data()
-    scrape_mind_data()
+    nhs_data = scrape_nhs_data()
+    mind_data = scrape_mind_data()
+
+    logger.info(f"'NHS' dataset has {len(nhs_data.index)} rows.")
+    logger.info(f"'Mind' dataset has {len(mind_data.index)} rows.")
