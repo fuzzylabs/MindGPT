@@ -2,7 +2,6 @@
 import click
 from pipelines.data_scraping_pipeline import data_scraping_pipeline
 from pipelines.data_preparation_pipeline import data_preparation_pipeline
-from steps.save_data_step import save_data
 from steps.data_scraping_steps import scrape_mind_data, scrape_nhs_data
 from steps.data_preparation_steps import (
     load_data,
@@ -18,7 +17,7 @@ logger = get_logger(__name__)
 def run_data_scrapping_pipeline() -> None:
     """Run all steps in the data scrapping pipeline."""
     pipeline = data_scraping_pipeline(
-        scrape_nhs_data(), scrape_mind_data(), save_data()
+        scrape_nhs_data(), scrape_mind_data()
     )
     pipeline.run(
         config_path="pipelines/data_scraping_pipeline/config_data_scraping_pipeline.yaml"

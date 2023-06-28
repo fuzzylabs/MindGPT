@@ -10,7 +10,6 @@ logger = get_logger(__name__)
 def data_scraping_pipeline(
     scrape_nhs_data: BaseStep,
     scrape_mind_data: BaseStep,
-    save_data: BaseStep,
 ) -> None:
     """The data scraping pipeline.
 
@@ -22,4 +21,3 @@ def data_scraping_pipeline(
     nhs_data = scrape_nhs_data()
     mind_data = scrape_mind_data()
 
-    save_data(nhs_data, mind_data)
