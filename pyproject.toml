@@ -18,7 +18,6 @@ types-beautifulsoup4 = "^4.12.0.5"
 pytest-freezegun = "^0.4.2"
 types-urllib3 = "^1.26.25.13"
 virtualenv = "^20.23.1"
-pyarrow = "^12.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
