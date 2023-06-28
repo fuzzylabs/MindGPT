@@ -1,0 +1,1 @@
+"""Generic constants file."""
