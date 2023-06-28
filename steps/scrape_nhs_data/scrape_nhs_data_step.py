@@ -1,7 +1,7 @@
 """Scrape data from the NHS website."""
 import re
 from datetime import date
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import pandas as pd
 from bs4 import BeautifulSoup, NavigableString, Tag
@@ -43,7 +43,7 @@ class NHSMentalHealthScraper:
         if self._scraped_list is None:
             self._scraped_list = [self._url]
 
-    def _identify_target(self) -> Tag | NavigableString | BeautifulSoup:
+    def _identify_target(self) -> Union[Tag, NavigableString, BeautifulSoup]:
         """A method to identify the HTML elements to scrape.
 
         Returns:
