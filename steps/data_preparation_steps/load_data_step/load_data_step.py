@@ -58,6 +58,33 @@ def get_output_from_step(pipeline: PipelineView, step_name: str) -> ArtifactView
     return output
 
 
+def get_df_from_step(pipeline: PipelineView, fetch_df_step_name: str) -> pd.DataFrame:
+    """Fetch DataFrame from specified ZenML pipeline and step name.
+
+    Args:
+        pipeline (PipelineView): Post-execution pipeline class object.
+        fetch_df_step_name (str): Name of step to fetch DataFrame from.
+
+    Returns:
+        pd.DataFrame: DataFrame from ZenML artifact store.
+    """
+    # Get the output from the step
+    output = get_output_from_step(pipeline, fetch_df_step_name)
+
+    # Read the DataFrame artifact from the output
+    df = output.read()
+
+    if not isinstance(df, pd.DataFrame):
+        logger.error(
+            f"Artifact for '{pipeline}' pipeline and step '{fetch_df_step_name}' is not a pandas DataFrame"
+        )
+        raise TypeError(
+            f"Artifact for '{pipeline}' pipeline and step '{fetch_df_step_name}' is not a pandas DataFrame"
+        )
+
+    return df
+
+
 @step
 def load_data(params: LoadDataParameters) -> pd.DataFrame:
     """Loads the data from the output of the last run of the data_scraping_pipeline.
@@ -80,8 +107,9 @@ def load_data(params: LoadDataParameters) -> pd.DataFrame:
     logger.info(f"Pipeline: {pipeline}")
 
     # Fetch the data artifacts from the pipeline
-    mind_df = get_output_from_step(pipeline, "scrape_mind_data").read()
-    nhs_df = get_output_from_step(pipeline, "scrape_nhs_data").read()
+    mind_df = get_df_from_step(pipeline, "scrape_mind_data")
+    nhs_df = get_df_from_step(pipeline, "scrape_nhs_data")
+
     data = pd.concat([mind_df, nhs_df])
 
     return data
