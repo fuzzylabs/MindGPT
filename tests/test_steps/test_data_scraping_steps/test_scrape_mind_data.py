@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from freezegun import freeze_time
 from pandas.testing import assert_frame_equal
 from requests_html import HTMLSession
-from steps.scrape_mind_data.scrape_mind_data_step import (
+from steps.data_scraping_steps.scrape_mind_data.scrape_mind_data_step import (
     Scraper,
     scrape_conditions_and_drugs_sections,
     scrape_helping_someone_section,
