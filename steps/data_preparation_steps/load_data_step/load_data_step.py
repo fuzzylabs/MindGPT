@@ -52,7 +52,6 @@ def get_output_from_step(pipeline: PipelineView, step_name: str) -> ArtifactView
     # Get the model artifacts from the step
     output = fetch_step.outputs.get("output")
     if output is None:
-        logger.error(f"No output found for step '{step_name}'")
         raise ValueError(f"No output found for step '{step_name}'")
 
     return output
@@ -75,9 +74,6 @@ def get_df_from_step(pipeline: PipelineView, fetch_df_step_name: str) -> pd.Data
     df = output.read()
 
     if not isinstance(df, pd.DataFrame):
-        logger.error(
-            f"Artifact for '{pipeline}' pipeline and step '{fetch_df_step_name}' is not a pandas DataFrame"
-        )
         raise TypeError(
             f"Artifact for '{pipeline}' pipeline and step '{fetch_df_step_name}' is not a pandas DataFrame"
         )
@@ -101,7 +97,6 @@ def load_data(params: LoadDataParameters) -> pd.DataFrame:
     )
 
     if pipeline is None:
-        logger.error(f"Pipeline '{params.pipeline_name}' does not exist")
         raise ValueError(f"Pipeline '{params.pipeline_name}' does not exist")
 
     logger.info(f"Pipeline: {pipeline}")
