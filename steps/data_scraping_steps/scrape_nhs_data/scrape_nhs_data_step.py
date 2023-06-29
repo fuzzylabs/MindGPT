@@ -78,7 +78,7 @@ class NHSMentalHealthScraper:
         """A method for scraping the text from target pages.
 
         Returns:
-            (DataFrame): a Pandas DataFrame with four columns ("text_scraped", "timestamp", "url", "archived_url") and a single record representing the results of the scrape.
+            (DataFrame): a Pandas DataFrame with four columns ("text_scraped", "timestamp", "url") and a single record representing the results of the scrape.
         """
         timestamp = date.today()
         target = self._identify_target()
