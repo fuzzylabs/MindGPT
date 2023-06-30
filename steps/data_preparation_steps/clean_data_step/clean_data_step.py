@@ -3,13 +3,22 @@ import pandas as pd
 
 
 def reformat(df: pd.DataFrame) -> pd.DataFrame:
-    """"""
+    """Reformat the scraped data dataframe into a one-sentence-per-row dataframe.
+
+    Args:
+        df (pd.DataFrame): A pandas dataframe holding the scraped data.
+    """
     sentences = []
     df['text_scraped'].map(lambda s: sentences.extend(s.split('.')))
     return pd.DataFrame({"sentences": sentences})
 
 
 def remove_punctuation(data_string: str) -> str:
+    """Remove punctuation from a scraped data string.
+
+    Args:
+        data_string (str): A string representing a sentence from which to remove the punctuation.
+    """
     punc_nospace = {"!", "?", ".", ",", "-", "–", "+", "=", "(", ")", ":", "'", ";", '"', "%", "&", "*", "_"}
     for p in punc_nospace:
         data_string = data_string.replace(p, "")
