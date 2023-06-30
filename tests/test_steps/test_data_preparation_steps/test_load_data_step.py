@@ -1,5 +1,4 @@
 """Test load data step file."""
-
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pandas as pd
