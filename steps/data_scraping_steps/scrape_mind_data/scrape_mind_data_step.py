@@ -1,4 +1,5 @@
 """Scrape data from the Mind charity website."""
+import time
 from datetime import date
 from typing import Dict, List, Optional
 
@@ -222,6 +223,9 @@ def scrape_conditions_and_drugs_sections(
                 single_page_data_string = "\n".join(single_page_data)
                 full_url = scraper.build_subpage_url(obj_url)
                 data[full_url] = single_page_data_string
+
+        logger.info("\nSleeping for 30 seconds to prevent bot detection.")
+        time.sleep(30)
 
     logger.info(
         "\nFinised scraping data from the 'Types of mental health problems' and 'Drugs and treatments' section\n"
