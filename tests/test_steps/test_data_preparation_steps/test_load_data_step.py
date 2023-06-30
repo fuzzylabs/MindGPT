@@ -23,7 +23,7 @@ def test_load_data_step():
 
         get_df_from_step.return_value = mock_df
 
-        result_df1, result_df2 = load_data.entrypoint(pipeline_name="test-pipeline")
+        result_df1, result_df2 = load_data(pipeline_name="test-pipeline")
 
         pd.testing.assert_frame_equal(result_df1, mock_df)
         pd.testing.assert_frame_equal(result_df2, mock_df)
@@ -41,7 +41,7 @@ def test_load_data_step_raises_exception_when_no_pipeline_found():
         get_df_from_step.return_value = mock_df
 
         with pytest.raises(ValueError) as e:
-            _ = load_data.entrypoint(pipeline_name="data_scraping_pipeline")
+            _ = load_data(pipeline_name="data_scraping_pipeline")
 
         assert "Pipeline 'data_scraping_pipeline' does not exist" in str(e)
 
