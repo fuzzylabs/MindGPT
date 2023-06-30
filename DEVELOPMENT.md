@@ -42,7 +42,7 @@ Install the git hook scripts
 pre-commit install
 ```
 
-> The pre-commit checks will run automatically on the changed files after commiting files using `git commit` command.
+> The pre-commit checks will run automatically on the changed files after committing files using `git commit` command.
 
 Optionally, to run the hooks against all of the files, run the following command.
 
