@@ -30,6 +30,18 @@ def mocked_html_session_get(mocked_html_text: str) -> MagicMock:
         yield mock_method
 
 
+@pytest.fixture(autouse=True)
+def mocked_sleep_function() -> MagicMock:
+    """A fixture that mocks the time.sleep function.
+
+    Yields:
+        MagicMock: The mocked method.
+    """
+    with patch("time.sleep") as mock_sleep:
+        mock_sleep.return_value = None
+        yield mock_sleep
+
+
 @pytest.fixture
 def scraper() -> Scraper:
     """A fixture for an instance of the Scraper class.
