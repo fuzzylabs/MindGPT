@@ -22,12 +22,13 @@ def test_load_data_step():
     ) as get_df_from_step:
         get_pipeline.return_value = PipelineView("test-pipeline")
         mock_df = pd.DataFrame({"COL1": [1, 2], "COL2": [3, 4]})
-        expected_df = pd.concat([mock_df, mock_df])
+
         get_df_from_step.return_value = mock_df
 
-        result_df = load_data.entrypoint(LoadDataParameters())
+        result_df1, result_df2 = load_data.entrypoint(LoadDataParameters())
 
-        pd.testing.assert_frame_equal(result_df, expected_df)
+        pd.testing.assert_frame_equal(result_df1, mock_df)
+        pd.testing.assert_frame_equal(result_df2, mock_df)
 
 
 def test_load_data_step_raises_exception_when_no_pipeline_found():
