@@ -2,7 +2,8 @@ from zenml.steps import step
 import pandas as pd
 
 
-def reformat(df: pd.DataFrame):
+def reformat(df: pd.DataFrame) -> pd.DataFrame:
+    """"""
     sentences = []
     df['text_scraped'].map(lambda s: sentences.extend(s.split('.')))
     return pd.DataFrame({"sentences": sentences})
@@ -22,6 +23,19 @@ def remove_punctuation(data_string: str) -> str:
 
 # @step
 def clean_data(data: pd.DataFrame) -> pd.DataFrame:
+    """Clean the scraped data.
+
+    Clean the data by dropping rows containing NaN, dropping duplicates, removing new line characters, removing
+    punctuation, making everything lower case, removing blank space and removing nbsp. The returned data is reformatted
+    into a dataframe with one column, each row containing one sentence.
+
+    Args:
+        data (pd.DataFrame): The scraped data.
+
+    Returns:
+        The cleaned data in the new format described above.
+
+    """
     data = data.dropna().copy()
     data = data.drop_duplicates()
     remove_new_line = lambda s: s.replace("\n", " ")
@@ -46,4 +60,5 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
     # drop empty strings
     data = data.drop(data[data.sentences == ""].index)
     data = data.drop_duplicates()
+
     return data
