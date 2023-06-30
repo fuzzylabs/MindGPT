@@ -288,6 +288,5 @@ def scrape_mind_data() -> pd.DataFrame:
 
     logger.info(f"Creating dataframe with {len(data)} rows of data")
     df = scraper.create_dataframe(data)
-    df.to_csv("new.csv")
 
     return df
