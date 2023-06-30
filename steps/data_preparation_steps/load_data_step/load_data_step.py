@@ -94,7 +94,8 @@ def load_data(
         params (LoadDataParameters): Parameters for load data step
 
     Returns:
-        pd.DataFrame: Raw scraped data from the output of the data scraping pipeline
+        mind_data (pd.DataFrame): Raw scraped data from the Mind website
+        nhs_data (pd.DataFrame): Raw scraped data from the NHS website
     """
     # Fetch pipeline by name
     pipeline: PipelineView = get_pipeline(
