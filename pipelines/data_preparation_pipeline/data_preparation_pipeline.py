@@ -24,7 +24,6 @@ def data_preparation_pipeline(
         load_data: A ZenML step which loads the data.
         clean_data: A ZenML step which cleans the data.
         validate_data: A ZenML step which validates the cleaned data.
-        save_prepared_data: A ZenML step which versions the cleaned and validated data.
     """
     mind_df, nhs_df = load_data(
         pipeline_name=pipeline_name, pipeline_version=pipeline_version
