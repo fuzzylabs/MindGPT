@@ -22,9 +22,10 @@ def run_data_scrapping_pipeline() -> None:
 
 def run_data_preparation_pipeline() -> None:
     """Run all steps in the data preparation pipeline."""
-    data_preparation_pipeline.with_options(
+    pipeline = data_preparation_pipeline.with_options(
         config_path="pipelines/data_preparation_pipeline/config_data_preparation_pipeline.yaml"
-    )()
+    )
+    pipeline()
 
 
 @click.command()

@@ -1,6 +1,8 @@
 steps:
   load_data:
     enable_cache: False
+    parameters:
+      pipeline_name: "data_scraping_pipeline"
   clean_data:
     enable_cache: False
   validate_data:

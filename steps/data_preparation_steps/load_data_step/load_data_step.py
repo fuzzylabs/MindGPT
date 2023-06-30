@@ -1,5 +1,4 @@
 """Load data step (data prep pipeline)."""
-from typing import Optional
 
 import pandas as pd
 from zenml import step
@@ -76,19 +75,18 @@ def get_df_from_step(pipeline: PipelineView, fetch_df_step_name: str) -> pd.Data
 
 
 @step
-def load_data(pipeline_name: str = "data_scraping_pipeline", pipeline_version: Optional[int] = None) -> Output(mind_df=pd.DataFrame, nhs_df=pd.DataFrame):  # type: ignore
+def load_data(pipeline_name: str) -> Output(mind_df=pd.DataFrame, nhs_df=pd.DataFrame):  # type: ignore
     """Loads the data from the output of the last run of the data_scraping_pipeline.
 
     Args:
         pipeline_name (str): Name of pipeline to get raw scraped data from
-        pipeline_version (Optional[int]): Optional pipeline version, defaults to None
 
     Returns:
         mind_data (pd.DataFrame): Raw scraped data from the Mind website
         nhs_data (pd.DataFrame): Raw scraped data from the NHS website
     """
     # Fetch pipeline by name
-    pipeline: PipelineView = get_pipeline(pipeline_name, version=pipeline_version)
+    pipeline: PipelineView = get_pipeline(pipeline_name)
 
     if pipeline is None:
         raise ValueError(f"Pipeline '{pipeline_name}' does not exist")
