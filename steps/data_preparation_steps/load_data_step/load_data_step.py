@@ -5,7 +5,7 @@ import pandas as pd
 from zenml.logger import get_logger
 from zenml.post_execution import PipelineView, get_pipeline
 from zenml.post_execution.artifact import ArtifactView
-from zenml.steps import BaseParameters, step
+from zenml.steps import BaseParameters, Output, step
 
 logger = get_logger(__name__)
 
@@ -85,7 +85,9 @@ def get_df_from_step(pipeline: PipelineView, fetch_df_step_name: str) -> pd.Data
 
 
 @step
-def load_data(params: LoadDataParameters) -> pd.DataFrame:
+def load_data(
+    params: LoadDataParameters,
+) -> Output(mind_df=pd.DataFrame, nhs_df=pd.DataFrame):  # type: ignore
     """Loads the data from the output of the last run of the data_scraping_pipeline.
 
     Args:
@@ -108,6 +110,4 @@ def load_data(params: LoadDataParameters) -> pd.DataFrame:
     mind_df = get_df_from_step(pipeline, "scrape_mind_data")
     nhs_df = get_df_from_step(pipeline, "scrape_nhs_data")
 
-    data = pd.concat([mind_df, nhs_df])
-
-    return data
+    return mind_df, nhs_df
