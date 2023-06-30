@@ -66,6 +66,9 @@ def get_df_from_step(pipeline: PipelineView, fetch_df_step_name: str) -> pd.Data
 
     Returns:
         pd.DataFrame: DataFrame from ZenML artifact store.
+
+    Raises:
+        TypeError: if the specified step output is not of type pd.DataFrame
     """
     # Get the output from the step
     output = get_output_from_step(pipeline, fetch_df_step_name)
