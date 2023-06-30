@@ -2,22 +2,13 @@
 from typing import Optional
 
 import pandas as pd
+from zenml import step
 from zenml.logger import get_logger
 from zenml.post_execution import PipelineView, get_pipeline
 from zenml.post_execution.artifact import ArtifactView
-from zenml.steps import BaseParameters, Output, step
+from zenml.steps import Output
 
 logger = get_logger(__name__)
-
-
-class LoadDataParameters(BaseParameters):
-    """Parameters for load data step."""
-
-    # Name of the pipeline to fetch from
-    pipeline_name: str = "data_scraping_pipeline"
-
-    # Optional pipeline version
-    pipeline_version: Optional[int] = None
 
 
 def get_output_from_step(pipeline: PipelineView, step_name: str) -> ArtifactView:
@@ -85,25 +76,22 @@ def get_df_from_step(pipeline: PipelineView, fetch_df_step_name: str) -> pd.Data
 
 
 @step
-def load_data(
-    params: LoadDataParameters,
-) -> Output(mind_df=pd.DataFrame, nhs_df=pd.DataFrame):  # type: ignore
+def load_data(pipeline_name: str = "data_scraping_pipeline", pipeline_version: Optional[int] = None) -> Output(mind_df=pd.DataFrame, nhs_df=pd.DataFrame):  # type: ignore
     """Loads the data from the output of the last run of the data_scraping_pipeline.
 
     Args:
-        params (LoadDataParameters): Parameters for load data step
+        pipeline_name (str): Name of pipeline to get raw scraped data from
+        pipeline_version (Optional[int]): Optional pipeline version, defaults to None
 
     Returns:
         mind_data (pd.DataFrame): Raw scraped data from the Mind website
         nhs_data (pd.DataFrame): Raw scraped data from the NHS website
     """
     # Fetch pipeline by name
-    pipeline: PipelineView = get_pipeline(
-        params.pipeline_name, version=params.pipeline_version
-    )
+    pipeline: PipelineView = get_pipeline(pipeline_name, version=pipeline_version)
 
     if pipeline is None:
-        raise ValueError(f"Pipeline '{params.pipeline_name}' does not exist")
+        raise ValueError(f"Pipeline '{pipeline_name}' does not exist")
 
     logger.info(f"Pipeline: {pipeline}")
 
