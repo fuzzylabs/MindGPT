@@ -98,9 +98,7 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
     data["text_scraped"] = data["text_scraped"].map(
         insert_space_between_numbers_and_letters
     )
-    # data["text_scraped"] = data["text_scraped"].map(remove_punctuation)
 
-    # drop empty strings
     data = data.drop(data[data.text_scraped == ""].index)
     data = data.drop_duplicates()
 
