@@ -1,5 +1,6 @@
 """Clean the scraped data."""
 import pandas as pd
+from zenml import step
 
 
 def reformat(df: pd.DataFrame) -> pd.DataFrame:
@@ -54,7 +55,7 @@ def remove_punctuation(data_string: str) -> str:
     return data_string
 
 
-# @step
+@step
 def clean_data(data: pd.DataFrame) -> pd.DataFrame:
     """Clean the scraped data.
 
