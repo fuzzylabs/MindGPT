@@ -56,5 +56,8 @@ jobs:
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install
 
+      - name: Setup ZenML
+        run: poetry run zenml install huggingface pytorch -y
+
       - name: Run the full test suite
         run: poetry run python -m pytest tests --cov

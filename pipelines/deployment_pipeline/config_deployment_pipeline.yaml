@@ -1,5 +1,7 @@
 steps:
   fetch_model:
-    enable_cache: False
+    enable_cache: True
+    parameters:
+      model_name: 'google/flan-t5-small'
   deploy_model:
     enable_cache: False

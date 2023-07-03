@@ -106,5 +106,6 @@ exclude = '''
 [[tool.mypy.overrides]]
 module = [
     "python_terraform.*",
+    "transformers.*"
 ]
 ignore_missing_imports = true
