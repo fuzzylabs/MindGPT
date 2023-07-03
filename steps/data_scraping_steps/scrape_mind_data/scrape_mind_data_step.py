@@ -6,8 +6,8 @@ from typing import Dict, List, Optional
 import pandas as pd
 from bs4 import BeautifulSoup
 from requests_html import HTMLSession  # type: ignore
+from zenml import step
 from zenml.logger import get_logger
-from zenml.steps import step
 
 logger = get_logger(__name__)
 
