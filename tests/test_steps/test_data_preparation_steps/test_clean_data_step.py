@@ -35,4 +35,5 @@ def test_clean_data(scraped_data_fixture):
         )
         assert "\xa0" not in cleaned_data.loc[idx, "text_scraped"]
         assert "  " not in cleaned_data.loc[idx, "text_scraped"]
+        assert len(cleaned_data) == len(scraped_data_fixture.dropna().drop_duplicates())
     assert len(cleaned_data) == len(scraped_data_fixture) - 1

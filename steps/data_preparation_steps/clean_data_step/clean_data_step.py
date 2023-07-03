@@ -32,17 +32,6 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
         """
         return s.replace("\n", " ")
 
-    def lower_case(s: str) -> str:
-        """Make the string lowercase.
-
-        Args:
-            s: A string.
-
-        Returns:
-            Lowercase version of the s arg.
-        """
-        return s.lower()
-
     def strip_string(s: str) -> str:
         """Strip the string.
 
@@ -91,7 +80,6 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
         return re.sub(" +", " ", s)
 
     data["text_scraped"] = data["text_scraped"].map(remove_new_line)
-    data["text_scraped"] = data["text_scraped"].map(lower_case)
     data["text_scraped"] = data["text_scraped"].map(strip_string)
     data["text_scraped"] = data["text_scraped"].map(remove_nbsp)
     data["text_scraped"] = data["text_scraped"].map(contract_white_space)
