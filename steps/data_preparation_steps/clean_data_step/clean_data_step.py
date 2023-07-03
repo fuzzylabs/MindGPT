@@ -1,4 +1,7 @@
 """Clean the scraped data."""
+import re
+
+import nltk  # type: ignore
 import pandas as pd
 from zenml import step
 
@@ -13,7 +16,7 @@ def reformat(df: pd.DataFrame) -> pd.DataFrame:
         A reformatted pandas DataFrame.
     """
     sentences = []
-    df["text_scraped"].map(lambda s: sentences.extend(s.split(".")))
+    df["text_scraped"].map(lambda s: sentences.extend(nltk.tokenize.sent_tokenize(s)))
     return pd.DataFrame({"sentences": sentences})
 
 
@@ -26,9 +29,9 @@ def remove_punctuation(data_string: str) -> str:
     Returns: The string but with punctuation removed.
     """
     punc_nospace = {
+        ".",
         "!",
         "?",
-        ".",
         ",",
         "-",
         "–",
@@ -84,25 +87,27 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
     def remove_nbsp(s: str) -> str:
         return s.replace("\xa0", " ")
 
+    def insert_space_between_numbers_and_letters(s: str) -> str:
+        regex = "(?<=[a-zA-Z])(?=\\d)|(?<=\\d)(?=[a-zA-Z])"
+        subst = " "
+        result = re.sub(regex, subst, s, 0)
+        return result
+
+    def contract_white_space(s: str) -> str:
+        return re.sub(" +", " ", s)
+
     data["text_scraped"] = data["text_scraped"].map(remove_new_line)
     data["text_scraped"] = data["text_scraped"].map(lower_case)
     data["text_scraped"] = data["text_scraped"].map(strip_string)
     data["text_scraped"] = data["text_scraped"].map(remove_nbsp)
-
-    data = reformat(data)
-
-    # now text is split into sentences, remove punc
-    data["sentences"] = data["sentences"].map(remove_punctuation)
-
-    def remove_double_spaces(s: str) -> str:
-        return s.replace("  ", " ")
-
-    data["sentences"] = data["sentences"].map(remove_double_spaces)
-
-    data["sentences"] = data["sentences"].map(strip_string)
+    data["text_scraped"] = data["text_scraped"].map(contract_white_space)
+    data["text_scraped"] = data["text_scraped"].map(
+        insert_space_between_numbers_and_letters
+    )
+    data["text_scraped"] = data["text_scraped"].map(remove_punctuation)
 
     # drop empty strings
-    data = data.drop(data[data.sentences == ""].index)
+    data = data.drop(data[data.text_scraped == ""].index)
     data = data.drop_duplicates()
 
     return data
