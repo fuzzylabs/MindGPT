@@ -7,6 +7,8 @@ def reformat(df: pd.DataFrame) -> pd.DataFrame:
 
     Args:
         df (pd.DataFrame): A pandas dataframe holding the scraped data.
+
+    Returns: A reformatted pandas DataFrame.
     """
     sentences = []
     df['text_scraped'].map(lambda s: sentences.extend(s.split('.')))
@@ -18,6 +20,8 @@ def remove_punctuation(data_string: str) -> str:
 
     Args:
         data_string (str): A string representing a sentence from which to remove the punctuation.
+
+    Returns: The string but with punctuation removed.
     """
     punc_nospace = {"!", "?", ".", ",", "-", "–", "+", "=", "(", ")", ":", "'", ";", '"', "%", "&", "*", "_"}
     for p in punc_nospace:
@@ -43,7 +47,6 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
 
     Returns:
         The cleaned data in the new format described above.
-
     """
     data = data.dropna().copy()
     data = data.drop_duplicates()
