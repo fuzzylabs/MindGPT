@@ -1,61 +1,8 @@
 """Clean the scraped data."""
 import re
 
-import nltk  # type: ignore
 import pandas as pd
 from zenml import step
-
-
-def reformat(df: pd.DataFrame) -> pd.DataFrame:
-    """Reformat the scraped data dataframe into a one-sentence-per-row dataframe.
-
-    Args:
-        df (pd.DataFrame): A pandas dataframe holding the scraped data.
-
-    Returns:
-        A reformatted pandas DataFrame.
-    """
-    sentences = []
-    df["text_scraped"].map(lambda s: sentences.extend(nltk.tokenize.sent_tokenize(s)))
-    return pd.DataFrame({"sentences": sentences})
-
-
-def remove_punctuation(data_string: str) -> str:
-    """Remove punctuation from a scraped data string.
-
-    Args:
-        data_string (str): A string representing a sentence from which to remove the punctuation.
-
-    Returns: The string but with punctuation removed.
-    """
-    punc_nospace = {
-        ".",
-        "!",
-        "?",
-        ",",
-        "-",
-        "–",
-        "+",
-        "=",
-        "(",
-        ")",
-        ":",
-        "'",
-        ";",
-        '"',
-        "%",
-        "&",
-        "*",
-        "_",
-    }
-    for p in punc_nospace:
-        data_string = data_string.replace(p, "")
-
-    punc_space = {"/"}
-    for p in punc_space:
-        data_string = data_string.replace(p, " ")
-
-    return data_string
 
 
 @step
@@ -76,6 +23,11 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
     data = data.drop_duplicates()
 
     def remove_new_line(s: str) -> str:
+        """Remove new line characters.
+
+        Args:
+            s: A string.
+        """
         return s.replace("\n", " ")
 
     def lower_case(s: str) -> str:
@@ -104,10 +56,10 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
     data["text_scraped"] = data["text_scraped"].map(
         insert_space_between_numbers_and_letters
     )
-    data["text_scraped"] = data["text_scraped"].map(remove_punctuation)
+    # data["text_scraped"] = data["text_scraped"].map(remove_punctuation)
 
     # drop empty strings
     data = data.drop(data[data.text_scraped == ""].index)
     data = data.drop_duplicates()
 
-    return data
+    return data.reset_index(drop=True)
