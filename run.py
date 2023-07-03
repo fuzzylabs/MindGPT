@@ -1,18 +1,12 @@
-"""Run all pipeline."""
+"""Run all pipelines."""
 import click
-from steps.data_scraping_steps import scrape_mind_data, scrape_nhs_data
 from pipelines.data_preparation_pipeline.data_preparation_pipeline import (
     data_preparation_pipeline,
 )
 from pipelines.data_scraping_pipeline.data_scraping_pipeline import (
     data_scraping_pipeline,
 )
-from steps.data_preparation_steps import (
-    load_data,
-    clean_data,
-    save_prepared_data,
-    validate_data,
-)
+from pipelines.deployment_pipeline.deployment_pipeline import deployment_pipeline
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
@@ -20,20 +14,24 @@ logger = get_logger(__name__)
 
 def run_data_scrapping_pipeline() -> None:
     """Run all steps in the data scrapping pipeline."""
-    pipeline = data_scraping_pipeline(scrape_nhs_data(), scrape_mind_data())
-    pipeline.run(
+    pipeline = data_scraping_pipeline.with_options(
         config_path="pipelines/data_scraping_pipeline/config_data_scraping_pipeline.yaml"
     )
+    pipeline()
 
 
 def run_data_preparation_pipeline() -> None:
     """Run all steps in the data preparation pipeline."""
-    pipeline = data_preparation_pipeline(
-        load_data(), clean_data(), validate_data(), save_prepared_data()
-    )
-    pipeline.run(
+    pipeline = data_preparation_pipeline.with_options(
         config_path="pipelines/data_preparation_pipeline/config_data_preparation_pipeline.yaml"
     )
+    pipeline()
+
+
+def run_deployment_pipeline() -> None:
+    """Run all the steps in the deployment pipeline."""
+    pipeline = deployment_pipeline
+    pipeline()
 
 
 @click.command()
@@ -41,12 +39,14 @@ def run_data_preparation_pipeline() -> None:
 @click.option(
     "--prepare", "-p", is_flag=True, help="Run the data preparation pipeline."
 )
-def main(scrape: bool, prepare: bool) -> None:
+@click.option("--deploy", "-d", is_flag=True, help="Run the deployment pipeline.")
+def main(scrape: bool, prepare: bool, deploy: bool) -> None:
     """Run all pipelines.
 
     Args:
         scrape (bool): run the data scraping pipeline when True.
         prepare (bool): run the data preparation pipeline when True.
+        deploy (bool): run the deployment pipeline when True.
     """
     if scrape:
         logger.info("Running data scraping pipeline.")
@@ -55,6 +55,10 @@ def main(scrape: bool, prepare: bool) -> None:
     if prepare:
         logger.info("Running the data preparation pipeline.")
         run_data_preparation_pipeline()
+
+    if deploy:
+        logger.info("Running the deployment pipeline.")
+        run_deployment_pipeline()
 
 
 if __name__ == "__main__":

@@ -1,16 +1,13 @@
 """Data scraping pipeline."""
+from steps.data_scraping_steps import scrape_mind_data, scrape_nhs_data
+from zenml import pipeline
 from zenml.logger import get_logger
-from zenml.pipelines import pipeline
-from zenml.steps import BaseStep
 
 logger = get_logger(__name__)
 
 
 @pipeline
-def data_scraping_pipeline(
-    scrape_nhs_data: BaseStep,
-    scrape_mind_data: BaseStep,
-) -> None:
+def data_scraping_pipeline() -> None:
     """The data scraping pipeline.
 
     Args:
