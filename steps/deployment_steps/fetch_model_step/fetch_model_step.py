@@ -1,4 +1,4 @@
-"""Fetch the FLAN base model and tokenizer from HuggingFace using Langchain."""
+"""Fetch the FLAN base model and tokenizer from the HuggingFace hub."""
 from transformers import (
     AutoModelForSeq2SeqLM,
     AutoTokenizer,
