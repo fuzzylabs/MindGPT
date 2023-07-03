@@ -1,6 +1,4 @@
 """Data preparation pipeline."""
-
-
 from steps.data_preparation_steps import clean_data, load_data, validate_data
 from zenml import pipeline
 from zenml.logger import get_logger

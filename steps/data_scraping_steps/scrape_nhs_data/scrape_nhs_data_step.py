@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Union
 import pandas as pd
 from bs4 import BeautifulSoup, NavigableString, Tag
 from requests_html import HTMLSession  # type: ignore
-from zenml.steps import step
+from zenml import step
 
 
 class NHSMentalHealthScraper:
