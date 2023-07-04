@@ -7,6 +7,7 @@ from transformers import (
     PreTrainedModel,
     PreTrainedTokenizerBase,
 )
+from zenml import step
 from zenml.environment import Environment
 from zenml.exceptions import DoesNotExistException
 from zenml.integrations.seldon.constants import (
@@ -29,7 +30,6 @@ from zenml.logger import get_logger
 from zenml.steps import (
     STEP_ENVIRONMENT_NAME,
     StepEnvironment,
-    step,
 )
 from zenml.steps.step_context import StepContext
 from zenml.utils import io_utils, source_utils
