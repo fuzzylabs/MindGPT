@@ -30,7 +30,9 @@ def run_data_preparation_pipeline() -> None:
 
 def run_deployment_pipeline() -> None:
     """Run all the steps in the deployment pipeline."""
-    pipeline = deployment_pipeline
+    pipeline = deployment_pipeline.with_options(
+        config_path="pipelines/deployment_pipeline/config_deployment_pipeline.yaml"
+    )
     pipeline()
 
 
