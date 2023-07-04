@@ -13,7 +13,11 @@ from steps.data_preparation_steps.clean_data_step.clean_data_step import (
 
 @pytest.fixture
 def scraped_data_fixture() -> pd.DataFrame:
-    """Fixture mocking the result of the scraping pipeline."""
+    """Fixture mocking the result of the scraping pipeline.
+
+    Returns:
+        A pandas DataFrame mimicking the results of the scraping procedure.
+    """
     data = {
         "text_scraped": [
             "This is some scraped data! It has some really wild  spacing.",
