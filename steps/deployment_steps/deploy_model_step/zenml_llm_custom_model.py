@@ -79,6 +79,7 @@ class ZenMLCustomLLMModel:
             logger.error(f"Failed to load model: {e}")
             return False
         self.ready = True
+
         return self.ready
 
     def predict(
