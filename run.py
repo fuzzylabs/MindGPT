@@ -1,4 +1,4 @@
-"""Run all pipeline."""
+"""Run all pipelines."""
 import click
 from pipelines.data_preparation_pipeline.data_preparation_pipeline import (
     data_preparation_pipeline,
@@ -7,7 +7,6 @@ from pipelines.data_scraping_pipeline.data_scraping_pipeline import (
     data_scraping_pipeline,
 )
 from pipelines.deployment_pipeline.deployment_pipeline import deployment_pipeline
-from steps.data_scraping_steps import scrape_mind_data, scrape_nhs_data
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
@@ -15,10 +14,10 @@ logger = get_logger(__name__)
 
 def run_data_scrapping_pipeline() -> None:
     """Run all steps in the data scrapping pipeline."""
-    pipeline = data_scraping_pipeline(scrape_nhs_data(), scrape_mind_data())
-    pipeline.run(
+    pipeline = data_scraping_pipeline.with_options(
         config_path="pipelines/data_scraping_pipeline/config_data_scraping_pipeline.yaml"
     )
+    pipeline()
 
 
 def run_data_preparation_pipeline() -> None:
@@ -31,7 +30,9 @@ def run_data_preparation_pipeline() -> None:
 
 def run_deployment_pipeline() -> None:
     """Run all the steps in the deployment pipeline."""
-    pipeline = deployment_pipeline
+    pipeline = deployment_pipeline.with_options(
+        config_path="pipelines/deployment_pipeline/config_deployment_pipeline.yaml"
+    )
     pipeline()
 
 

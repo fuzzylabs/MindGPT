@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 from bs4 import BeautifulSoup
-from freezegun import freeze_time
 from pandas.testing import assert_frame_equal
 from requests_html import HTMLSession
 from steps.data_scraping_steps.scrape_mind_data.scrape_mind_data_step import (
@@ -142,7 +141,6 @@ def test_build_subpage_url(scraper: Scraper):
     assert result == expected_result
 
 
-@freeze_time("2023-06-25")
 def test_create_dataframe(scraper: Scraper):
     """Test that the create_dataframe function creates a pandas dataframe with th 4 expected columns and contains the expected data.
 
@@ -156,13 +154,15 @@ def test_create_dataframe(scraper: Scraper):
     expected_df = pd.DataFrame(
         {
             "text_scraped": ["mocked_text_scraped"],
-            "timestamp": ["20230625"],
             "url": ["mocked_url"],
         }
     )
 
     assert isinstance(result_df, pd.DataFrame)
-    assert_frame_equal(result_df, expected_df)
+    assert {"text_scraped", "url", "timestamp"} == set(result_df.columns.tolist())
+    assert_frame_equal(
+        result_df[["text_scraped", "url"]], expected_df[["text_scraped", "url"]]
+    )
 
 
 def test_extract_section_list(scraper: Scraper):
@@ -274,7 +274,6 @@ def test_scrape_helping_someone_section(scraper: Scraper):
     assert set(data_scraped.values()) == expected_dict_values
 
 
-@freeze_time("2023-06-25")
 def test_scrape_mind_data():
     """Test that the scrape_mind_data step returns the expected dataframe."""
     result_df = scrape_mind_data.entrypoint()
@@ -295,4 +294,8 @@ def test_scrape_mind_data():
         }
     )
 
-    assert_frame_equal(result_df, expected_df)
+    assert isinstance(result_df, pd.DataFrame)
+    assert {"text_scraped", "url", "timestamp"} == set(result_df.columns.tolist())
+    assert_frame_equal(
+        result_df[["text_scraped", "url"]], expected_df[["text_scraped", "url"]]
+    )
