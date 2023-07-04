@@ -12,7 +12,7 @@ from transformers import (
 FUNCTION_LOCATION_PREFIX = "steps.deployment_steps.fetch_model_step.fetch_model_step"
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def model_name() -> str:
     """A fixture to define a mock `model_name` parameter for the `from_pretrained` function.
 
@@ -22,7 +22,7 @@ def model_name() -> str:
     return "fuzzylabs-llm-base"
 
 
-def test_fetch_model_expected():
+def test_fetch_model_expected(model_name: str):
     """Test whether the fetch_model step returns the expected objects, a model and a tokenizer."""
     with patch(f"{FUNCTION_LOCATION_PREFIX}.AutoTokenizer") as mock_tokenizer, patch(
         f"{FUNCTION_LOCATION_PREFIX}.AutoModelForSeq2SeqLM"
