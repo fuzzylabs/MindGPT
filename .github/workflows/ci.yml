@@ -57,7 +57,7 @@ jobs:
         run: poetry install
 
       - name: Setup ZenML
-        run: poetry run zenml integration install huggingface pytorch -y
+        run: poetry run zenml integration install huggingface pytorch seldon -y
 
       - name: Run the full test suite
         run: poetry run python -m pytest tests --cov
