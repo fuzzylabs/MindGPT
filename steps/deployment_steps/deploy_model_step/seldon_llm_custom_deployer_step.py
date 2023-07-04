@@ -77,8 +77,8 @@ def copy_artifact(
 
 @step(enable_cache=False, extra={SELDON_CUSTOM_DEPLOYMENT: True})
 def seldon_llm_model_deployer_step(  # noqa: PLR0913 # Too many arguments for ruff
-    model_uri: str,
-    tokenizer_uri: str,
+    model: PreTrainedModel,
+    tokenizer: PreTrainedTokenizerBase,
     predict_function: str,
     service_config: SeldonDeploymentConfig,  # New from ZenML v0.40.3
     context: StepContext,
@@ -91,8 +91,8 @@ def seldon_llm_model_deployer_step(  # noqa: PLR0913 # Too many arguments for ru
     the process required to deploy a custom model with Seldon Core.
 
     Args:
-        model_uri (str): The URI of Huggingface model
-        tokenizer_uri (str): The URI of Huggingface tokenizer
+        model (str): The Huggingface model
+        tokenizer (str): The Huggingface tokenizer
         predict_function: Path to Python file containing predict function.
         service_config: Seldon Core deployment service configuration
         context (StepContext): the step context
@@ -177,11 +177,8 @@ def seldon_llm_model_deployer_step(  # noqa: PLR0913 # Too many arguments for ru
     image_name = step_env.step_run_info.get_image(key=SELDON_DOCKER_IMAGE_KEY)
 
     # Copy artifacts
-    model_path = os.path.join(model_uri, DEFAULT_PT_MODEL_DIR)
-    served_model_uri = copy_artifact(model_path, DEFAULT_PT_MODEL_DIR, context)
-
-    tokenizer_path = os.path.join(tokenizer_uri, DEFAULT_TOKENIZER_DIR)
-    copy_artifact(tokenizer_path, DEFAULT_TOKENIZER_DIR, context)
+    served_model_uri = copy_artifact(model, DEFAULT_PT_MODEL_DIR, context)
+    copy_artifact(tokenizer, DEFAULT_TOKENIZER_DIR, context)
 
     # prepare the service configuration for the deployment
     service_config = service_config.copy()
