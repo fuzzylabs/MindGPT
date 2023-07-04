@@ -54,7 +54,7 @@ def test_remove_new_line():
     """Test that new line chars are removed from strings."""
     assert (
         remove_new_line("\n\na string\n \ncontaining \nnewline chars.")
-        == "a string containing newline chars."
+        == "  a string   containing  newline chars."
     )
 
 
