@@ -2,6 +2,13 @@
 import pandas as pd
 import pytest
 from steps.data_preparation_steps import clean_data
+from steps.data_preparation_steps.clean_data_step.clean_data_step import (
+    contract_white_space,
+    insert_space_between_numbers_and_letters,
+    remove_nbsp,
+    remove_new_line,
+    strip_string,
+)
 
 
 @pytest.fixture
@@ -37,3 +44,51 @@ def test_clean_data(scraped_data_fixture):
         assert "  " not in cleaned_data.loc[idx, "text_scraped"]
         assert len(cleaned_data) == len(scraped_data_fixture.dropna().drop_duplicates())
     assert len(cleaned_data) == len(scraped_data_fixture) - 1
+
+
+def test_remove_new_line():
+    """Test that new line chars are removed from strings."""
+    assert (
+        remove_new_line("\n\na string\n \ncontaining \nnewline chars.")
+        == "a string containing newline chars."
+    )
+
+
+def test_strip_string():
+    """Test that strings are appropriately stripped."""
+    assert (
+        strip_string("  a string which needs stripping   ")
+        == "a string which needs stripping"
+    )
+
+
+def test_remove_nbsp():
+    """Check that nbsp characters are removed from strings."""
+    assert (
+        remove_nbsp("a string\xa0containing\xa0non-blank white space.")
+        == "a string containing non-blank white space."
+    )
+
+
+def test_insert_space_between_numbers_and_letters():
+    """Test confirming that insertion of white space between numbers and letters behaves as desired."""
+    assert (
+        insert_space_between_numbers_and_letters(
+            "for help with this test, call 0800123456or visit helpwiththistest.com"
+        )
+        == "for help with this test, call 0800123456 or visit helpwiththistest.com"
+    )
+    assert (
+        insert_space_between_numbers_and_letters(
+            "for help with this test, visit or call helpwiththistest.com0800123456"
+        )
+        == "for help with this test, visit or call helpwiththistest.com 0800123456"
+    )
+
+
+def test_contract_white_space():
+    """Test confirming contraction of white space behaves as expected."""
+    assert (
+        contract_white_space("   this   string  has      strange     spacing         ")
+        == " this string has strange spacing "
+    )
