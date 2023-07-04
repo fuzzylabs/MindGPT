@@ -130,5 +130,4 @@ def scrape_nhs_data() -> pd.DataFrame:
     )
     nhs_scraper.scrape_recursively()
 
-    print(nhs_scraper.df.head())
     return nhs_scraper.df
