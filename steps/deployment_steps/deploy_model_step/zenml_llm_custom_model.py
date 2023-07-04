@@ -1,5 +1,5 @@
-# Derived from ZenML Seldon Integration; source : https://github.com/zenml-io/zenml/blob/main/src/zenml/integrations/seldon/custom_deployer/zenml_custom_model.py
-"""Place holder."""
+# Derived from ZenML Seldon Integration; source : https://github.com/zenml-io/zenml/blob/release/0.40.3/src/zenml/integrations/seldon/custom_deployer/zenml_custom_model.py
+"""ZenML Custom LLM Class."""
 import os
 import subprocess
 from typing import Any, Dict, List, Optional, Union
@@ -22,7 +22,17 @@ Array_Like = Union[np.ndarray, List[Any], str, bytes, Dict[str, Any]]
 
 
 class ZenMLCustomLLMModel:
-    """_summary_."""
+    """Custom model class for ZenML and Seldon.
+
+    This class is used to implement a custom model for the Seldon Core integration,
+    which is used as the main entry point for custom code execution.
+
+    Attributes:
+        model_uri: The URI of the model.
+        tokenizer_uri: The URI of the tokenizer.
+        model_name: The name of the model.
+        predict_func: The predict function of the model.
+    """
 
     def __init__(
         self,
@@ -98,7 +108,9 @@ class ZenMLCustomLLMModel:
         """
         if self.predict_func is not None:
             try:
-                prediction = {"predictions": self.predict_func(self.model, X)}
+                prediction = {
+                    "predictions": self.predict_func(self.model, self.tokenizer, X)
+                }
             except Exception as e:
                 raise Exception(f"Failed to predict: {e}")
             if isinstance(prediction, dict):
@@ -145,6 +157,7 @@ def main(
     Within the deployment process, the built-in custom deployment step is used to
     to prepare the Seldon Core deployment with an entry point that calls this script,
     which then starts a subprocess to start the Seldon server and waits for requests.
+
     The following is an example of the entry point:
     ```
     entrypoint_command = [
