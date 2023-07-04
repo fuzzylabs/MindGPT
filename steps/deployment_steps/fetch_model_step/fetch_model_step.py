@@ -23,12 +23,11 @@ def fetch_model(
 
     Returns:
         PreTrainedModel: the model.
-        PreTrainedTokenizerBase: the tokenizer for the model
+        PreTrainedTokenizerBase: the tokenizer for the model.
     """
     logger.info(
         f"Fetching the model '{model_name}' and tokenizer from the HuggingFace Hub"
     )
-
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
