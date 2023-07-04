@@ -31,8 +31,12 @@ def scraped_data_fixture() -> pd.DataFrame:
     return pd.DataFrame(data)
 
 
-def test_clean_data(scraped_data_fixture):
-    """Run a short test on the fake scraped data."""
+def test_clean_data(scraped_data_fixture: pd.DataFrame):
+    """Run a short test on the fake scraped data.
+
+    Args:
+        scraped_data_fixture: A pandas dataframe mimicking the scraped data format.
+    """
     cleaned_data = clean_data(scraped_data_fixture)
     for idx in cleaned_data.index:
         assert "\n" not in cleaned_data.loc[idx, "text_scraped"]
