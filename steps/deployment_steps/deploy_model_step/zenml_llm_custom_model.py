@@ -179,7 +179,7 @@ def main(
     """
     command = [
         "seldon-core-microservice",
-        "steps.zenml_llm_custom_model.ZenMLCustomLLMModel",
+        "steps.deployment_steps.deploy_model_step.zenml_llm_custom_model.ZenMLCustomLLMModel",
         "--service-type",
         "MODEL",
         "--parameters",

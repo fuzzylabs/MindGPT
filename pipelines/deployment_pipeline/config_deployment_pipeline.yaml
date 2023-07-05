@@ -3,5 +3,5 @@ steps:
     enable_cache: True
     parameters:
       model_name: 'google/flan-t5-small'
-  deploy_model:
+  seldon_llm_model_deployer_step:
     enable_cache: False

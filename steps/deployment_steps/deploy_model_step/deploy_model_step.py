@@ -10,7 +10,7 @@ from zenml.integrations.seldon.services.seldon_deployment import (
 
 seldon_llm_custom_deployment = seldon_llm_model_deployer_step.with_options(
     parameters={
-        "predict_function": "steps.llm_custom_predict.custom_predict",
+        "predict_function": "steps.deployment_steps.deploy_model_step.llm_custom_predict.custom_predict",
         "service_config": SeldonDeploymentConfig(
             model_name="seldon-llm-custom-model",
             replicas=1,

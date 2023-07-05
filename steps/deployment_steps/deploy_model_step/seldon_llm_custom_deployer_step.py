@@ -1,12 +1,8 @@
 # Derived from ZenML Seldon integration; source : https://github.com/zenml-io/zenml/blob/release/0.40.3/src/zenml/integrations/seldon/steps/seldon_deployer.py
 """Custom ZenML deployer step for Seldon LLM."""
 import os
-from typing import Union, cast
+from typing import cast
 
-from transformers import (
-    PreTrainedModel,
-    PreTrainedTokenizerBase,
-)
 from zenml import step
 from zenml.environment import Environment
 from zenml.exceptions import DoesNotExistException
@@ -39,46 +35,37 @@ DEFAULT_PT_MODEL_DIR = "hf_pt_model"
 DEFAULT_TOKENIZER_DIR = "hf_tokenizer"
 
 
-def copy_artifact(
-    artifact: Union[PreTrainedTokenizerBase, PreTrainedModel],
-    filename: str,
-    context: StepContext,
-) -> str:
-    """Copy either the model or the tokenizer artifact to the output location of the current step.
+def copy_artifact(uri: str, filename: str, context: StepContext) -> str:
+    """Copy an artifact to the output location of the current step.
 
     Args:
-        artifact (Union[PreTrainedTokenizerBase, PreTrainedModel]): The artifact to copy.
-        filename (str): The filename for the output artifact.
+        uri (str): URI of the artifact to copy
+        filename (str): filename for the output artifact
         context (StepContext): ZenML step context
 
     Returns:
-        str: The URI of the output location.
+        str: URI of the output location
 
     Raises:
-        RuntimeError: If the artifact passed has incorrect type.
+        RuntimeError: if the artifact is not found
 
     """
-    if not (isinstance(artifact, (PreTrainedTokenizerBase, PreTrainedModel))):
-        raise RuntimeError(
-            "The model or the tokenizer artifact does not have the expected type."
-        )
-
-    served_artifact_uri = os.path.join(
-        context.get_output_artifact_uri(), "seldon"
-    )  # Derived from https://github.com/zenml-io/zenml/blob/23b25975a64c682e89a802bc73b641dc20f3bf42/src/zenml/integrations/seldon/steps/seldon_deployer.py#L297
+    served_artifact_uri = os.path.join(context.get_output_artifact_uri(), "seldon")
     fileio.makedirs(served_artifact_uri)
-
-    io_utils.write_file_contents_as_string(
-        os.path.join(served_artifact_uri, filename), artifact
-    )
+    if not fileio.exists(uri):
+        raise RuntimeError(f"Expected artifact was not found at f {uri}")
+    if io_utils.isdir(uri):
+        io_utils.copy_dir(uri, os.path.join(served_artifact_uri, filename))
+    else:
+        fileio.copy(uri, os.path.join(served_artifact_uri, filename))
 
     return served_artifact_uri
 
 
 @step(enable_cache=False, extra={SELDON_CUSTOM_DEPLOYMENT: True})
 def seldon_llm_model_deployer_step(  # noqa: PLR0913 # Too many arguments for ruff
-    model: PreTrainedModel,
-    tokenizer: PreTrainedTokenizerBase,
+    model_uri: str,
+    tokenizer_uri: str,
     predict_function: str,
     service_config: SeldonDeploymentConfig,  # New from ZenML v0.40.3
     context: StepContext,
@@ -91,8 +78,8 @@ def seldon_llm_model_deployer_step(  # noqa: PLR0913 # Too many arguments for ru
     the process required to deploy a custom model with Seldon Core.
 
     Args:
-        model (str): The Huggingface model
-        tokenizer (str): The Huggingface tokenizer
+        model_uri (str): The Huggingface model artifact uri.
+        tokenizer_uri (str): The Huggingface tokenizer artifact uri.
         predict_function: Path to Python file containing predict function.
         service_config: Seldon Core deployment service configuration
         context (StepContext): the step context
@@ -160,7 +147,7 @@ def seldon_llm_model_deployer_step(  # noqa: PLR0913 # Too many arguments for ru
     entrypoint_command = [
         "python",
         "-m",
-        "zenml.integrations.seldon.custom_deployer.zenml_custom_model",
+        "steps.deployment_steps.deploy_model_step.zenml_llm_custom_model",
         "--model_name",
         service_config.model_name,
         "--predict_func",
@@ -177,8 +164,8 @@ def seldon_llm_model_deployer_step(  # noqa: PLR0913 # Too many arguments for ru
     image_name = step_env.step_run_info.get_image(key=SELDON_DOCKER_IMAGE_KEY)
 
     # Copy artifacts
-    served_model_uri = copy_artifact(model, DEFAULT_PT_MODEL_DIR, context)
-    copy_artifact(tokenizer, DEFAULT_TOKENIZER_DIR, context)
+    served_model_uri = copy_artifact(model_uri, DEFAULT_PT_MODEL_DIR, context)
+    copy_artifact(tokenizer_uri, DEFAULT_TOKENIZER_DIR, context)
 
     # prepare the service configuration for the deployment
     service_config = service_config.copy()
@@ -190,7 +177,7 @@ def seldon_llm_model_deployer_step(  # noqa: PLR0913 # Too many arguments for ru
         custom_docker_image=image_name,
         secret_name=model_deployer.kubernetes_secret_name,
         command=entrypoint_command,
-    ).to_dict()
+    )
 
     # deploy the service
     service = cast(
