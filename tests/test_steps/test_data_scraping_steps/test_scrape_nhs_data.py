@@ -1,5 +1,4 @@
 """Test script for test_scrape_nhs_data."""
-from datetime import date
 from unittest.mock import patch
 
 import pandas as pd
@@ -10,6 +9,16 @@ from steps.data_scraping_steps.scrape_nhs_data.scrape_nhs_data_step import (
     HTMLSession,
     NHSMentalHealthScraper,
 )
+
+
+@pytest.fixture
+def expected_columns() -> set:
+    """The columns that we would expect to be returned from the scraping process.
+
+    Returns:
+        set: a set containing the expected columns
+    """
+    return {"text_scraped", "timestamp", "url"}
 
 
 @pytest.fixture
@@ -63,16 +72,17 @@ def nhs_mental_health_scraper(
 def test_init(
     nhs_mental_health_scraper: NHSMentalHealthScraper,
     nhs_mental_health_scraper_arguments: set,
+    expected_columns: set,
 ):
     """Tests the constructor for the NHSMentalHealthScraper class.
 
     Args:
         nhs_mental_health_scraper (NHSMentalHealthScraper): a patched NHSMentalHealthScraper instance
         nhs_mental_health_scraper_arguments (set): a list of arguments used to construct the nhs_mental_health_scraper instance
+        expected_columns (set): a set of columns that we would expect to be returned by the scraping process
     """
     url, tag, attributes = nhs_mental_health_scraper_arguments
     test_file_content = ""
-    timestamp = date.today()
 
     with open(url) as file:
         test_file_content = file.read()
@@ -95,10 +105,10 @@ def test_init(
         .find(name=tag, attrs=attributes)
         .get_text(" ")
     )
-    test_df = pd.DataFrame(
-        [{"text_scraped": test_text, "timestamp": timestamp, "url": url}]
-    )
-    assert_frame_equal(nhs_mental_health_scraper.df, test_df)
+    test_df = pd.DataFrame([{"text_scraped": test_text, "url": url}])
+
+    assert expected_columns == set(nhs_mental_health_scraper.df.columns.tolist())
+    assert_frame_equal(nhs_mental_health_scraper.df[["text_scraped", "url"]], test_df)
 
 
 def test_identify_target(
@@ -135,15 +145,16 @@ def test_get_links(nhs_mental_health_scraper: NHSMentalHealthScraper):
 def test_scrape(
     nhs_mental_health_scraper: NHSMentalHealthScraper,
     nhs_mental_health_scraper_arguments: set,
+    expected_columns: set,
 ):
     """Tests the scrape method of the NHSMentalHealthScraper class.
 
     Args:;
         nhs_mental_health_scraper (NHSMentalHealthScraper): a patched NHSMentalHealthScraper instance
         nhs_mental_health_scraper_arguments (set): a list of arguments used to construct the nhs_mental_health_scraper instance
+        expected_columns (set): a set of columns that we would expect to be returned by the scraping process
     """
     url, tag, attributes = nhs_mental_health_scraper_arguments
-    timestamp = date.today()
     with open(url) as file:
         file_content = file.read()
         test_text = (
@@ -152,7 +163,6 @@ def test_scrape(
             .get_text(" ")
         )
         scraper_df = nhs_mental_health_scraper.scrape()
-        test_df = pd.DataFrame(
-            [{"text_scraped": test_text, "timestamp": timestamp, "url": url}]
-        )
-        assert_frame_equal(scraper_df, test_df)
+        test_df = pd.DataFrame([{"text_scraped": test_text, "url": url}])
+        assert expected_columns == set(scraper_df.columns.tolist())
+        assert_frame_equal(scraper_df[["text_scraped", "url"]], test_df)
