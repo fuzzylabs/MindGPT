@@ -12,13 +12,15 @@ from steps.data_preparation_steps.validate_data_step.validate_data_step import (
     validate_data,
 )
 
+REQUESTS_FUNCTION_TARGET = (
+    "steps.data_preparation_steps.validate_data_step.validate_data_step.requests.head"
+)
+
 
 def test_validate_data_step():
     """Test validate data step returns True with valid data."""
     df = pd.DataFrame({"text_scraped": ["abcd", "https://www.bbc.co.uk/news", "42"]})
-    with mock.patch(
-        "steps.data_preparation_steps.validate_data_step.validate_data_step.requests.head"
-    ) as mock_request:
+    with mock.patch(REQUESTS_FUNCTION_TARGET) as mock_request:
         mock_request_code = mock.MagicMock()
         mock_request.return_value = mock_request_code
         mock_request_code.ok = True
@@ -43,9 +45,7 @@ def test_validate_data_step_with_invalid_data():
         }
     )
 
-    with mock.patch(
-        "steps.data_preparation_steps.validate_data_step.validate_data_step.requests.head"
-    ) as mock_request:
+    with mock.patch(REQUESTS_FUNCTION_TARGET) as mock_request:
         mock_request_code = mock.MagicMock()
         mock_request.return_value = mock_request_code
         mock_request_code.ok = False
@@ -212,9 +212,7 @@ def test_check_links_within_column():
         index=[1],
     )
 
-    with mock.patch(
-        "steps.data_preparation_steps.validate_data_step.validate_data_step.requests.head"
-    ) as mock_request:
+    with mock.patch(REQUESTS_FUNCTION_TARGET) as mock_request:
         mock_request_code = mock.MagicMock()
         mock_request.return_value = mock_request_code
         mock_request_code.ok = False
