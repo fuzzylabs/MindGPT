@@ -7,6 +7,7 @@ from steps.data_preparation_steps.validate_data_step.validate_data_step import (
     check_column_empty_strings,
     check_column_is_string,
     check_column_not_null,
+    check_links_within_column,
     flag_outliers,
     validate_data,
 )
@@ -20,7 +21,7 @@ def test_validate_data_step():
     ) as mock_request:
         mock_request_code = mock.MagicMock()
         mock_request.return_value = mock_request_code
-        mock_request_code.ok is True
+        mock_request_code.ok = True
 
         is_valid, rows_with_warning = validate_data(df)
 
@@ -47,7 +48,7 @@ def test_validate_data_step_with_invalid_data():
     ) as mock_request:
         mock_request_code = mock.MagicMock()
         mock_request.return_value = mock_request_code
-        mock_request_code.ok is False
+        mock_request_code.ok = False
 
         is_valid, rows_with_warning = validate_data(df)
 
@@ -191,3 +192,34 @@ def test_check_column_not_null():
 
     assert len(null_warnings) > 0
     pd.testing.assert_frame_equal(expected_output, null_warnings)
+
+
+def test_check_links_within_column():
+    """Test check column not null returns a DataFrame containing the invalid rows with warnings when the input contains invalid rows."""
+    df = pd.DataFrame(
+        {
+            "text_scraped": [
+                "abcd",
+                "https://www.notarealwebsite.com/news",
+            ]
+        }
+    )
+    expected_output = pd.DataFrame(
+        {
+            "text_scraped": ["https://www.notarealwebsite.com/news"],
+            "validation_warning": ["Warning: row contains invalid links."],
+        },
+        index=[1],
+    )
+
+    with mock.patch(
+        "steps.data_preparation_steps.validate_data_step.validate_data_step.requests.head"
+    ) as mock_request:
+        mock_request_code = mock.MagicMock()
+        mock_request.return_value = mock_request_code
+        mock_request_code.ok = False
+
+        link_warnings = check_links_within_column(df, "text_scraped")
+
+    assert len(link_warnings) > 0
+    pd.testing.assert_frame_equal(expected_output, link_warnings)
