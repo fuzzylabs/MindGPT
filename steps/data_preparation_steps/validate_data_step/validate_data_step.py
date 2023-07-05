@@ -1,6 +1,7 @@
 """Validate data step."""
 import re
 
+import numpy as np
 import pandas as pd
 import requests
 from zenml import step
@@ -8,13 +9,13 @@ from zenml.steps import Output
 
 
 def validate_links(s: str) -> bool:
-    """_summary_.
+    """Extracts links from a string and sends requests to see if the links are valid.
 
     Args:
-        s (str): _description_
+        s (str): Input string.
 
     Returns:
-        bool: _description_
+        bool: True, if all links within a string return a 200:OK response. False, otherwise.
     """
     link_pattern = r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
 
@@ -24,29 +25,48 @@ def validate_links(s: str) -> bool:
     # Check validity of each link
     for link in links:
         response = requests.head(link)
-        if response.ok:
+        if not response.ok:
             return False
 
     return True
 
 
-# def validate_empty_strings(dataframe: pd.DataFrame) -> bool:
-#     """Validates if a Pandas DataFrame contains any empty strings.
+def check_links_within_column(
+    dataframe: pd.DataFrame, column_name: str
+) -> pd.DataFrame:
+    """Checks all entries in a column of a Pandas DataFrame does not contain unreachable website links.
 
-#     Args:
-#         dataframe (pandas.DataFrame): The input DataFrame.
+    Args:
+        dataframe (pd.DataFrame): The input DataFrame.
+        column_name (str): Name of the column to check.
 
-#     Returns:
-#         bool: True if no empty strings are found, False otherwise.
-#     """
-#     # Check if any value in the DataFrame is an empty string
-#     has_empty_strings = (
-#         dataframe.apply(lambda column: column.astype(str).str.strip().eq(""))
-#         .any()
-#         .any()
-#     )
+    Returns:
+        pd.DataFrame: All rows that violate the current validation assertion.
+    """
+    mask = ~dataframe[column_name].apply(lambda x: validate_links(str(x)))
+    df = dataframe[mask].copy()
+    df["validation_warning"] = "Warning: row contains invalid links."
+    return df
 
-#     return not has_empty_strings
+
+def check_column_empty_strings(
+    dataframe: pd.DataFrame, column_name: str
+) -> pd.DataFrame:
+    """Checks if a column in a Pandas DataFrame contains any empty strings.
+
+    Args:
+        dataframe (pandas.DataFrame): The input DataFrame.
+        column_name (str): The name of the column to check.
+
+    Returns:
+        pandas.DataFrame: All rows that contain empty strings in the specified column.
+    """
+    mask = dataframe[column_name].apply(lambda x: not str(x))
+    df = dataframe[mask].copy()
+    df[
+        "validation_warning"
+    ] = f"Warning: row contains an empty string in column '{column_name}'."
+    return df
 
 
 def check_column_not_null(dataframe: pd.DataFrame, column_name: str) -> pd.DataFrame:
@@ -59,11 +79,9 @@ def check_column_not_null(dataframe: pd.DataFrame, column_name: str) -> pd.DataF
     Returns:
         pandas.DataFrame: All rows that violate the current validation assertion.
     """
-    df = dataframe.copy()
-    df["is_notnull"] = df[column_name].notnull()
-    df = df.drop(df[df["is_notnull"] is True].index)
+    mask = dataframe[column_name].isnull()
+    df = dataframe[mask].copy()
     df["validation_warning"] = "Warning: row contains Null value."
-    df = df.drop(["is_notnull"], axis=1)
     return df
 
 
@@ -77,11 +95,9 @@ def check_column_is_string(dataframe: pd.DataFrame, column_name: str) -> pd.Data
     Returns:
         pandas.DataFrame: All rows that violate the current validation assertion.
     """
-    df = dataframe.copy()
-    df["is_str"] = df[column_name].apply(lambda x: isinstance(x, str))
-    df = df.drop(df[df["is_str"] is True].index)
+    mask = ~dataframe[column_name].apply(lambda x: isinstance(x, str))
+    df = dataframe[mask].copy()
     df["validation_warning"] = "Warning: row is not a string data type."
-    df = df.drop(["is_str"], axis=1)
     return df
 
 
@@ -95,11 +111,32 @@ def check_column_ascii(dataframe: pd.DataFrame, column_name: str) -> pd.DataFram
     Returns:
         pandas.DataFrame: All rows that violate the current validation assertion.
     """
-    df = dataframe.copy()
-    df["is_ascii"] = df[column_name].apply(lambda x: isinstance(x, str) and x.isascii())
-    df = df.drop(df[df["is_ascii"] is True].index)
+    mask = ~dataframe[column_name].apply(lambda x: isinstance(x, str) and x.isascii())
+    df = dataframe[mask].copy()
     df["validation_warning"] = "Warning: row contains non ASCII characters."
-    df = df.drop(["is_ascii"], axis=1)
+    return df
+
+
+def flag_outliers_mean_std(dataframe: pd.DataFrame, column_name: str) -> pd.DataFrame:
+    """Calculates the mean and standard deviation of the number of words for all strings in a column of a Pandas DataFrame and flags rows that are greater than two standard deviations away from the mean on either side.
+
+    Args:
+        dataframe (pandas.DataFrame): The input DataFrame.
+        column_name (str): The name of the column to calculate the statistics and flag outliers for.
+
+    Returns:
+        pandas.DataFrame: The input DataFrame with an additional "outlier_flag" column indicating the outliers.
+    """
+    words_count = dataframe[column_name].astype(str).str.split().apply(len)
+    mean = np.mean(words_count)
+    std = np.std(words_count)
+    threshold = 2 * std
+
+    mask = (words_count > mean + 2 * threshold) | (words_count < mean - threshold)
+    df: pd.DataFrame = dataframe[mask].copy()
+    df["validation_warning"] = df[column_name].apply(
+        lambda x: f"Warning: the number of words '{len(str(x).split())}' in this row has been flagged as an outlier."
+    )
     return df
 
 
@@ -116,14 +153,19 @@ def validate_data(
         is_valid (bool): True, if all rows pass data validation checks, otherwise False.
         rows_with_warning (pd.DataFrame): Data rows with validation warning.
     """
-    rows_with_warning = check_column_ascii(data, column_name="text_scraped")
-    rows_with_warning = pd.concat(
-        [rows_with_warning, check_column_is_string(data, column_name="text_scraped")]
-    )
-    # print(validate_empty_strings(data))
-    rows_with_warning = pd.concat(
-        [rows_with_warning, check_column_not_null(data, column_name="text_scraped")]
-    )
-    print(data.apply(lambda s: validate_links(str(s))).all())
-
+    num_words_outlier = flag_outliers_mean_std(data, column_name="text_scraped")
+    not_ascii_warnings = check_column_ascii(data, column_name="text_scraped")
+    empty_string_warnings = check_column_empty_strings(data, column_name="text_scraped")
+    not_string_warnings = check_column_is_string(data, column_name="text_scraped")
+    null_warnings = check_column_not_null(data, column_name="text_scraped")
+    link_warnings = check_links_within_column(data, column_name="text_scraped")
+    warnings = [
+        num_words_outlier,
+        not_ascii_warnings,
+        empty_string_warnings,
+        not_string_warnings,
+        null_warnings,
+        link_warnings,
+    ]
+    rows_with_warning = pd.concat(warnings)
     return len(rows_with_warning) == 0, rows_with_warning
