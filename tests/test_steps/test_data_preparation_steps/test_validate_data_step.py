@@ -5,6 +5,8 @@ import pandas as pd
 from steps.data_preparation_steps.validate_data_step.validate_data_step import (
     check_column_ascii,
     check_column_empty_strings,
+    check_column_is_string,
+    check_column_not_null,
     flag_outliers,
     validate_data,
 )
@@ -139,7 +141,53 @@ def test_flag_outliers():
 
     empty_string_warnings = flag_outliers(df, "text_scraped")
 
-    print(empty_string_warnings)
-
     assert len(empty_string_warnings) > 0
     pd.testing.assert_frame_equal(expected_output, empty_string_warnings)
+
+
+def test_check_column_is_string():
+    """Test check column is string returns a DataFrame containing the invalid rows with warnings when the input contains invalid rows."""
+    df = pd.DataFrame(
+        {
+            "text_scraped": [
+                "abcd",
+                set("a"),
+            ]
+        }
+    )
+    expected_output = pd.DataFrame(
+        {
+            "text_scraped": [set("a")],
+            "validation_warning": ["Warning: row is not a string data type."],
+        },
+        index=[1],
+    )
+
+    not_string_warnings = check_column_is_string(df, "text_scraped")
+
+    assert len(not_string_warnings) > 0
+    pd.testing.assert_frame_equal(expected_output, not_string_warnings)
+
+
+def test_check_column_not_null():
+    """Test check column not null returns a DataFrame containing the invalid rows with warnings when the input contains invalid rows."""
+    df = pd.DataFrame(
+        {
+            "text_scraped": [
+                "abcd",
+                None,
+            ]
+        }
+    )
+    expected_output = pd.DataFrame(
+        {
+            "text_scraped": [None],
+            "validation_warning": ["Warning: row contains Null value."],
+        },
+        index=[1],
+    )
+
+    null_warnings = check_column_not_null(df, "text_scraped")
+
+    assert len(null_warnings) > 0
+    pd.testing.assert_frame_equal(expected_output, null_warnings)
