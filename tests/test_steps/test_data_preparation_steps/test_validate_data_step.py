@@ -59,7 +59,7 @@ def test_validate_data_step_with_invalid_data():
 
 
 def test_check_column_empty_strings():
-    """Test check column empty strings returns a DataFrame containing the invalid rows with warnings when the input contains invalid rows."""
+    """Test check column empty strings returns a DataFrame containing the invalid rows with warnings when the input contains invalid rows with empty strings."""
     df = pd.DataFrame(
         {
             "text_scraped": [
@@ -85,7 +85,7 @@ def test_check_column_empty_strings():
 
 
 def test_check_column_ascii():
-    """Test check column ASCII returns a DataFrame containing the invalid rows with warnings when the input contains invalid rows."""
+    """Test check column ASCII returns a DataFrame containing the invalid rows with warnings when the input contains invalid rows with non ASCII characters."""
     df = pd.DataFrame(
         {
             "text_scraped": [
@@ -109,7 +109,7 @@ def test_check_column_ascii():
 
 
 def test_flag_outliers():
-    """Test flag outliers returns a DataFrame containing the invalid rows with warnings when the input contains invalid rows."""
+    """Test flag outliers returns a DataFrame containing the invalid rows with warnings when the input contains invalid rows with anomalous numbers of words."""
     df = pd.DataFrame(
         {
             "text_scraped": [
@@ -147,7 +147,7 @@ def test_flag_outliers():
 
 
 def test_check_column_is_string():
-    """Test check column is string returns a DataFrame containing the invalid rows with warnings when the input contains invalid rows."""
+    """Test check column is string returns a DataFrame containing the invalid rows with warnings when the input contains invalid rows with non string values."""
     df = pd.DataFrame(
         {
             "text_scraped": [
@@ -171,7 +171,7 @@ def test_check_column_is_string():
 
 
 def test_check_column_not_null():
-    """Test check column not null returns a DataFrame containing the invalid rows with warnings when the input contains invalid rows."""
+    """Test check column not null returns a DataFrame containing the invalid rows with warnings when the input contains invalid rows with None/Null values."""
     df = pd.DataFrame(
         {
             "text_scraped": [
@@ -195,7 +195,7 @@ def test_check_column_not_null():
 
 
 def test_check_links_within_column():
-    """Test check column not null returns a DataFrame containing the invalid rows with warnings when the input contains invalid rows."""
+    """Test check links within column returns a DataFrame containing the invalid rows with warnings when the input contains rows that contain invalid URL links."""
     df = pd.DataFrame(
         {
             "text_scraped": [
