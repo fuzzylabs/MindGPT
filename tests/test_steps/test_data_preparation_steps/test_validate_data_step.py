@@ -3,7 +3,9 @@ from unittest import mock
 
 import pandas as pd
 from steps.data_preparation_steps.validate_data_step.validate_data_step import (
+    check_column_ascii,
     check_column_empty_strings,
+    flag_outliers,
     validate_data,
 )
 
@@ -74,6 +76,70 @@ def test_check_column_empty_strings():
     )
 
     empty_string_warnings = check_column_empty_strings(df, "text_scraped")
+
+    assert len(empty_string_warnings) > 0
+    pd.testing.assert_frame_equal(expected_output, empty_string_warnings)
+
+
+def test_check_column_ascii():
+    """Test check column ASCII returns a DataFrame containing the invalid rows with warnings when the input contains invalid rows."""
+    df = pd.DataFrame(
+        {
+            "text_scraped": [
+                "abcd",
+                "四十二",
+            ]
+        }
+    )
+    expected_output = pd.DataFrame(
+        {
+            "text_scraped": ["四十二"],
+            "validation_warning": ["Warning: row contains non ASCII characters."],
+        },
+        index=[1],
+    )
+
+    empty_string_warnings = check_column_ascii(df, "text_scraped")
+
+    assert len(empty_string_warnings) > 0
+    pd.testing.assert_frame_equal(expected_output, empty_string_warnings)
+
+
+def test_flag_outliers():
+    """Test flag outliers returns a DataFrame containing the invalid rows with warnings when the input contains invalid rows."""
+    df = pd.DataFrame(
+        {
+            "text_scraped": [
+                "word1",
+                "word2",
+                "word3",
+                "word4",
+                "word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5",
+                "word6",
+                "word7",
+                "",
+                "",
+                "",
+                "",
+                "",
+            ]
+        }
+    )
+    expected_output = pd.DataFrame(
+        {
+            "text_scraped": [
+                "word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5 word5"
+            ],
+            "validation_warning": [
+                "Warning: the number of words '24' in this row has been flagged as an outlier."
+            ],
+        },
+        index=[4],
+    )
+
+    empty_string_warnings = flag_outliers(df, "text_scraped")
+
+    print(empty_string_warnings)
 
     assert len(empty_string_warnings) > 0
     pd.testing.assert_frame_equal(expected_output, empty_string_warnings)

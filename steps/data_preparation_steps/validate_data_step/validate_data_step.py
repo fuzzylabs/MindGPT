@@ -117,7 +117,7 @@ def check_column_ascii(dataframe: pd.DataFrame, column_name: str) -> pd.DataFram
     return df
 
 
-def flag_outliers_mean_std(dataframe: pd.DataFrame, column_name: str) -> pd.DataFrame:
+def flag_outliers(dataframe: pd.DataFrame, column_name: str) -> pd.DataFrame:
     """Calculates the mean and standard deviation of the number of words for all strings in a column of a Pandas DataFrame and flags rows that are greater than two standard deviations away from the mean on either side.
 
     Args:
@@ -130,9 +130,9 @@ def flag_outliers_mean_std(dataframe: pd.DataFrame, column_name: str) -> pd.Data
     words_count = dataframe[column_name].astype(str).str.split().apply(len)
     mean = np.mean(words_count)
     std = np.std(words_count)
-    threshold = 2 * std
 
-    mask = (words_count > mean + 2 * threshold) | (words_count < mean - threshold)
+    # ~= Normal distribution with 98% confidence interval
+    mask = (words_count > mean + 2 * std) | (words_count < mean - 2 * std)
     df: pd.DataFrame = dataframe[mask].copy()
     df["validation_warning"] = df[column_name].apply(
         lambda x: f"Warning: the number of words '{len(str(x).split())}' in this row has been flagged as an outlier."
@@ -153,7 +153,7 @@ def validate_data(
         is_valid (bool): True, if all rows pass data validation checks, otherwise False.
         rows_with_warning (pd.DataFrame): Data rows with validation warning.
     """
-    num_words_outlier = flag_outliers_mean_std(data, column_name="text_scraped")
+    num_words_outlier = flag_outliers(data, column_name="text_scraped")
     not_ascii_warnings = check_column_ascii(data, column_name="text_scraped")
     empty_string_warnings = check_column_empty_strings(data, column_name="text_scraped")
     not_string_warnings = check_column_is_string(data, column_name="text_scraped")
