@@ -19,6 +19,11 @@ st.set_page_config(
 )
 
 st.title("MindGPT 🧠")
+st.caption("_made by [Fuzzy Labs](https://www.fuzzylabs.ai/)_")
+st.caption(
+    "MindGPT is not a digital counsellor and the answers provided may be innacurate. If you or someone you know is in crisis or experiencing a mental health emergency, please contact your local emergency services or a helpline immediately such as https://www.mind.org.uk/need-urgent-help/using-this-tool/ . This chatbot is not designed to provide immediate crisis intervention or emergency assistance."
+)
+
 st.session_state.error_placeholder = st.empty()
 
 
