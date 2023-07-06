@@ -98,31 +98,9 @@ def show_disclaimer() -> bool:
         bool: True if disclamer accepted, False if not.
     """
     st.sidebar.title("Disclaimer")
-    st.sidebar.markdown(
-        """
-Please read and accept the following conditions before using this chatbot:
-
-We are not affiliated, associated, authorized, endorsed by, or in any way officially connected with the NHS or the Mind charity. The official Mind website can be found at https://www.mind.org.uk/.
-
-Your data: We want to assure you that we do not store any data you input through this chatbot. Your privacy and confidentiality are important to us. However, please note that this chatbot may utilize temporary storage or caching solely for the purpose of providing you with a smooth and interactive experience. Any temporary storage or caching is designed to be ephemeral and is not intended for data retention.
-
-The following disclaimer applies to the chatbot's mental health information and any advice or suggestions it provides.
-
-1. Informational purposes only: The mental health information provided by this chatbot is intended for general informational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of a qualified mental health professional or healthcare provider with any questions you may have regarding a mental health condition.
-
-2. Not a substitute for professional help: This chatbot is not a licensed mental health professional and should not be relied upon as a substitute for professional diagnosis or treatment. It is designed to provide general information and support, but it cannot replace the expertise and individualized care provided by trained professionals.
-
-3. Individual differences: Mental health is a complex and highly individualized field. The information provided by this chatbot may not be applicable to everyone. It is important to recognize that each person's mental health needs are unique, and what works for one individual may not work for another. Use the information provided by this chatbot as a starting point for further exploration and discussion with a qualified professional.
-
-4. Accuracy and reliability: While efforts have been made to ensure the accuracy and reliability of the information provided by this chatbot, it is not guaranteed to be complete, up-to-date, or error-free. Mental health research and knowledge are constantly evolving, and new information may emerge that could change the understanding or recommendations in the field. Therefore, it is always advisable to consult current and reputable sources for the most accurate and reliable information.
-
-5. Emergency situations: If you or someone you know is in crisis or experiencing a mental health emergency, please contact your local emergency services or a helpline immediately such as https://www.mind.org.uk/need-urgent-help/using-this-tool/ . This chatbot is not designed to provide immediate crisis intervention or emergency assistance.
-
-6. User responsibility: By using this chatbot, you acknowledge and accept that you are solely responsible for any actions or decisions you make based on the information provided. The creators and developers of this chatbot shall not be held liable for any damages, losses, or adverse outcomes resulting from the use of this chatbot.
-
-Remember, seeking professional help from qualified mental health professionals is crucial for accurate diagnosis, personalized treatment, and ongoing care. Use this chatbot as a tool to enhance your understanding, but always consult with professionals for specific guidance and support.
-    """
-    )
+    with open("app/disclaimer.txt") as f:
+        disclaimer_text = f.read()
+    st.sidebar.markdown(disclaimer_text)
 
     accept = st.sidebar.button("I Accept")
 
@@ -158,7 +136,8 @@ def main() -> None:
 
             if prediction_endpoint is None:
                 st.session_state.error_placeholder.error(
-                    "MindGPT is not reachable, please try again later.", icon="🚨"
+                    "MindGPT is not currently reachable, please try again later.",
+                    icon="🚨",
                 )
             else:
                 with st.chat_message("assistant"):
