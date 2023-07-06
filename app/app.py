@@ -99,6 +99,8 @@ Please read and accept the following conditions before using this chatbot:
 
 We are not affiliated, associated, authorized, endorsed by, or in any way officially connected with the NHS or the Mind charity. The official Mind website can be found at https://www.mind.org.uk/.
 
+Your data: We want to assure you that we do not store any data you input through this chatbot. Your privacy and confidentiality are important to us. However, please note that this chatbot may utilize temporary storage or caching solely for the purpose of providing you with a smooth and interactive experience. Any temporary storage or caching is designed to be ephemeral and is not intended for data retention.
+
 The following disclaimer applies to the chatbot's mental health information and any advice or suggestions it provides.
 
 1. Informational purposes only: The mental health information provided by this chatbot is intended for general informational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of a qualified mental health professional or healthcare provider with any questions you may have regarding a mental health condition.
