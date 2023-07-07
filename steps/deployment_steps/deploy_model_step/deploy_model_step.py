@@ -16,7 +16,7 @@ seldon_llm_custom_deployment = seldon_llm_model_deployer_step.with_options(
             replicas=1,
             implementation="custom",
             resources=SeldonResourceRequirements(
-                limits={"cpu": "500m", "memory": "900Mi"}
+                limits={"cpu": "500m", "memory": "1500Mi"}
             ),
         ),
         "timeout": 300,

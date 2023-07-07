@@ -35,12 +35,11 @@ DEFAULT_PT_MODEL_DIR = "hf_pt_model"
 DEFAULT_TOKENIZER_DIR = "hf_tokenizer"
 
 
-def copy_artifact(uri: str, filename: str, context: StepContext) -> str:
+def copy_artifact(uri: str, context: StepContext) -> str:
     """Copy an artifact to the output location of the current step.
 
     Args:
         uri (str): URI of the artifact to copy
-        filename (str): filename for the output artifact
         context (StepContext): ZenML step context
 
     Returns:
@@ -52,12 +51,15 @@ def copy_artifact(uri: str, filename: str, context: StepContext) -> str:
     """
     served_artifact_uri = os.path.join(context.get_output_artifact_uri(), "seldon")
     fileio.makedirs(served_artifact_uri)
+
     if not fileio.exists(uri):
         raise RuntimeError(f"Expected artifact was not found at f {uri}")
-    if io_utils.isdir(uri):
-        io_utils.copy_dir(uri, os.path.join(served_artifact_uri, filename))
+    if io_utils.isdir(  # type: ignore[attr-defined]
+        uri
+    ):  # isdir() is used in the up to date ZenML example
+        io_utils.copy_dir(uri, served_artifact_uri)
     else:
-        fileio.copy(uri, os.path.join(served_artifact_uri, filename))
+        fileio.copy(uri, served_artifact_uri)
 
     return served_artifact_uri
 
@@ -164,8 +166,8 @@ def seldon_llm_model_deployer_step(  # noqa: PLR0913 # Too many arguments for ru
     image_name = step_env.step_run_info.get_image(key=SELDON_DOCKER_IMAGE_KEY)
 
     # Copy artifacts
-    served_model_uri = copy_artifact(model_uri, DEFAULT_PT_MODEL_DIR, context)
-    copy_artifact(tokenizer_uri, DEFAULT_TOKENIZER_DIR, context)
+    served_model_uri = copy_artifact(model_uri, context)
+    copy_artifact(tokenizer_uri, context)
 
     # prepare the service configuration for the deployment
     service_config = service_config.copy()

@@ -1,3 +1,11 @@
+settings:
+  docker:
+    requirements:
+      - fastapi
+      - torch
+      - seldon-core==1.15.1
+    required_integrations:
+      - huggingface
 steps:
   fetch_model:
     enable_cache: True
