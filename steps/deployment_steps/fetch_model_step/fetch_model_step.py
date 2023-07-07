@@ -13,35 +13,6 @@ from zenml.steps.step_context import StepContext
 logger = get_logger(__name__)
 
 
-# @step
-# def fetch_model(
-#     model_name: str,
-#     context: StepContext
-# ) -> Output(model=PreTrainedModel, tokenizers=PreTrainedTokenizerBase):  # type: ignore
-#     """A step to fetch a model and tokenizer (specified by model_name) from the HuggingFace Hub.
-
-#     Args:
-#         model_name: the name of the model to fetch from the hub.
-
-#     Returns:
-#         PreTrainedModel: the model.
-#         PreTrainedTokenizerBase: the tokenizer for the model.
-#     """
-#     logger.info(
-#         f"Fetching the model '{model_name}' and tokenizer from the HuggingFace Hub"
-#     )
-#     tokenizer = AutoTokenizer.from_pretrained(model_name)
-#     model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-
-#     logger.info("Model and tokenizer loaded")
-
-#     print(context.get_output_artifact_uri("tokenizers"))
-#     print(context.get_output_materializer("tokenizers"))
-#     # print(context.get_output_materializer())
-
-#     return model.uri, tokenizer
-
-
 @step
 def fetch_model(
     model_name: str, context: StepContext
