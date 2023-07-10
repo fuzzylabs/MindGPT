@@ -1,6 +1,6 @@
 """Scrape data from the NHS website."""
 import re
-from datetime import date
+from datetime import datetime
 from typing import Dict, List, Optional, Union
 
 import pandas as pd
@@ -80,7 +80,7 @@ class NHSMentalHealthScraper:
         Returns:
             (DataFrame): a Pandas DataFrame with four columns ("text_scraped", "timestamp", "url") and a single record representing the results of the scrape.
         """
-        timestamp = date.today()
+        timestamp = datetime.now()
         target = self._identify_target()
         return pd.DataFrame(
             [
@@ -129,4 +129,5 @@ def scrape_nhs_data() -> pd.DataFrame:
         attributes={"class": "nhsuk-main-wrapper"},
     )
     nhs_scraper.scrape_recursively()
+
     return nhs_scraper.df

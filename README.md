@@ -27,7 +27,7 @@ MindGPT sets out to increase ease of access to this information.
 
 This project is in active development at Fuzzy Labs and you can follow along!
 
-The repository for this project is one method where you can monitor progress - we're always raising pull requests to move the project forward. Another way you can do this is to follow along to our daily updates, [posted on our website](https://www.fuzzylabs.ai/blog-post/diary-of-a-project-llms-support-mental-health).
+The repository for this project is one method where you can monitor progress - we're always raising pull requests to move the project forward. Another way you can do this is to follow our blog. We'll be posting periodic updates as we tick off sections of the project. If you're new to the project, the best place to start is our [project introduction](https://www.fuzzylabs.ai/blog-post/mindgpt-an-introduction).
 
 # &#127939; How do I get started?
 

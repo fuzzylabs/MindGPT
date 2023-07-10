@@ -1,6 +1,6 @@
 """Scrape data from the Mind charity website."""
 import time
-from datetime import date
+from datetime import datetime
 from typing import Dict, List, Optional
 
 import pandas as pd
@@ -80,8 +80,7 @@ class Scraper:
         """
         df = pd.DataFrame(data.items(), columns=["url", "text_scraped"])
 
-        date_of_today = date.today().strftime("%Y%m%d")
-        df["timestamp"] = date_of_today
+        df["timestamp"] = datetime.now()
 
         df = df[["text_scraped", "timestamp", "url"]]  # Rearrange Columns
 
