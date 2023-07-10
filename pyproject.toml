@@ -19,6 +19,7 @@ types-requests = "^2.31.0.1"
 types-urllib3 = "^1.26.25.13"
 sentencepiece = "^0.1.99"
 streamlit = "^1.24.0"
+dvc = {version = ">=3.4.0", extras = ["gdrive"]}
 
 
 [tool.poetry.group.dev.dependencies]
