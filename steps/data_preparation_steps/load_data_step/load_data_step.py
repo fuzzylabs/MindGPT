@@ -1,6 +1,9 @@
 """Load data step (data prep pipeline)."""
 
+import os
+
 import pandas as pd
+from config import DATA_DIR
 from zenml import step
 from zenml.logger import get_logger
 from zenml.post_execution import PipelineView, get_pipeline
@@ -80,6 +83,7 @@ def load_data(pipeline_name: str) -> Output(mind_df=pd.DataFrame, nhs_df=pd.Data
 
     Args:
         pipeline_name (str): Name of pipeline to get raw scraped data from
+        data_state (str): The state of the data. Either 'raw' or 'validated'
 
     Returns:
         mind_data (pd.DataFrame): Raw scraped data from the Mind website
@@ -93,8 +97,7 @@ def load_data(pipeline_name: str) -> Output(mind_df=pd.DataFrame, nhs_df=pd.Data
 
     logger.info(f"Pipeline: {pipeline}")
 
-    # Fetch the data artifacts from the pipeline
-    mind_df = get_df_from_step(pipeline, "scrape_mind_data")
-    nhs_df = get_df_from_step(pipeline, "scrape_nhs_data")
+    mind_df = pd.read_csv(os.path.join(DATA_DIR, "mind_data_raw.csv"))
+    nhs_df = pd.read_csv(os.path.join(DATA_DIR, "nhs_data_raw.csv"))
 
     return mind_df, nhs_df
