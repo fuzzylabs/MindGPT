@@ -25,9 +25,9 @@ def fetch_model(
 
     Returns:
         PreTrainedModel: the model.
-        Str: the model artifact uri.
+        str: the model artifact uri.
         PreTrainedTokenizerBase: the tokenizer for the model.
-        Str: the tokenizer artifact uri.
+        str: the tokenizer artifact uri.
     """
     logger.info(
         f"Fetching the model '{model_name}' and tokenizer from the HuggingFace Hub"
