@@ -1,0 +1,4 @@
+[core]
+    remote = mindgpt-drive
+['remote "mindgpt-drive"']
+    url = gdrive://1wQ_88shlxquNPdlKtQZrWmDCZJvx7-t7
