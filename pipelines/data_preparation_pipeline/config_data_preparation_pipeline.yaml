@@ -7,3 +7,4 @@ steps:
     enable_cache: False
   validate_data:
     enable_cache: False
+    parameters: {}

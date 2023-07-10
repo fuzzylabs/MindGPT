@@ -1,9 +1,11 @@
 """Validate data step."""
+import os
 import re
 
 import numpy as np
 import pandas as pd
 import requests
+from config import DATA_DIR
 from zenml import step
 from zenml.steps import Output
 
@@ -142,12 +144,13 @@ def flag_outliers(dataframe: pd.DataFrame, column_name: str) -> pd.DataFrame:
 
 @step
 def validate_data(
-    data: pd.DataFrame,
+    data: pd.DataFrame, source: str
 ) -> Output(is_valid=bool, rows_with_warning=pd.DataFrame):  # type: ignore
     """A step to validate text within the data DataFrame.
 
     Args:
         data (pd.DataFrame): Data to validate.
+        source (str): The source of the data being validated.
 
     Returns:
         is_valid (bool): True, if all rows pass data validation checks, otherwise False.
@@ -168,4 +171,6 @@ def validate_data(
         link_warnings,
     ]
     rows_with_warning = pd.concat(warnings)
+    csv_path = os.path.join(DATA_DIR, f"{source}_data_validated.csv")
+    data.to_csv(csv_path)
     return len(rows_with_warning) == 0, rows_with_warning
