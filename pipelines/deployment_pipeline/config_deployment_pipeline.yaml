@@ -1,7 +1,15 @@
+settings:
+  docker:
+    requirements:
+      - fastapi
+      - torch
+      - seldon-core==1.15.1
+    required_integrations:
+      - huggingface
 steps:
   fetch_model:
     enable_cache: True
     parameters:
       model_name: 'google/flan-t5-small'
-  deploy_model:
+  seldon_llm_model_deployer_step:
     enable_cache: False
