@@ -8,6 +8,9 @@ from transformers import (
     PreTrainedModel,
     PreTrainedTokenizerBase,
 )
+from zenml.materializers.base_materializer import BaseMaterializer
+from zenml.steps import StepContext
+
 
 FUNCTION_LOCATION_PREFIX = "steps.deployment_steps.fetch_model_step.fetch_model_step"
 
@@ -30,7 +33,20 @@ def test_fetch_model_expected(model_name: str):
         mock_model.from_pretrained.return_value = PreTrainedModel(PretrainedConfig())
         mock_tokenizer.from_pretrained.return_value = PreTrainedTokenizerBase()
 
-        model, tokenizer = fetch_model(model_name=model_name)
+        materializers = {
+            "model": (PreTrainedModel,),
+            "tokenizers": (PreTrainedTokenizerBase,),
+        }
+        artifact_uris = {"model": "", "tokenizers": ""}
+
+        model, _, tokenizer, _ = fetch_model.entrypoint(
+            model_name=model_name,
+            context=StepContext(
+                step_name="fetch_model",
+                output_materializers=materializers,
+                output_artifact_uris=artifact_uris,
+            ),
+        )
 
         assert isinstance(model, PreTrainedModel)
         assert isinstance(tokenizer, PreTrainedTokenizerBase)

@@ -1,0 +1,13 @@
+.zen/
+data/
+model/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+docs
+
+.matcha
+.mypy_cache/

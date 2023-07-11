@@ -8,22 +8,26 @@ from transformers import (
 from zenml import step
 from zenml.logger import get_logger
 from zenml.steps import Output
+from zenml.steps.step_context import StepContext
 
 logger = get_logger(__name__)
 
 
 @step
 def fetch_model(
-    model_name: str,
-) -> Output(model=PreTrainedModel, tokenizers=PreTrainedTokenizerBase):  # type: ignore
+    model_name: str, context: StepContext
+) -> Output(model=PreTrainedModel, model_uri=str, tokenizers=PreTrainedTokenizerBase, tokenizer_uri=str):  # type: ignore
     """A step to fetch a model and tokenizer (specified by model_name) from the HuggingFace Hub.
 
     Args:
         model_name: the name of the model to fetch from the hub.
+        context: the step context for artifact uri.
 
     Returns:
         PreTrainedModel: the model.
+        str: the model artifact uri.
         PreTrainedTokenizerBase: the tokenizer for the model.
+        str: the tokenizer artifact uri.
     """
     logger.info(
         f"Fetching the model '{model_name}' and tokenizer from the HuggingFace Hub"
@@ -33,4 +37,9 @@ def fetch_model(
 
     logger.info("Model and tokenizer loaded")
 
-    return model, tokenizer
+    return (
+        model,
+        context.get_output_artifact_uri("model"),
+        tokenizer,
+        context.get_output_artifact_uri("tokenizers"),
+    )

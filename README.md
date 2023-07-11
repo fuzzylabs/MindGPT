@@ -23,7 +23,7 @@ Mental health problems are something that everyone struggles with at various poi
 
 MindGPT sets out to increase ease of access to this information.
 
-# &#128064; Follow along!
+# &#128064; Follow along
 
 This project is in active development at Fuzzy Labs and you can follow along!
 
@@ -31,7 +31,28 @@ The repository for this project is one method where you can monitor progress - w
 
 # &#127939; How do I get started?
 
-We're working on this! Coming soon...
+## Deployment pipeline
+
+To run the zenml deployment pipeline, the resources required by seldon have to provisioned. `matcha` tool can help you in provisioning these resources.
+
+Install `matcha-ml` library and provision resources using the same
+
+```bash
+pip install matcha-ml
+matcha provision
+```
+
+After the provisioning completes, run the following bash script
+
+```bash
+./setup_deploy.sh
+```
+
+Run the deployment pipeline.
+
+```bash
+python run.py -d
+```
 
 # &#129309; Acknowledgements
 
