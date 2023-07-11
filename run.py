@@ -34,7 +34,7 @@ def run_data_preparation_pipeline() -> None:
 def run_data_embedding_pipeline() -> None:
     """Run all the steps in the data embedding pipeline."""
     pipeline = data_embedding_pipeline.with_options(
-        config_path="pipelines/deployment_pipeline/config_data_embedding_pipeline.yaml"
+        config_path="pipelines/data_embedding_pipeline/config_data_embedding_pipeline.yaml"
     )
     pipeline()
 

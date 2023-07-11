@@ -1,11 +1,11 @@
 steps:
-  fetch_data_step:
+  fetch_data:
     enable_cache: False
     parameters:
       data_version: "v1.0"
-  embed_data_step:
+  embed_data:
     enable_cache: True
-  upload_data_to_vector_db_step:
+  upload_data_to_vector_db:
     enable_cache: False
     parameters:
       data_version: "v1.0"
