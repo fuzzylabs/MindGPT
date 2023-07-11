@@ -59,5 +59,8 @@ jobs:
       - name: Setup ZenML
         run: poetry run zenml integration install huggingface pytorch -y
 
+      - name: Collect data
+        run: dvc pull
+
       - name: Run the full test suite
         run: poetry run python -m pytest tests --cov
