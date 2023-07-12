@@ -1,5 +1,5 @@
 """Data embedding pipeline."""
-from steps.data_embedding_steps import embed_data, fetch_data, upload_data_to_vector_db
+from steps.data_embedding_steps import embed_data, fetch_data
 from zenml import pipeline
 from zenml.logger import get_logger
 
@@ -12,13 +12,9 @@ def data_embedding_pipeline() -> None:
 
     Steps:
         fetch_data: A ZenML step which loads the data from a specified DVC data version.
-        embed_data: A ZenML step which embeds the text data into vectors.
-        upload_data_to_vector_db: A ZenML step which uploads the embedded data to the vector database.
+        embed_data: A ZenML step which embeds the text data into vectors and pushes to the vector database.
     """
     mind_df, nhs_df = fetch_data()
 
     mind_df = embed_data(mind_df)
     nhs_df = embed_data(nhs_df)
-
-    upload_data_to_vector_db(mind_df)
-    upload_data_to_vector_db(nhs_df)
