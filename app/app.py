@@ -3,13 +3,16 @@ import json
 import os
 import time
 from typing import Any, Dict, List, Optional
-
 import requests
 import streamlit as st
 
+from zenml.integrations.seldon.model_deployers.seldon_model_deployer import (
+    SeldonModelDeployer,
+)
+
 PIPELINE_NAME = "deployment_pipeline"
-PIPELINE_STEP = "deploy_model"
-MODEL_NAME = "placeholder"
+PIPELINE_STEP = "seldon_llm_model_deployer_step"
+MODEL_NAME = "seldon-llm-custom-model"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 st.set_page_config(
@@ -34,7 +37,18 @@ def _get_prediction_endpoint() -> Optional[str]:
     Returns:
         Optional[str]: the url endpoint if it exists and is valid, None otherwise.
     """
-    return None
+    try:
+        model_deployer = SeldonModelDeployer.get_active_model_deployer()
+
+        deployed_services = model_deployer.find_model_server(
+            pipeline_name=PIPELINE_NAME,
+            pipeline_step_name=PIPELINE_STEP,
+            model_name=MODEL_NAME,
+        )
+
+        return deployed_services[0].prediction_url
+    except Exception:
+        return None
 
 
 def _create_payload(
