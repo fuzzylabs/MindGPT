@@ -54,6 +54,14 @@ Run the deployment pipeline.
 python run.py -d
 ```
 
+## Streamlit Application
+
+After running the deployment pipeline is a success, run the following command to start a streamlit application.
+
+```bash
+streamlit run app/app.py
+```
+
 # &#129309; Acknowledgements
 
 This project wouldn't be possible without the exceptional content on both the Mind and NHS Mental Health websites.
