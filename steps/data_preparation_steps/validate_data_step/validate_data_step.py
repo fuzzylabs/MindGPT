@@ -187,7 +187,7 @@ def validate_data(
         link_warnings,
     ]
     rows_with_warning = pd.concat(warnings)
-    # csv_path = os.path.join(DATA_DIR, f"{source}_data_validated.csv")
-    # data.to_csv(csv_path)
+
     _write_data(data, DATA_DIR, source)
+
     return len(rows_with_warning) == 0, rows_with_warning
