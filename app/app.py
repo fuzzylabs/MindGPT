@@ -30,7 +30,7 @@ st.caption(
 st.session_state.error_placeholder = st.empty()
 
 
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def _get_prediction_endpoint() -> Optional[str]:
     """Get the endpoint for the currently deployed LLM model.
 
