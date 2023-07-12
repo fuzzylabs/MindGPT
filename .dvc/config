@@ -1,4 +1,5 @@
 [core]
-    remote = mindgpt-drive
-['remote "mindgpt-drive"']
-    url = gdrive://1wQ_88shlxquNPdlKtQZrWmDCZJvx7-t7
+    remote = mindgpt
+['remote "mindgpt"']
+    url = azure://mindgptdvccontainer
+    account_name = mindgptstorage
