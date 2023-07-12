@@ -27,12 +27,8 @@ def _read_data() -> Tuple[pd.DataFrame, pd.DataFrame]:
 
 
 @step
-def load_data(pipeline_name: str = "pipeline") -> Output(mind_df=pd.DataFrame, nhs_df=pd.DataFrame):  # type: ignore
+def load_data() -> Output(mind_df=pd.DataFrame, nhs_df=pd.DataFrame):  # type: ignore
     """Loads the data from the output of the last run of the data_scraping_pipeline.
-
-    Args:
-        pipeline_name (str): Name of pipeline to get raw scraped data from
-        data_state (str): The state of the data. Either 'raw' or 'validated'
 
     Returns:
         mind_data (pd.DataFrame): Raw scraped data from the Mind website

@@ -1,5 +1,7 @@
 """Conftest for the data preparation steps."""
-from typing import Tuple
+import os
+from tempfile import TemporaryDirectory
+from typing import Iterator, Tuple
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -44,3 +46,19 @@ def mocked_read_data(sample_scraping_data: Tuple[DataFrame, DataFrame]) -> Magic
     with patch(f"{LOAD_DATA_STEP}._read_data") as read_data:
         read_data.return_value = sample_scraping_data
         yield read_data
+
+
+@pytest.fixture
+def directory_for_testing() -> Iterator[str]:
+    """A directory for testing purposes.
+
+    Yields:
+        Iterator[str]: the name of the directory.
+    """
+    temp_directory = TemporaryDirectory()
+    original_directory = os.getcwd()
+
+    yield temp_directory.name
+
+    os.chdir(original_directory)
+    temp_directory.cleanup()
