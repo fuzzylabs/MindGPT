@@ -56,7 +56,7 @@ python run.py -d
 
 ## Streamlit Application
 
-After running the deployment pipeline is a success, run the following command to start a streamlit application.
+Once the deployment has completed, run the following command to start a streamlit application.
 
 ```bash
 streamlit run app/app.py
