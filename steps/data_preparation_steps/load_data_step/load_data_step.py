@@ -30,7 +30,7 @@ def _read_data() -> Tuple[pd.DataFrame, pd.DataFrame]:
 
 @step
 def load_data() -> Output(mind_df=pd.DataFrame, nhs_df=pd.DataFrame):  # type: ignore
-    """Loads the data from the data/ directory.
+    """Load data from the data/ directory. If no data exists, pull from the DVC storage bucket prior to loading.
 
     Returns:
         mind_data (pd.DataFrame): Raw scraped data from the Mind website
