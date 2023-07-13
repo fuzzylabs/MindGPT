@@ -1,10 +1,12 @@
 """Scrape data from the Mind charity website."""
+import os
 import time
 from datetime import datetime
 from typing import Dict, List, Optional
 
 import pandas as pd
 from bs4 import BeautifulSoup
+from config import DATA_DIR
 from requests_html import HTMLSession  # type: ignore
 from zenml import step
 from zenml.logger import get_logger
@@ -287,5 +289,6 @@ def scrape_mind_data() -> pd.DataFrame:
 
     logger.info(f"Creating dataframe with {len(data)} rows of data")
     df = scraper.create_dataframe(data)
+    df.to_csv(os.path.join(DATA_DIR, "mind_data_raw.csv"))
 
     return df

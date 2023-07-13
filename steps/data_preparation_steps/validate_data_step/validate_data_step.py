@@ -1,9 +1,11 @@
 """Validate data step."""
+import os
 import re
 
 import numpy as np
 import pandas as pd
 import requests
+from config import DATA_DIR, VALIDATED_FILE_NAME_POSTFIX
 from zenml import step
 from zenml.steps import Output
 
@@ -140,14 +142,29 @@ def flag_outliers(dataframe: pd.DataFrame, column_name: str) -> pd.DataFrame:
     return df
 
 
+def _write_data(data: pd.DataFrame, destination: str, data_source: str) -> None:
+    """A function to write the validated dataframe to file.
+
+    Args:
+        data (pd.DataFrame): the dataframe to write to disk.
+        destination (str): the directory to save the dataframe in.
+        data_source (str): the source for the data, i.e., the website.
+    """
+    data.to_csv(
+        os.path.join(destination, f"{data_source}{VALIDATED_FILE_NAME_POSTFIX}"),
+        index=False,
+    )
+
+
 @step
 def validate_data(
-    data: pd.DataFrame,
+    data: pd.DataFrame, source: str
 ) -> Output(is_valid=bool, rows_with_warning=pd.DataFrame):  # type: ignore
     """A step to validate text within the data DataFrame.
 
     Args:
         data (pd.DataFrame): Data to validate.
+        source (str): The source of the data being validated.
 
     Returns:
         is_valid (bool): True, if all rows pass data validation checks, otherwise False.
@@ -168,4 +185,7 @@ def validate_data(
         link_warnings,
     ]
     rows_with_warning = pd.concat(warnings)
+
+    _write_data(data, DATA_DIR, source)
+
     return len(rows_with_warning) == 0, rows_with_warning

@@ -20,5 +20,5 @@ def data_preparation_pipeline() -> None:
     mind_df = clean_data(mind_df)
     nhs_df = clean_data(nhs_df)
 
-    mind_df = validate_data(mind_df)
-    nhs_df = validate_data(nhs_df)
+    mind_df = validate_data(mind_df, "mind")
+    nhs_df = validate_data(nhs_df, "nhs")
