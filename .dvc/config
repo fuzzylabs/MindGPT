@@ -2,4 +2,4 @@
     remote = mindgpt
 ['remote "mindgpt"']
     url = azure://mindgptdvccontainer
-    account_name = mindgptstorage
+    account_name = mindgptdvc

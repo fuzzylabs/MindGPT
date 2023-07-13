@@ -1,6 +1,6 @@
 resource "azurerm_storage_account" "storage_account" {
     resource_group_name = var.resource_group_name
-    name                = "mindgptstacc"
+    name                = var.name
     location            = var.location
 
     account_tier                    = "Standard"
@@ -12,8 +12,8 @@ resource "azurerm_storage_account" "storage_account" {
 }
 
 # Storage container inside storage account
-resource "azurerm_storage_container" "scraped_data_store" {
-    name                  = "scraped-data-store"
+resource "azurerm_storage_container" "data_store" {
+    name                  = var.container_name
     storage_account_name  = azurerm_storage_account.storage_account.name
     container_access_type = "container"
 }
