@@ -18,7 +18,7 @@ def _read_data() -> Tuple[pd.DataFrame, pd.DataFrame]:
     Note: this will need updating in the subsequent integration of DVC proper.
 
     Returns:
-        Tuple[pd.DataFrame, pd.DataFrame]: the two raw datasets
+        Tuple[pd.DataFrame, pd.DataFrame]: the two raw datasets.
     """
     mind_df = pd.read_csv(os.path.join(DATA_DIR, "mind_data_raw.csv"))
     nhs_df = pd.read_csv(os.path.join(DATA_DIR, "nhs_data_raw.csv"))
