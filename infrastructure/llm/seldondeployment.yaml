@@ -1,0 +1,19 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: llm
+spec:
+  protocol: v2
+  predictors:
+  - graph:
+      name: transformer
+      implementation: HUGGINGFACE_SERVER
+      parameters:
+      - name: task
+        type: STRING
+        value: text-generation
+      - name: pretrained_model
+        type: STRING
+        value: google/flan-t5-small
+    name: default
+    replicas: 1
