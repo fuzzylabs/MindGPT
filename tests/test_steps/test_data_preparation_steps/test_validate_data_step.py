@@ -1,8 +1,13 @@
 """Test validate data file."""
+import os.path
 from unittest import mock
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
+import pytest
 from steps.data_preparation_steps.validate_data_step.validate_data_step import (
+    VALIDATED_FILE_NAME_POSTFIX,
+    _write_data,
     check_column_ascii,
     check_column_empty_strings,
     check_column_is_string,
@@ -12,27 +17,66 @@ from steps.data_preparation_steps.validate_data_step.validate_data_step import (
     validate_data,
 )
 
-REQUESTS_FUNCTION_TARGET = (
-    "steps.data_preparation_steps.validate_data_step.validate_data_step.requests.head"
+VALIDATE_DATA_STEP = (
+    "steps.data_preparation_steps.validate_data_step.validate_data_step"
 )
 
 
-def test_validate_data_step():
-    """Test validate data step returns True with valid data."""
+@pytest.fixture
+def mocked_write_data() -> MagicMock:
+    """Mock the _write_data function such that it does nothing to avoid IO in testing.
+
+    Yields:
+        MagicMock: a mocked _write_data function which does nothing
+    """
+    with patch(f"{VALIDATE_DATA_STEP}._write_data") as write_data:
+        write_data.return_value = None
+        yield write_data
+
+
+def test_write_data(directory_for_testing: str):
+    """Test that the _write_data function writes the dataframe to disk.
+
+    Args:
+        directory_for_testing (str): the temporary directory to save the output.
+    """
+    data_to_write = pd.DataFrame(
+        {"text_scraped": ["abcd", "https://www.bbc.co.uk/news", "42"]}
+    )
+
+    _write_data(data_to_write, str(directory_for_testing), "testing")
+
+    assert os.path.exists(
+        os.path.join(
+            str(directory_for_testing), f"testing{VALIDATED_FILE_NAME_POSTFIX}"
+        )
+    )
+
+
+def test_validate_data_step(mocked_write_data):
+    """Test validate data step returns True with valid data.
+
+    Args:
+        mocked_write_data (MagicMock): the mocked _write_data function.
+    """
     df = pd.DataFrame({"text_scraped": ["abcd", "https://www.bbc.co.uk/news", "42"]})
-    with mock.patch(REQUESTS_FUNCTION_TARGET) as mock_request:
+    with patch(f"{VALIDATE_DATA_STEP}.requests.head") as mock_request:
         mock_request_code = mock.MagicMock()
         mock_request.return_value = mock_request_code
         mock_request_code.ok = True
 
-        is_valid, rows_with_warning = validate_data(df)
+        is_valid, rows_with_warning = validate_data(df, source="testing")
 
     assert is_valid
     assert rows_with_warning.empty
 
 
-def test_validate_data_step_with_invalid_data():
-    """Test validate data steps returns False with invalid data."""
+def test_validate_data_step_with_invalid_data(mocked_write_data):
+    """Test validate data steps returns False with invalid data.
+
+    Args:
+        mocked_write_data (MagicMock): the mocked _write_data function.
+    """
     df = pd.DataFrame(
         {
             "text_scraped": [
@@ -45,12 +89,12 @@ def test_validate_data_step_with_invalid_data():
         }
     )
 
-    with mock.patch(REQUESTS_FUNCTION_TARGET) as mock_request:
+    with patch(f"{VALIDATE_DATA_STEP}.requests.head") as mock_request:
         mock_request_code = mock.MagicMock()
         mock_request.return_value = mock_request_code
         mock_request_code.ok = False
 
-        is_valid, rows_with_warning = validate_data(df)
+        is_valid, rows_with_warning = validate_data(df, source="testing")
 
     assert not is_valid
     assert len(rows_with_warning) > 0
@@ -212,7 +256,7 @@ def test_check_links_within_column():
         index=[1],
     )
 
-    with mock.patch(REQUESTS_FUNCTION_TARGET) as mock_request:
+    with patch(f"{VALIDATE_DATA_STEP}.requests.head") as mock_request:
         mock_request_code = mock.MagicMock()
         mock_request.return_value = mock_request_code
         mock_request_code.ok = False

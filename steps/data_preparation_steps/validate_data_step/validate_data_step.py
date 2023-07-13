@@ -9,6 +9,8 @@ from config import DATA_DIR
 from zenml import step
 from zenml.steps import Output
 
+VALIDATED_FILE_NAME_POSTFIX = "_data_validated.csv"
+
 
 def validate_links(s: str) -> bool:
     """Extracts links from a string and sends requests to see if the links are valid.
@@ -142,6 +144,20 @@ def flag_outliers(dataframe: pd.DataFrame, column_name: str) -> pd.DataFrame:
     return df
 
 
+def _write_data(data: pd.DataFrame, destination: str, data_source: str) -> None:
+    """A function to write the validated dataframe to file.
+
+    Args:
+        data (pd.DataFrame): the dataframe to write to disk.
+        destination (str): the directory to save the dataframe in.
+        data_source (str): the source for the data, i.e., the website.
+    """
+    data.to_csv(
+        os.path.join(destination, f"{data_source}{VALIDATED_FILE_NAME_POSTFIX}"),
+        index=False,
+    )
+
+
 @step
 def validate_data(
     data: pd.DataFrame, source: str
@@ -171,6 +187,7 @@ def validate_data(
         link_warnings,
     ]
     rows_with_warning = pd.concat(warnings)
-    csv_path = os.path.join(DATA_DIR, f"{source}_data_validated.csv")
-    data.to_csv(csv_path)
+
+    _write_data(data, DATA_DIR, source)
+
     return len(rows_with_warning) == 0, rows_with_warning
