@@ -54,6 +54,8 @@ Run the deployment pipeline.
 python run.py -d
 ```
 
+You can take a look [here](docs/data-version-control.md) for guidance with regards to interacting with data version control on this project.
+
 # &#129309; Acknowledgements
 
 This project wouldn't be possible without the exceptional content on both the Mind and NHS Mental Health websites.
