@@ -5,11 +5,9 @@ import re
 import numpy as np
 import pandas as pd
 import requests
-from config import DATA_DIR
+from config import DATA_DIR, VALIDATED_FILE_NAME_POSTFIX
 from zenml import step
 from zenml.steps import Output
-
-VALIDATED_FILE_NAME_POSTFIX = "_data_validated.csv"
 
 
 def validate_links(s: str) -> bool:
