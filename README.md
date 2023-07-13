@@ -56,6 +56,14 @@ python run.py -d
 
 You can take a look [here](docs/data-version-control.md) for guidance with regards to interacting with data version control on this project.
 
+## Streamlit Application
+
+Once the deployment has completed, run the following command to start a streamlit application.
+
+```bash
+streamlit run app/app.py
+```
+
 # &#129309; Acknowledgements
 
 This project wouldn't be possible without the exceptional content on both the Mind and NHS Mental Health websites.

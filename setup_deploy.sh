@@ -14,6 +14,7 @@ function get_state_value() {
     echo "$value"
 }
 
+echo "Extracting resource names and assigning it to a variable..."
 zenml_storage_path=$(get_state_value pipeline storage-path)
 zenml_connection_string=$(get_state_value pipeline connection-string)
 k8s_context=$(get_state_value orchestrator k8s-context)
@@ -43,7 +44,8 @@ echo "Setting up ZenML..."
     zenml model-deployer register seldon_deployer --flavor=seldon \
             --kubernetes_context=$k8s_context \
             --kubernetes_namespace=$seldon_workload_namespace \
-            --base_url=http://$seldon_ingress_host
+            --base_url=http://$seldon_ingress_host  \
+
     zenml stack register llm_test_stack -i docker_builder -a az_store -o default -c acr_registry --model_deployer=seldon_deployer --set
 } >> setup_out.log
 
