@@ -15,7 +15,9 @@ logger = get_logger(__name__)
 def _read_data() -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Read in the data from the data directory.
 
-    Note: this will need updating in the subsequent integration of DVC proper.
+    Note:
+        This will need updating as part of the full implementation of DVC. This includes either pulling the latest
+        version of data or a specific version.
 
     Returns:
         Tuple[pd.DataFrame, pd.DataFrame]: the two raw datasets.
@@ -28,7 +30,7 @@ def _read_data() -> Tuple[pd.DataFrame, pd.DataFrame]:
 
 @step
 def load_data() -> Output(mind_df=pd.DataFrame, nhs_df=pd.DataFrame):  # type: ignore
-    """Loads the data from the output of the last run of the data_scraping_pipeline.
+    """Loads the data from the data/ directory.
 
     Returns:
         mind_data (pd.DataFrame): Raw scraped data from the Mind website
