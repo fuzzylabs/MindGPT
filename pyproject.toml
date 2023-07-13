@@ -20,7 +20,7 @@ types-urllib3 = "^1.26.25.13"
 transformers = "^4.30.2"
 sentencepiece = "^0.1.99"
 streamlit = "^1.24.0"
-dvc = {version = ">=3.4.0", extras = ["gdrive"]}
+dvc = {version = ">=3.4.0", extras = ["azure"]}
 
 
 [tool.poetry.group.dev.dependencies]
