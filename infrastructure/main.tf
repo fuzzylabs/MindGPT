@@ -16,6 +16,6 @@ module "storage_account" {
 
   resource_group_name = var.resource_group_name
   location = var.location
-  name = "mindgptdvc"
-  container_name = "mindgptdvccontainer"
+  name = var.storage_account_name
+  container_name = var.container_name
 }
