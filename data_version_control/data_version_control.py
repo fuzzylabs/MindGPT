@@ -35,7 +35,7 @@ def commit_new_dcv_changes() -> None:
 
 
 def version_new_data() -> None:
-    """Version new data."""
+    """Version new data in the data/ directory."""
     add_csv_files_to_dvc()
     add_dvc_files_to_git()
     commit_new_dcv_changes()
