@@ -1,10 +1,12 @@
 """Scrape data from the NHS website."""
+import os
 import re
 from datetime import datetime
 from typing import Dict, List, Optional, Union
 
 import pandas as pd
 from bs4 import BeautifulSoup, NavigableString, Tag
+from config import DATA_DIR
 from requests_html import HTMLSession  # type: ignore
 from zenml import step
 
@@ -130,6 +132,6 @@ def scrape_nhs_data() -> pd.DataFrame:
     )
     nhs_scraper.scrape_recursively()
 
-    # nhs_scraper.df.to_csv(os.path.join(DATA_DIR, "nhs_data_raw.csv"))
+    nhs_scraper.df.to_csv(os.path.join(DATA_DIR, "nhs_data_raw.csv"))
 
     return nhs_scraper.df

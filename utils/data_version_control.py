@@ -39,7 +39,9 @@ def add_and_commit_dvc_files_to_git(filenames: List[str]) -> None:
     """
     files = "".join(f"data/{fname} " for fname in filenames)
     sp.run(f"git add {files}", shell=True, cwd=PROJECT_ROOT_DIR)
-    sp.run(f'git commit {files} -m "Update dvc files"')
+    sp.run(
+        f'git commit {files} -m "Update dvc files"', shell=True, cwd=PROJECT_ROOT_DIR
+    )
 
 
 def push_and_tag_dvc_changes_to_git(tag: str) -> None:
