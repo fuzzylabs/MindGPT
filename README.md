@@ -42,7 +42,7 @@ pip install matcha-ml
 matcha provision
 ```
 
-Run kubernetes manifests to deploy chromadb server using following commands
+Run kubernetes manifests to deploy chromadb server on AKS using following commands
 
 ```bash
 cd infrastructure/chroma_server_k8s
