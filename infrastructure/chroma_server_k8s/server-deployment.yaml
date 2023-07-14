@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server
+spec:
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      containers:
+        - name: clickhouse
+          env:
+            - name: ALLOW_EMPTY_PASSWORD
+              value: "yes"
+            - name: CLICKHOUSE_HTTP_PORT
+              value: "8123"
+            - name: CLICKHOUSE_TCP_PORT
+              value: "9000"
+          image: clickhouse/clickhouse-server:22.9-alpine
+          ports:
+            - containerPort: 8123
+            - containerPort: 9000
+          resources: {}
+          volumeMounts:
+            - mountPath: /bitnami/clickhouse
+              name: clickhouse-claim0
+            - mountPath: /backups
+              name: clickhouse-claim1
+            - mountPath: /etc/clickhouse-server/config.d#backup_disk.xml
+              name: backup-disk-config
+              subPath: backup_disk.xml
+            - mountPath: /etc/clickhouse-server/users.d#chroma_users.xml
+              name: chroma-users-config
+              subPath: chroma.xml
+
+        - name: chroma-server
+          env:
+            - name: CHROMA_DB_IMPL
+              value: clickhouse
+            - name: CLICKHOUSE_HOST
+              value: localhost
+            - name: CLICKHOUSE_PORT
+              value: "8123"
+          image: dudeperf3ct7/chromatest # ghcr.io/chroma-core/chroma:0.3.29
+          ports:
+            - containerPort: 8000
+          resources: {}
+          volumeMounts:
+            - mountPath: /index_data
+              name: server-claim0
+
+      restartPolicy: Always
+
+      volumes:
+        - name: server-claim0
+          persistentVolumeClaim:
+            claimName: server-claim0
+        - name: clickhouse-claim0
+          persistentVolumeClaim:
+            claimName: clickhouse-claim0
+        - name: clickhouse-claim1
+          persistentVolumeClaim:
+            claimName: clickhouse-claim1
+        - name: backup-disk-config
+          configMap:
+            name: clickhouse-config
+        - name: chroma-users-config
+          configMap:
+            name: chroma-config

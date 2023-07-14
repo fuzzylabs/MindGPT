@@ -31,7 +31,7 @@ The repository for this project is one method where you can monitor progress - w
 
 # &#127939; How do I get started?
 
-## Deployment pipeline
+## Embedding pipeline
 
 To run the zenml deployment pipeline, the resources required by seldon have to provisioned. `matcha` tool can help you in provisioning these resources.
 
@@ -41,6 +41,25 @@ Install `matcha-ml` library and provision resources using the same
 pip install matcha-ml
 matcha provision
 ```
+
+Run kubernetes manifests to deploy chromadb server using following commands
+
+```bash
+cd infrastructure/chroma_server_k8s
+kubectl create configmap clickhouse-config --from-file=config/backup_disk.xml
+kubectl create configmap chroma-config --from-file=config/chroma_users.xml
+kubectl apply -f .
+```
+
+Run the embedding pipeline.
+
+```bash
+python run.py -e
+```
+
+## Deployment pipeline
+
+> Note: Deployment pipeline requires an aks cluster to provisioned.
 
 After the provisioning completes, run the following bash script
 
