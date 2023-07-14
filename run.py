@@ -1,15 +1,9 @@
 """Run all pipelines."""
 import click
-from pipelines.data_embedding_pipeline.data_embedding_pipeline import (
-    data_embedding_pipeline,
-)
-from pipelines.data_preparation_pipeline.data_preparation_pipeline import (
-    data_preparation_pipeline,
-)
-from pipelines.data_scraping_pipeline.data_scraping_pipeline import (
-    data_scraping_pipeline,
-)
-from pipelines.deployment_pipeline.deployment_pipeline import deployment_pipeline
+from pipelines.data_embedding_pipeline import data_embedding_pipeline
+from pipelines.data_preparation_pipeline import data_preparation_pipeline
+from pipelines.data_scraping_pipeline import data_scraping_pipeline
+from pipelines.deployment_pipeline import deployment_pipeline
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
