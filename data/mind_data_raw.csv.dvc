@@ -1,0 +1,5 @@
+outs:
+- md5: 627ddb35cb935d296e10e26634c4c9d5
+  size: 2053405
+  hash: md5
+  path: mind_data_raw.csv
