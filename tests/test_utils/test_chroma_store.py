@@ -1,7 +1,4 @@
 import pytest
-from unittest.mock import patch
-import chromadb
-
 from utils.chroma_store import ChromaStore
 
 

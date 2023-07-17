@@ -8,9 +8,7 @@ from transformers import (
     PreTrainedModel,
     PreTrainedTokenizerBase,
 )
-from zenml.materializers.base_materializer import BaseMaterializer
 from zenml.steps import StepContext
-
 
 FUNCTION_LOCATION_PREFIX = "steps.deployment_steps.fetch_model_step.fetch_model_step"
 

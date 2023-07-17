@@ -3,9 +3,9 @@ import json
 import os
 import time
 from typing import Any, Dict, List, Optional
+
 import requests
 import streamlit as st
-
 from zenml.integrations.seldon.model_deployers.seldon_model_deployer import (
     SeldonModelDeployer,
 )

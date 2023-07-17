@@ -1,10 +1,9 @@
 """Embed data step."""
 import pandas as pd
 from chromadb.utils import embedding_functions
+from utils.chroma_store import ChromaStore
 from zenml import step
 from zenml.logger import get_logger
-
-from utils.chroma_store import ChromaStore
 
 logger = get_logger(__name__)
 
@@ -16,9 +15,11 @@ def embed_data(
     """Embeds each row of the given DataFrame and uploads to the vector database.
 
     Args:
-        df (pd.DataFrame): Input data with column of text data.
+        df (pd.DataFrame): _description_
+        embed_model_type (str): _description_
+        data_version (str): _description_
+        collection_name (str): _description_
     """
-
     texts = df["text_scraped"].values
     src_urls = df["url"].values
 

@@ -1,18 +1,30 @@
 """ChromaDB vector store class."""
 import ipaddress
 import uuid
-from typing import Optional, Iterable, List
-from chromadb.api.types import EmbeddingFunction, CollectionMetadata
+from typing import Iterable, List, Optional
+
 import chromadb
+from chromadb.api.types import CollectionMetadata, EmbeddingFunction
 from chromadb.config import Settings
+
+MIN_COLLECTION_NAME_LENGTH = 3
+MAX_COLLECTION_NAME_LENGTH = 64
 
 
 class ChromaStore:
+    """ChromaStore class for ChromaDB vector store."""
+
     def __init__(
         self,
         chroma_server_hostname: str = "server.default",
         chroma_server_port: int = 8000,
     ) -> None:
+        """_summary_.
+
+        Args:
+            chroma_server_hostname (str, optional): _description_. Defaults to "server.default".
+            chroma_server_port (int, optional): _description_. Defaults to 8000.
+        """
         self._client = chromadb.Client(
             Settings(
                 chroma_api_impl="rest",
@@ -23,7 +35,7 @@ class ChromaStore:
         self._collection = None
 
     def validate_collection_name(self, collection_name: str) -> tuple[bool, str]:
-        """_summary_
+        """_summary_.
 
         Args:
             collection_name (str): _description_
@@ -32,7 +44,10 @@ class ChromaStore:
             tuple[bool, str]: _description_
         """
         # The length of the name must be between 3 and 63 characters.
-        if len(collection_name) > 64 or len(collection_name) < 3:
+        if (
+            len(collection_name) > MAX_COLLECTION_NAME_LENGTH
+            or len(collection_name) < MIN_COLLECTION_NAME_LENGTH
+        ):
             err_msg = f"The length of collection name in Chroma must be between 3 and 63 characters, got {len(collection_name)}"
             return False, err_msg
 
@@ -66,14 +81,15 @@ class ChromaStore:
         embedding_function: Optional[EmbeddingFunction] = None,
         metadata: Optional[CollectionMetadata] = None,
     ):
-        """_summary_
+        """_summary_.
 
         Args:
             collection_name (str): _description_
             embedding_function (Optional[EmbeddingFunction], optional): _description_. Defaults to None.
+            metadata (Optional[CollectionMetadata], optional): _description_. Defaults to None.
 
         Raises:
-            err_msg: _description_
+            ValueError: _description_
         """
         is_valid, err_msg = self.validate_collection_name(collection_name)
         if not is_valid:
@@ -87,7 +103,7 @@ class ChromaStore:
         )
 
     def list_collection_names(self) -> List[str]:
-        """_summary_
+        """_summary_.
 
         Returns:
             List[str]: _description_
@@ -103,7 +119,7 @@ class ChromaStore:
         texts: Iterable[str],
         metadatas: Optional[List[dict]] = None,
     ):
-        """_summary_
+        """_summary_.
 
         Args:
             collection_name (str): _description_
@@ -119,7 +135,7 @@ class ChromaStore:
         self._collection.upsert(documents=texts, ids=ids, metadatas=metadatas)
 
     def delete_collection(self, collection_name: str):
-        """_summary_
+        """_summary_.
 
         Args:
             collection_name (str): _description_
