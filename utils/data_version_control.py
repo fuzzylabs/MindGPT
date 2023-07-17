@@ -1,14 +1,14 @@
 """Data version control tools for interacting with DVC CLI."""
 import subprocess as sp
-from typing import Any, List
+from typing import List
 
 from config import PROJECT_ROOT_DIR
 from pygit2 import Repository  # type: ignore
 
 
-def get_active_branch_name() -> Any:
+def get_active_branch_name() -> str:
     """Get the name of the current active branch of the git tree."""
-    return Repository(PROJECT_ROOT_DIR).head.shorthand
+    return str(Repository(PROJECT_ROOT_DIR).head.shorthand)
 
 
 def pull_data() -> None:
@@ -70,8 +70,3 @@ def version_new_data(filename_roots: List[str]) -> None:
     dvc_files = [f"{fname}.csv.dvc" for fname in filename_roots]
     add_csv_files_to_dvc(csv_files)
     add_and_commit_dvc_files_to_git(dvc_files)
-
-
-def pull_data_consistent_with_git() -> None:
-    """Checkout the data consistent with the dcv files in the current commit."""
-    sp.run("dvc checkout", shell=True, cwd=PROJECT_ROOT_DIR)
