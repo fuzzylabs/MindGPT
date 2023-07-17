@@ -41,7 +41,6 @@ def run_deployment_pipeline() -> None:
 @click.option(
     "--prepare", "-p", is_flag=True, help="Run the data preparation pipeline."
 )
-@click.option("--deploy", "-d", is_flag=True, help="Run the deployment pipeline.")
 def main(scrape: bool, prepare: bool, deploy: bool) -> None:
     """Run all pipelines.
 
@@ -57,10 +56,6 @@ def main(scrape: bool, prepare: bool, deploy: bool) -> None:
     if prepare:
         logger.info("Running the data preparation pipeline.")
         run_data_preparation_pipeline()
-
-    if deploy:
-        logger.info("Running the deployment pipeline.")
-        run_deployment_pipeline()
 
 
 if __name__ == "__main__":

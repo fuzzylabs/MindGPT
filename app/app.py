@@ -37,23 +37,15 @@ def _get_prediction_endpoint() -> Optional[str]:
     Returns:
         Optional[str]: the url endpoint if it exists and is valid, None otherwise.
     """
-    try:
-        model_deployer = SeldonModelDeployer.get_active_model_deployer()
-
-        deployed_services = model_deployer.find_model_server(
-            pipeline_name=PIPELINE_NAME,
-            pipeline_step_name=PIPELINE_STEP,
-            model_name=MODEL_NAME,
-        )
-
-        return deployed_services[0].prediction_url
-    except Exception:
+    ingress_ip = os.environ.get("SELDON_INGRESS")
+    if ingress_ip is None:
         return None
+    return f"http://{ingress_ip}/seldon/matcha-seldon-workloads/llm/v2/models/transformer/infer"
 
 
 def _create_payload(
     messages: List[Dict[str, str]]
-) -> Dict[str, Dict[str, List[Dict[str, str]]]]:
+) -> Dict[str, List[Dict[str, str]]]:
     """Create a payload from the user input to send to the LLM model.
 
     Args:
@@ -66,7 +58,16 @@ def _create_payload(
     input_text = " ".join(
         f"{x.get('role', '')}: {x.get('content', '')}" for x in messages
     )
-    return {"data": {"ndarray": [{"text": str(input_text)}]}}
+    return {
+        "inputs": [
+            {
+                "name": "array_inputs",
+                "shape": [-1],
+                "datatype": "string",
+                "data": str(input_text)
+            }
+        ]
+    }
 
 
 def _get_predictions(
@@ -86,7 +87,8 @@ def _get_predictions(
         data=json.dumps(payload),
         headers={"Content-Type": "application/json"},
     )
-    return json.loads(response.text)["jsonData"]["predictions"][0]
+    data = json.loads(json.loads(response.text)["outputs"][0]["data"][0])
+    return data["summary_text"]
 
 
 def fetch_summary(prediction_endpoint: str, messages: List[Dict[str, str]]) -> str:
