@@ -5,7 +5,5 @@ steps:
       data_version: "v1.0"
   embed_data:
     enable_cache: True
-  upload_data_to_vector_db:
-    enable_cache: False
     parameters:
       data_version: "v1.0"
