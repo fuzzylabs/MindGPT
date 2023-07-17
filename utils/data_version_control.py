@@ -1,14 +1,14 @@
 """Data version control tools for interacting with DVC CLI."""
 import subprocess as sp
-from typing import Any, List
+from typing import List
 
 from config import PROJECT_ROOT_DIR
 from pygit2 import Repository  # type: ignore
 
 
-def get_active_branch_name() -> Any:
+def get_active_branch_name() -> str:
     """Get the name of the current active branch of the git tree."""
-    return Repository(PROJECT_ROOT_DIR).head.shorthand
+    return str(Repository(PROJECT_ROOT_DIR).head.shorthand)
 
 
 def pull_data() -> None:
