@@ -22,12 +22,12 @@ def version_data(
         debug_mode: If in debug mode, calls to this step won't push anything to the repository.
 
     """
-    version_new_data(filename_roots=filename_roots)
-
     if not debug_mode and get_active_branch_name() == "develop":
         raise RuntimeError(
             "Aborting data versioning. Pushing directly to develop is not allowed!"
         )
+
+    version_new_data(filename_roots=filename_roots)
 
     if not debug_mode:
         push_data()
