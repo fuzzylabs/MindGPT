@@ -70,8 +70,3 @@ def version_new_data(filename_roots: List[str]) -> None:
     dvc_files = [f"{fname}.csv.dvc" for fname in filename_roots]
     add_csv_files_to_dvc(csv_files)
     add_and_commit_dvc_files_to_git(dvc_files)
-
-
-def pull_data_consistent_with_git() -> None:
-    """Checkout the data consistent with the dcv files in the current commit."""
-    sp.run("dvc checkout", shell=True, cwd=PROJECT_ROOT_DIR)
