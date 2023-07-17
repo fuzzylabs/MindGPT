@@ -64,7 +64,7 @@ Optionally, the `chroma` directory downloaded to build a Docker image can be rem
 
 Line number 48 in [server-deployment.yml](./infrastructure/chroma_server_k8s/server-deployment.yaml#L48) should be updated to the name Docker image pushed to ACR, in this case it will be of format `<name-of-acr-registry>.azurecr.io/chroma-server`.
 
-Finally, we run kubernetes manifests to deploy Chroma server on AKS using following commands
+Finally, we run Kubernetes manifests to deploy Chroma server on AKS using following commands
 
 ```bash
 cd infrastructure/chroma_server_k8s
