@@ -45,7 +45,7 @@ spec:
               value: localhost
             - name: CLICKHOUSE_PORT
               value: "8123"
-          image: crshutest.azurecr.io/chroma-server
+          image: ghcr.io/chroma-core/chroma:0.3.29
           ports:
             - containerPort: 8000
           resources: {}
