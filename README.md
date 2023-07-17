@@ -33,18 +33,18 @@ The repository for this project is one method where you can monitor progress - w
 
 ## Embedding pipeline
 
-To run the zenml embedding pipeline, the resources required for running chromadb server on AKS and ACR for chromadb server image have to provisioned. `matcha` tool can help you in provisioning these resources.
+To run the Zenml embedding pipeline, the resources such as AKS and ACR have to provisioned. AKS is used running Chroma server on AKS and ACR is used to store Chroma server image. 
 
-Install `matcha-ml` library and provision resources using the same
+`matcha` tool can help you in provisioning these resources. Install `matcha-ml` library and provision resources using the same
 
 ```bash
 pip install matcha-ml
 matcha provision
 ```
 
-Before we start deploying chromadb server on AKS, we need to build the docker image for chromadb server. We build and push this chromadb server image to ACR.
+Before we start deploying Chroma server on AKS, we need to build the Docker image for Chroma server. We build and push this Chroma server image to ACR.
 
-> Note: There exists a [bug](https://github.com/chroma-core/chroma/issues/721) in the exisiting chromadb server image present on [ghcr](https://github.com/chroma-core/chroma/pkgs/container/chroma).
+> Note: There exists a [bug](https://github.com/chroma-core/chroma/issues/721) in the exisiting Chroma server image present on [ghcr](https://github.com/chroma-core/chroma/pkgs/container/chroma).
 
 ```bash
 acr_registry_uri=$(matcha get container-registry registry-url --output json | sed -n 's/.*"registry-url": "\(.*\)".*/\1/p')
@@ -60,11 +60,11 @@ docker build -t $acr_registry_uri/chroma-server:latest .
 docker push $acr_registry_uri/chroma-server:latest
 ```
 
-Optionally, the chroma directory downloaded to build a docker image can be removed since it's not longer required.
+Optionally, the `chroma` directory downloaded to build a Docker image can be removed since it's not longer required.
 
-Line numer 48 in [server-deployment.yml](./infrastructure/chroma_server_k8s/server-deployment.yaml#L48) should be updated to the name docker image pushed to ACR, in this case it will be of format `<name-of-acr-registry>.azurecr.io/chroma-server`.
+Line number 48 in [server-deployment.yml](./infrastructure/chroma_server_k8s/server-deployment.yaml#L48) should be updated to the name Docker image pushed to ACR, in this case it will be of format `<name-of-acr-registry>.azurecr.io/chroma-server`.
 
-Finally, we run kubernetes manifests to deploy chromadb server on AKS using following commands
+Finally, we run kubernetes manifests to deploy Chroma server on AKS using following commands
 
 ```bash
 cd infrastructure/chroma_server_k8s
