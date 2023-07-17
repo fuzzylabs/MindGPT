@@ -1,5 +1,5 @@
 """Scrape data from the NHS website."""
-import os.path
+import os
 import re
 from datetime import datetime
 from typing import Dict, List, Optional, Union
