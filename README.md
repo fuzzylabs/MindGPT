@@ -35,7 +35,7 @@ The repository for this project is one method where you can monitor progress - w
 
 To run the Zenml embedding pipeline, the resources such as AKS and ACR have to provisioned. AKS is used running Chroma server on AKS and ACR is used to store Chroma server image. 
 
-`matcha` tool can help you in provisioning these resources. Install `matcha-ml` library and provision resources using the same
+`matcha` tool can help you in provisioning these resources. Install `matcha-ml` library and provision resources using `matcha provision` command.
 
 ```bash
 pip install matcha-ml
