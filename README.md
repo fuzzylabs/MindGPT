@@ -33,7 +33,7 @@ The repository for this project is one method where you can monitor progress - w
 
 ## Embedding pipeline
 
-To run the zenml embedding pipeline, the resources required for running chromadb server on AKS have to provisioned. `matcha` tool can help you in provisioning these resources.
+To run the zenml embedding pipeline, the resources required for running chromadb server on AKS and ACR for chromadb server image have to provisioned. `matcha` tool can help you in provisioning these resources.
 
 Install `matcha-ml` library and provision resources using the same
 
@@ -42,7 +42,29 @@ pip install matcha-ml
 matcha provision
 ```
 
-Run kubernetes manifests to deploy chromadb server on AKS using following commands
+Before we start deploying chromadb server on AKS, we need to build the docker image for chromadb server. We build and push this chromadb server image to ACR.
+
+> Note: There exists a [bug](https://github.com/chroma-core/chroma/issues/721) in the exisiting chromadb server image present on [ghcr](https://github.com/chroma-core/chroma/pkgs/container/chroma).
+
+```bash
+acr_registry_uri=$(matcha get container-registry registry-url --output json | sed -n 's/.*"registry-url": "\(.*\)".*/\1/p')
+acr_registry_name=$(matcha get container-registry registry-name --output json | sed -n 's/.*"registry-name": "\(.*\)".*/\1/p')
+```
+
+```bash
+cd infrastructure/chroma_server_k8s
+git clone -b dockerfileChanges --single-branch https://github.com/petersolimine/chroma.git
+cd chroma
+az acr login --name $acr_registry_name
+docker build -t $acr_registry_uri/chroma-server:latest .
+docker push $acr_registry_uri/chroma-server:latest
+```
+
+Optionally, the chroma directory downloaded to build a docker image can be removed since it's not longer required.
+
+Line numer 48 in [server-deployment.yml](./infrastructure/chroma_server_k8s/server-deployment.yaml#L48) should be updated to the name docker image pushed to ACR, in this case it will be of format `<name-of-acr-registry>.azurecr.io/chroma-server`.
+
+Finally, we run kubernetes manifests to deploy chromadb server on AKS using following commands
 
 ```bash
 cd infrastructure/chroma_server_k8s
