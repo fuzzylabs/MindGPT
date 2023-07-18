@@ -85,7 +85,7 @@ class Scraper:
 
         df["timestamp"] = datetime.now()
 
-        df["uuid"] = df.apply(lambda row: uuid.uuid4(), axis=1)
+        df["uuid"] = df.apply(lambda row: str(uuid.uuid4()), axis=1)
 
         df = df[["uuid", "text_scraped", "timestamp", "url"]]  # Rearrange Columns
 

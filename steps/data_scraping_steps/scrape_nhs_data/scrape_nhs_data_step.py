@@ -88,7 +88,7 @@ class NHSMentalHealthScraper:
         return pd.DataFrame(
             [
                 {
-                    "uuid": uuid.uuid4(),
+                    "uuid": str(uuid.uuid4()),
                     "text_scraped": target.get_text(" "),
                     "timestamp": timestamp,
                     "url": self._url,
