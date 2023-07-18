@@ -80,6 +80,13 @@ class Scraper:
 
         Returns:
             pd.DataFrame: The created DataFrame with columns TextScraped, TimeStamp, URL, and ArchivedURL.
+                Index:
+                    RangeIndex
+                Columns:
+                    Name: uuid, dtype: object
+                    Name: text_scraped, dtype: object
+                    Name: timestamp, dtype: datetime64[ns]
+                    Name: url, dtype: object
         """
         df = pd.DataFrame(data.items(), columns=["url", "text_scraped"])
 
@@ -281,6 +288,13 @@ def scrape_mind_data() -> pd.DataFrame:
 
     Returns:
         pd.DataFrame: data scraped.
+            Index:
+                RangeIndex
+            Columns:
+                Name: uuid, dtype: object
+                Name: text_scraped, dtype: object
+                Name: timestamp, dtype: datetime64[ns]
+                Name: url, dtype: object
     """
     scraper = Scraper()
     data: Dict[str, str] = {}
