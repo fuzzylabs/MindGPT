@@ -8,6 +8,13 @@ from zenml.logger import get_logger
 logger = get_logger(__name__)
 
 
+EMBED_MODEL_MAP = {
+    "xl": "hkunlp/instructor-xl",
+    "large": "hkunlp/instructor-large",
+    "base": "hkunlp/instructor-large",
+}
+
+
 @step
 def embed_data(
     df: pd.DataFrame, embed_model_type: str, data_version: str, collection_name: str
@@ -15,21 +22,23 @@ def embed_data(
     """Embeds each row of the given DataFrame and uploads to the vector database.
 
     Args:
-        df (pd.DataFrame): _description_
-        embed_model_type (str): _description_
-        data_version (str): _description_
-        collection_name (str): _description_
-    """
-    texts = df["text_scraped"].values
-    src_urls = df["url"].values
+        df (pd.DataFrame): Input data frame to be embedded
+        embed_model_type (str): Name of embedding model to use
+        data_version (str): Data version of input dataset
+        collection_name (str): Name of collection for input dataset
 
-    model_name = None
-    if embed_model_type == "xl":
-        model_name = "hkunlp/instructor-xl"
-    elif embed_model_type == "large":
-        model_name = "hkunlp/instructor-large"
-    elif embed_model_type == "base":
-        model_name = "hkunlp/instructor-base"
+    Raises:
+        ValueError: if `embed_model_type` is not supported or invalid
+    """
+    uuids = df["uuid"].values.tolist()
+    texts = df["text_scraped"].values.tolist()
+    src_urls = df["url"].values.tolist()
+
+    model_name = EMBED_MODEL_MAP.get(embed_model_type, None)
+    if model_name is None:
+        raise ValueError(
+            f"{embed_model_type} is not supported. The list of supported models is {EMBED_MODEL_MAP.keys()}"
+        )
 
     # Create a embedding function
     ef = embedding_functions.InstructorEmbeddingFunction(model_name=model_name)
@@ -39,12 +48,10 @@ def embed_data(
         chroma_server_hostname="server.default", chroma_server_port=8000
     )
 
-    # Add text to a collection
-    chroma_client.get_or_create_collection(
-        collection_name=collection_name, embedding_function=ef
-    )
     chroma_client.add_texts(
         collection_name=collection_name,
         texts=texts,
+        ids=uuids,
         metadatas=[{"source": url, "data_version": data_version} for url in src_urls],
+        embedding_function=ef,
     )
