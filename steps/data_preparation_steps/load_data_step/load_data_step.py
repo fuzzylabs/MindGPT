@@ -34,7 +34,21 @@ def load_data() -> Output(mind_df=pd.DataFrame, nhs_df=pd.DataFrame):  # type: i
 
     Returns:
         mind_data (pd.DataFrame): Raw scraped data from the Mind website
+            Index:
+                RangeIndex
+            Columns:
+                Name: uuid, dtype: object
+                Name: text_scraped, dtype: object
+                Name: timestamp, dtype: datetime64[ns]
+                Name: url, dtype: object
         nhs_data (pd.DataFrame): Raw scraped data from the NHS website
+            Index:
+                RangeIndex
+            Columns:
+                Name: uuid, dtype: object
+                Name: text_scraped, dtype: object
+                Name: timestamp, dtype: datetime64[ns]
+                Name: url, dtype: object
     """
     mind_df, nhs_df = _read_data()
 
