@@ -50,3 +50,9 @@ def test_push_block_reached():
         )
         assert steps.data_versioning_steps.version_data_step.push_data.called
         assert steps.data_versioning_steps.version_data_step.version_new_data.called
+
+
+def test_error_raised_if_files_not_present():
+    """Test that the files_exist function is called and an appropriate error raised when called without files present."""
+    with pytest.raises(FileNotFoundError):
+        version_data("test_", ["test_", "test_0"], False)
