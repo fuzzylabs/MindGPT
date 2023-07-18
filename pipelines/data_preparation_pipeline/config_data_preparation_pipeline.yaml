@@ -1,6 +1,9 @@
 steps:
   load_data:
     enable_cache: False
+    parameters:
+      data_version: "data/first_version"
+      data_postfix: "raw"
   clean_data:
     enable_cache: False
   validate_data:

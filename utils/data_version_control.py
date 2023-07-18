@@ -3,6 +3,7 @@ import os
 import subprocess as sp
 from typing import List
 
+import git
 from config import DATA_DIR, PROJECT_ROOT_DIR
 from pygit2 import Repository  # type: ignore
 
@@ -98,3 +99,14 @@ def version_new_data(filename_roots: List[str]) -> None:
     dvc_files = [f"{fname}.csv.dvc" for fname in filename_roots]
     add_csv_files_to_dvc(csv_files)
     add_and_commit_dvc_files_to_git(dvc_files)
+
+
+def git_checkout_folder(tag_name: str, folder_name: str) -> None:
+    """Checkout a specified folder within a tagged commit or commit hash on Git.
+
+    Args:
+        tag_name (str): Git tag or commit hash to checkout.
+        folder_name (str): Folder name to checkout e.g. 'data'.
+    """
+    g = git.cmd.Git("")
+    g.checkout(tag_name, folder_name)
