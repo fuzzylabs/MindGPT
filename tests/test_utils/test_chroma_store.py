@@ -61,8 +61,8 @@ def test_validate_collection_name(collection_name: str, is_valid: bool):
     """
     store = ChromaStore()
     store._client = local_persist_api
-    success, _ = store.validate_collection_name(collection_name)
-    assert success == is_valid
+    validation = store.validate_collection_name(collection_name)
+    assert validation.is_valid == is_valid
 
 
 def test_get_or_create_collection(local_persist_api: API):
