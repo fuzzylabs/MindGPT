@@ -159,7 +159,9 @@ def test_create_dataframe(scraper: Scraper):
     )
 
     assert isinstance(result_df, pd.DataFrame)
-    assert {"text_scraped", "url", "timestamp"} == set(result_df.columns.tolist())
+    assert {"uuid", "text_scraped", "url", "timestamp"} == set(
+        result_df.columns.tolist()
+    )
     assert_frame_equal(
         result_df[["text_scraped", "url"]], expected_df[["text_scraped", "url"]]
     )
@@ -285,7 +287,6 @@ def test_scrape_mind_data():
                 "Test h2 text\nTest p text\nText li text",
                 "Test h2 text\nTest p text\nText li text",
             ],
-            "timestamp": ["20230625", "20230625", "20230625"],
             "url": [
                 "https://www.mind.org.uk/test_side_bar_object_1_url/",
                 "https://www.mind.org.uk/test_side_bar_exclude_me/",
@@ -295,7 +296,9 @@ def test_scrape_mind_data():
     )
 
     assert isinstance(result_df, pd.DataFrame)
-    assert {"text_scraped", "url", "timestamp"} == set(result_df.columns.tolist())
+    assert {"uuid", "text_scraped", "url", "timestamp"} == set(
+        result_df.columns.tolist()
+    )
     assert_frame_equal(
         result_df[["text_scraped", "url"]], expected_df[["text_scraped", "url"]]
     )
