@@ -150,7 +150,7 @@ def test_delete_collections(local_persist_api: API):
 
 
 def test_delete_collections_invalid_collection_name(local_persist_api: API):
-    """Test deleting a collection in chromadb using `delete_collection` function.
+    """Test deleting a collection using invalid collection name in chromadb using `delete_collection` function.
 
     Args:
         local_persist_api (API): Local chroma server for testing
@@ -158,6 +158,6 @@ def test_delete_collections_invalid_collection_name(local_persist_api: API):
     store = ChromaStore()
     store._client = local_persist_api
 
-    # Delete collection "test"
+    # Use invalid collection "dummy_test"
     with pytest.raises(ValueError):
         store.delete_collection("dummy_test")
