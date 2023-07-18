@@ -1,5 +1,5 @@
 """Scrape data from the NHS website."""
-import os.path
+import os
 import re
 import uuid
 from datetime import datetime

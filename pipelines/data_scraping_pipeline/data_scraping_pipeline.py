@@ -1,5 +1,6 @@
 """Data scraping pipeline."""
 from steps.data_scraping_steps import scrape_mind_data, scrape_nhs_data
+from steps.data_versioning_steps import version_data
 from zenml import pipeline
 from zenml.logger import get_logger
 
@@ -16,3 +17,4 @@ def data_scraping_pipeline() -> None:
     """
     nhs_data = scrape_nhs_data()  # NOQA
     mind_data = scrape_mind_data()  # NOQA
+    version_data()
