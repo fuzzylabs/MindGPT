@@ -1,6 +1,7 @@
 """Scrape data from the Mind charity website."""
 import os
 import time
+import uuid
 from datetime import datetime
 from typing import Dict, List, Optional
 
@@ -84,7 +85,9 @@ class Scraper:
 
         df["timestamp"] = datetime.now()
 
-        df = df[["text_scraped", "timestamp", "url"]]  # Rearrange Columns
+        df["uuid"] = df.apply(lambda row: uuid.uuid4(), axis=1)
+
+        df = df[["uuid", "text_scraped", "timestamp", "url"]]  # Rearrange Columns
 
         return df
 
