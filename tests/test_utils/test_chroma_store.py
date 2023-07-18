@@ -91,6 +91,10 @@ def test_add_texts(local_persist_api: API):
     Args:
         local_persist_api (API): Local chroma server for testing
     """
+    uuids = [
+        "bdd640fb-0667-4ad1-9c80-317fa3b1799d",
+        "bdd740fb-0667-4ad1-9c80-317fa3b1799d",
+    ]
     input_texts = ["a", "b"]
     expected_embeddings = [
         [float(1.0)] * 9 + [float(i)] for i in range(len(input_texts))
@@ -104,6 +108,7 @@ def test_add_texts(local_persist_api: API):
         collection_name="test",
         texts=input_texts,
         embedding_function=FakeEmbeddingFunction(),
+        ids=uuids,
     )
     data = store._collection.get(include=["embeddings", "documents"])
 
@@ -112,7 +117,7 @@ def test_add_texts(local_persist_api: API):
     assert data["embeddings"] == expected_embeddings
 
 
-def test_llist_collection_names(local_persist_api: API):
+def test_list_collection_names(local_persist_api: API):
     """Test listing collection in chromadb using `list_collection_names` function.
 
     Args:
@@ -140,3 +145,17 @@ def test_delete_collections(local_persist_api: API):
     assert "test" not in store.list_collection_names()
 
     assert "test1" in store.list_collection_names()
+
+
+def test_delete_collections_invalid_collection_name(local_persist_api: API):
+    """Test deleting a collection in chromadb using `delete_collection` function.
+
+    Args:
+        local_persist_api (API): Local chroma server for testing
+    """
+    store = ChromaStore()
+    store._client = local_persist_api
+
+    # Delete collection "test"
+    with pytest.raises(ValueError):
+        store.delete_collection("dummy_test")

@@ -1,6 +1,5 @@
 """ChromaDB vector store class."""
 import ipaddress
-import uuid
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -44,7 +43,7 @@ class ChromaStore:
         self._collection = None
 
     def validate_collection_name(self, collection_name: str) -> ValidateCollectionName:
-        """Validate collection name to be used in chromadb.
+        """Validate collection name to be used in ChromaDB.
 
         Args:
             collection_name (str): Name of collection
@@ -113,7 +112,7 @@ class ChromaStore:
         )
 
     def list_collection_names(self) -> List[str]:
-        """List all the collection names in chromadb.
+        """List all the collection names in ChromaDB.
 
         Returns:
             List[str]: List containing names of collections
@@ -127,7 +126,7 @@ class ChromaStore:
         self,
         collection_name: str,
         texts: List[str],
-        ids: Optional[List[str]] = None,
+        ids: List[str],
         metadatas: Optional[List[dict]] = None,
         embedding_function: Optional[EmbeddingFunction] = None,
     ) -> None:
@@ -135,29 +134,25 @@ class ChromaStore:
 
         Args:
             collection_name (str): Name of collection to use for adding documents
-            texts (List[str]): List of textd to be added to the collection
-            ids (Optional[List[str]], optional): Optional list of IDs for documents.
+            texts (List[str]): List of texts to be added to the collection
+            ids (List[str]): List of IDs for texts.
             metadatas (Optional[List[dict]], optional): Optional list of metadatas for documents. Defaults to None.
             embedding_function (Optional[EmbeddingFunction], optional): Embedding function to be used by collection. Defaults to None.
         """
         if self._collection is None:
             self._get_or_create_collection(collection_name, embedding_function)
 
-        # A unique id for each document
-        if ids is None:
-            ids = [str(uuid.uuid1()) for _ in texts]
-
         # Automatically tokenize and embed them with the collection's embedding function
         self._collection.upsert(documents=texts, ids=ids, metadatas=metadatas)
 
     def delete_collection(self, collection_name: str) -> None:
-        """Delete a collection from chroma database.
+        """Delete a collection from Chroma database.
 
         Args:
             collection_name (str): Name of collection
 
         Raises:
-            ValueError: if collection_name is not present in chroma server
+            ValueError: if collection_name is not present in Chroma server
         """
         if collection_name not in self.list_collection_names():
             raise ValueError(f"Collection name {collection_name} not found")
