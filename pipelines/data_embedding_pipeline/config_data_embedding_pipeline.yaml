@@ -7,3 +7,4 @@ steps:
     enable_cache: True
     parameters:
       data_version: "v1.0"
+      embed_model_type: "base"
