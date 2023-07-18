@@ -27,9 +27,9 @@ spec:
           resources: {}
           volumeMounts:
             - mountPath: /bitnami/clickhouse
-              name: clickhouse-claim0
+              name: chroma-clickhouse-data
             - mountPath: /backups
-              name: clickhouse-claim1
+              name: chroma-clickhouse-backups
             - mountPath: /etc/clickhouse-server/config.d#backup_disk.xml
               name: backup-disk-config
               subPath: backup_disk.xml
@@ -51,20 +51,20 @@ spec:
           resources: {}
           volumeMounts:
             - mountPath: /index_data
-              name: server-claim0
+              name: chroma-server-index
 
       restartPolicy: Always
 
       volumes:
-        - name: server-claim0
+        - name: chroma-server-index
           persistentVolumeClaim:
-            claimName: server-claim0
-        - name: clickhouse-claim0
+            claimName: chroma-server-index
+        - name: chroma-clickhouse-data
           persistentVolumeClaim:
-            claimName: clickhouse-claim0
-        - name: clickhouse-claim1
+            claimName: chroma-clickhouse-data
+        - name: chroma-clickhouse-backups
           persistentVolumeClaim:
-            claimName: clickhouse-claim1
+            claimName: chroma-clickhouse-backups
         - name: backup-disk-config
           configMap:
             name: clickhouse-config

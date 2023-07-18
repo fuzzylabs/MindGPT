@@ -2,8 +2,8 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   labels:
-    io.kompose.service: clickhouse-claim1
-  name: clickhouse-claim1
+    io.kompose.service: chroma-server-index
+  name: chroma-server-index
 spec:
   accessModes:
     - ReadWriteOnce
