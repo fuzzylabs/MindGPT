@@ -12,7 +12,7 @@ MAX_COLLECTION_NAME_LENGTH = 64
 
 
 @dataclass
-class ValidateCollectionName:
+class CollectionNameValidationOutcome:
     """Dataclass for validating class name."""
 
     is_valid: bool
@@ -42,14 +42,16 @@ class ChromaStore:
         )
         self._collection = None
 
-    def validate_collection_name(self, collection_name: str) -> ValidateCollectionName:
+    def validate_collection_name(
+        self, collection_name: str
+    ) -> CollectionNameValidationOutcome:
         """Validate collection name to be used in ChromaDB.
 
         Args:
             collection_name (str): Name of collection
 
         Returns:
-            ValidateCollectionName: Dataclass containing validation message and boolean for collection name
+            CollectionNameValidationOutcome: Dataclass containing validation message and boolean for collection name
         """
         # The length of the name must be between 3 and 63 characters.
         if (
@@ -57,7 +59,7 @@ class ChromaStore:
             or len(collection_name) < MIN_COLLECTION_NAME_LENGTH
         ):
             err_msg = f"The length of collection name in Chroma must be between 3 and 63 characters, got {len(collection_name)}"
-            return ValidateCollectionName(is_valid=False, err_msg=err_msg)
+            return CollectionNameValidationOutcome(is_valid=False, err_msg=err_msg)
 
         # The name must start and end with a lowercase letter or a digit
         if not (
@@ -65,12 +67,12 @@ class ChromaStore:
             and (collection_name[-1].islower() or collection_name[-1].isdigit())
         ):
             err_msg = f"The collection name must start and end with lowercase letter or a digit, got {collection_name}"
-            return ValidateCollectionName(is_valid=False, err_msg=err_msg)
+            return CollectionNameValidationOutcome(is_valid=False, err_msg=err_msg)
 
         # The name must not contain two consecutive dots.
         if ".." in collection_name:
             err_msg = f"The collection name must not contain two consecutive dots, got {collection_name}"
-            return ValidateCollectionName(is_valid=False, err_msg=err_msg)
+            return CollectionNameValidationOutcome(is_valid=False, err_msg=err_msg)
 
         # The name must not be a valid IP address
         try:
@@ -79,9 +81,9 @@ class ChromaStore:
             pass
         else:
             err_msg = f"The collection name must not be a valid IP address, got {collection_name}"
-            return ValidateCollectionName(is_valid=False, err_msg=err_msg)
+            return CollectionNameValidationOutcome(is_valid=False, err_msg=err_msg)
 
-        return ValidateCollectionName(is_valid=True, err_msg="")
+        return CollectionNameValidationOutcome(is_valid=True, err_msg="")
 
     def _get_or_create_collection(
         self,

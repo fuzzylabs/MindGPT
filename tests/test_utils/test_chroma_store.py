@@ -25,11 +25,11 @@ def local_persist_api() -> API:
     )
 
 
-class FakeEmbeddingFunction(EmbeddingFunction):
-    """Fake embedding class for testing."""
+class MockEmbeddingFunction(EmbeddingFunction):
+    """Mock embedding class for testing."""
 
     def __call__(self, texts: Documents) -> Embeddings:
-        """Calls the fake embedding function.
+        """Calls the mock embedding function.
 
         Args:
             texts (Documents): Documents to embed
@@ -75,14 +75,14 @@ def test_get_or_create_collection(local_persist_api: API):
     store._client = local_persist_api
 
     # Create collection "test"
-    store._get_or_create_collection("test", FakeEmbeddingFunction())
+    store._get_or_create_collection("test", MockEmbeddingFunction())
     assert store._collection.name == "test"
-    assert "test" in store.list_collection_names()
 
     # Create collection "test1"
-    store._get_or_create_collection("test1", FakeEmbeddingFunction())
+    store._get_or_create_collection("test1", MockEmbeddingFunction())
     assert store._collection.name == "test1"
-    assert "test1" in store.list_collection_names()
+
+    assert {"test", "test1"} == set(store.list_collection_names())
 
 
 def test_add_texts(local_persist_api: API):
@@ -107,10 +107,12 @@ def test_add_texts(local_persist_api: API):
     store.add_texts(
         collection_name="test",
         texts=input_texts,
-        embedding_function=FakeEmbeddingFunction(),
+        embedding_function=MockEmbeddingFunction(),
         ids=uuids,
     )
     data = store._collection.get(include=["embeddings", "documents"])
+
+    assert data
 
     assert data["documents"] == input_texts
 
@@ -127,7 +129,7 @@ def test_list_collection_names(local_persist_api: API):
     store._client = local_persist_api
 
     # Get list of all collections in chromadb
-    assert sorted(["test", "test1"]) == sorted(store.list_collection_names())
+    assert {"test", "test1"} == set(store.list_collection_names())
 
 
 def test_delete_collections(local_persist_api: API):
