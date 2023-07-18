@@ -52,7 +52,7 @@ def _create_payload(
         messages (List[Dict[str, str]]): List of previous messages from both the AI and user.
 
     Returns:
-        Dict[str, Dict[str, List[Dict[str, str]]]]: the payload to send in the correct format.
+        Dict[str, List[Dict[str, str]]]: the payload to send in the correct format.
     """
     # We currently just append all messages, this could be improved to append a summary of the conversation to the start of the current user message.
     input_text = " ".join(
