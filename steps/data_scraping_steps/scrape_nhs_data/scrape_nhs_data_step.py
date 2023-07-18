@@ -1,6 +1,7 @@
 """Scrape data from the NHS website."""
 import os.path
 import re
+import uuid
 from datetime import datetime
 from typing import Dict, List, Optional, Union
 
@@ -87,6 +88,7 @@ class NHSMentalHealthScraper:
         return pd.DataFrame(
             [
                 {
+                    "uuid": str(uuid.uuid4()),
                     "text_scraped": target.get_text(" "),
                     "timestamp": timestamp,
                     "url": self._url,
