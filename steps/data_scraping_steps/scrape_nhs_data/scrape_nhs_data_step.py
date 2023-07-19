@@ -1,6 +1,7 @@
 """Scrape data from the NHS website."""
-import os.path
+import os
 import re
+import uuid
 from datetime import datetime
 from typing import Dict, List, Optional, Union
 
@@ -80,13 +81,21 @@ class NHSMentalHealthScraper:
         """A method for scraping the text from target pages.
 
         Returns:
-            (DataFrame): a Pandas DataFrame with four columns ("text_scraped", "timestamp", "url") and a single record representing the results of the scrape.
+            pd.DataFrame: a Pandas DataFrame with four columns ("text_scraped", "timestamp", "url") and a single record representing the results of the scrape.
+                Index:
+                    RangeIndex
+                Columns:
+                    Name: uuid, dtype: object
+                    Name: text_scraped, dtype: object
+                    Name: timestamp, dtype: datetime64[ns]
+                    Name: url, dtype: object
         """
         timestamp = datetime.now()
         target = self._identify_target()
         return pd.DataFrame(
             [
                 {
+                    "uuid": str(uuid.uuid4()),
                     "text_scraped": target.get_text(" "),
                     "timestamp": timestamp,
                     "url": self._url,
@@ -125,7 +134,18 @@ class NHSMentalHealthScraper:
 
 @step
 def scrape_nhs_data() -> pd.DataFrame:
-    """A ZenML pipeline step for scraping the NHS Mental Health website."""
+    """A ZenML pipeline step for scraping the NHS Mental Health website.
+
+    Returns:
+        pd.DataFrame: a Pandas DataFrame with four columns ("text_scraped", "timestamp", "url") and a single record representing the results of the scrape.
+            Index:
+                RangeIndex
+            Columns:
+                Name: uuid, dtype: object
+                Name: text_scraped, dtype: object
+                Name: timestamp, dtype: datetime64[ns]
+                Name: url, dtype: object
+    """
     nhs_scraper = NHSMentalHealthScraper(
         url="https://www.nhs.uk/mental-health/",
         attributes={"class": "nhsuk-main-wrapper"},
