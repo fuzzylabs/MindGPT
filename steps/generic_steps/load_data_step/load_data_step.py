@@ -39,7 +39,14 @@ def load_data(data_version: str, data_postfix: str) -> Output(mind_df=pd.DataFra
     """
     git_checkout_folder(data_version, "data")
     pull_data()
-    mind_df = pd.read_csv(os.path.join(DATA_DIR, f"mind_data_{data_postfix}.csv"))
-    nhs_df = pd.read_csv(os.path.join(DATA_DIR, f"nhs_data_{data_postfix}.csv"))
+
+    try:
+        mind_df = pd.read_csv(os.path.join(DATA_DIR, f"mind_data_{data_postfix}.csv"))
+        nhs_df = pd.read_csv(os.path.join(DATA_DIR, f"nhs_data_{data_postfix}.csv"))
+    except OSError as e:
+        logger.error(
+            "Data does not exist. Make sure you have run the previous pipeline."
+        )
+        raise e
 
     return mind_df, nhs_df
