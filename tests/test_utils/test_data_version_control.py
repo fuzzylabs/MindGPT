@@ -53,3 +53,57 @@ def test_git_checkout_folder_raises_file_not_found_error_without_directory(
 
         with pytest.raises(FileNotFoundError):
             git_checkout_folder(tag_name="version1", folder_name="data")
+
+
+def test_git_checkout_folder_raises_vaue_error_invalid_tag(
+    directory_for_testing,
+):
+    """Test the git_checkout_folder function raises ValueError when the tag is invalid.
+
+    Args:
+        directory_for_testing (str): Path to testing directory.
+    """
+    data_path = os.path.join(directory_for_testing, "data")
+    os.mkdir(data_path)
+    with mock.patch(
+        "utils.data_version_control.git.cmd.Git"
+    ) as mock_git_command, mock.patch(
+        "utils.data_version_control._git_tag_exists"
+    ) as mock_git_tag_exists, mock.patch(
+        "utils.data_version_control._git_commit_hash_exists"
+    ) as mock_git_commit_hash_exists, mock.patch(
+        "utils.data_version_control.PROJECT_ROOT_DIR", directory_for_testing
+    ):
+        mock_git_command.return_value = mock.MagicMock()
+        mock_git_tag_exists.return_value = False
+        mock_git_commit_hash_exists.return_value = True
+
+        with pytest.raises(ValueError):
+            git_checkout_folder(tag_name="version1", folder_name="data")
+
+
+def test_git_checkout_folder_raises_vaue_error_invalid_commit(
+    directory_for_testing,
+):
+    """Test the git_checkout_folder function raises ValueError when the commit is invalid.
+
+    Args:
+        directory_for_testing (str): Path to testing directory.
+    """
+    data_path = os.path.join(directory_for_testing, "data")
+    os.mkdir(data_path)
+    with mock.patch(
+        "utils.data_version_control.git.cmd.Git"
+    ) as mock_git_command, mock.patch(
+        "utils.data_version_control._git_tag_exists"
+    ) as mock_git_tag_exists, mock.patch(
+        "utils.data_version_control._git_commit_hash_exists"
+    ) as mock_git_commit_hash_exists, mock.patch(
+        "utils.data_version_control.PROJECT_ROOT_DIR", directory_for_testing
+    ):
+        mock_git_command.return_value = mock.MagicMock()
+        mock_git_tag_exists.return_value = True
+        mock_git_commit_hash_exists.return_value = False
+
+        with pytest.raises(ValueError):
+            git_checkout_folder(commit_hash="abcdefg", folder_name="data")
