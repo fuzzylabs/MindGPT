@@ -16,5 +16,5 @@ def data_embedding_pipeline() -> None:
     """
     mind_df, nhs_df = fetch_data()
 
-    mind_df = embed_data(mind_df)
-    nhs_df = embed_data(nhs_df)
+    embed_data(mind_df, collection_name="mind_data")
+    embed_data(nhs_df, collection_name="nhs_data")
