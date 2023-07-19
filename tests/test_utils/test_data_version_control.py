@@ -8,7 +8,7 @@ from utils import (
     add_csv_files_to_dvc,
     git_checkout_folder,
 )
-from utils.data_version_control import _git_tag_exists
+from utils.data_version_control import _git_commit_hash_exists, _git_tag_exists
 
 
 def test_file_not_found_error_csv(directory_for_testing):
@@ -144,3 +144,35 @@ def test_git_tag_exists_returns_false_when_tag_does_not_exist(
         mock_git_repo_value.tags = ["tag1", "tag2"]
 
         assert not _git_tag_exists("tag3")
+
+
+def test_git_commit_hash_exists(
+    directory_for_testing,
+):
+    """Test the _git_commit_hash_exists function works as expected.
+
+    Args:
+        directory_for_testing (str): Path to testing directory.
+    """
+    with mock.patch("utils.data_version_control.git.Repo") as mock_git_repo:
+        mock_git_repo_value = mock.MagicMock()
+        mock_git_repo.return_value = mock_git_repo_value
+        mock_git_repo_value.iter_commits.return_value = ["hash1", "hash2"]
+
+        assert _git_commit_hash_exists("hash1")
+
+
+def test_git_commit_hash_exists_returns_false_when_tag_does_not_exist(
+    directory_for_testing,
+):
+    """Test the _git_commit_hash_exists returns false when a Git tag does not exist.
+
+    Args:
+        directory_for_testing (str): Path to testing directory.
+    """
+    with mock.patch("utils.data_version_control.git.Repo") as mock_git_repo:
+        mock_git_repo_value = mock.MagicMock()
+        mock_git_repo.return_value = mock_git_repo_value
+        mock_git_repo_value.iter_commits.return_value = ["hash1", "hash2"]
+
+        assert not _git_commit_hash_exists("hash3")
