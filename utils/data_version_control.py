@@ -115,11 +115,9 @@ def _git_tag_exists(tag_name: str) -> bool:
     """
     try:
         repo = git.Repo(PROJECT_ROOT_DIR)
-        repo.tags[tag_name]
-        return True
-    except Exception as e:
-        logger.error(f"Error tag does not exist: {e}")
-        # If the tag doesn't exist or other errors occur
+        return tag_name in repo.tags
+    except git.GitCommandError as e:
+        logger.error(f"Error tag '{tag_name}' does not exist: {e}")
         return False
 
 
@@ -134,11 +132,9 @@ def _git_commit_hash_exists(commit_hash: str) -> bool:
     """
     try:
         repo = git.Repo(PROJECT_ROOT_DIR)
-        repo.commit(commit_hash)
-        return True
+        return commit_hash in {str(c) for c in repo.iter_commits()}
     except Exception as e:
-        # If the commit doesn't exist or other errors occur
-        logger.error(f"Error commit hash does not exist: {e}")
+        logger.error(f"Error: Commit hash '{commit_hash}' does not exist: {e}")
         return False
 
 
@@ -158,7 +154,7 @@ def git_checkout_folder(
         ValueError: If the tag or commit hash is invalid or both are None.
     """
     if not os.path.exists(os.path.join(PROJECT_ROOT_DIR, folder_name)):
-        raise FileNotFoundError(f"Folder with the name {folder_name} does not exist.")
+        raise FileNotFoundError(f"Folder with the name '{folder_name}' does not exist.")
     if tag_name is not None and _git_tag_exists(tag_name):
         g = git.cmd.Git(PROJECT_ROOT_DIR)
         g.checkout(tag_name, folder_name)
