@@ -54,7 +54,9 @@ jobs:
       # Install dependencies if cache does not exist
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install
+        run: |
+          pip install "cython<3" && pip install --no-build-isolation "pyyaml==5.4.1"
+          poetry install
 
       - name: Setup ZenML
         run: poetry run zenml integration install huggingface pytorch seldon -y
