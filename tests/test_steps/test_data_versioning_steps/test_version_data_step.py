@@ -54,5 +54,8 @@ def test_push_block_reached():
 
 def test_error_raised_if_files_not_present():
     """Test that the files_exist function is called and an appropriate error raised when called without files present."""
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(FileNotFoundError), patch(
+        "steps.data_versioning_steps.version_data_step.get_active_branch_name"
+    ) as branch_name:
+        branch_name.return_value = "not_develop"
         version_data("test_", ["test_", "test_0"], False)
