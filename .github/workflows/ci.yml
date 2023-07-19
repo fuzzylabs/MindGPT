@@ -57,6 +57,10 @@ jobs:
         run: |
           pip install "cython<3" wheel && pip install --no-build-isolation "pyyaml==5.4.1"
           pip install "zenml==0.40.3"
+          sed '/tensorflow/d' pyproject.toml > pyproject2.toml
+          mv pyproject2.toml pyproject.toml
+          poetry lock
+          poetry install
 
       - name: Setup ZenML
         run: poetry run zenml integration install huggingface pytorch seldon -y
