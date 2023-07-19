@@ -52,6 +52,23 @@ def mock_project_root_directory(directory_for_testing: str):
         yield mock_project_root_dir
 
 
+@pytest.fixture(autouse=True)
+def mock_project_data_directory(directory_for_testing: str):
+    """Mocked DATA_DIR constant.
+
+    Args:
+        directory_for_testing (str): Mocked local directory.
+
+    Yields:
+        mock_data_dir (mock.MagicMock): Mocked data directory.
+    """
+    with mock.patch(
+        "steps.generic_steps.load_data_step.load_data_step.DATA_DIR",
+        os.path.join(directory_for_testing, "data"),
+    ) as mock_data_dir:
+        yield mock_data_dir
+
+
 def test_load_data(
     directory_for_testing: str,
     sample_scraping_data: Tuple[DataFrame, DataFrame],
