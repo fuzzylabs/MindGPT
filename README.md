@@ -42,6 +42,11 @@ pip install matcha-ml
 matcha provision
 ```
 
+After the provisioning completes, we will have on hand these resources:
+* Kubernetes cluster on Azure
+* Seldon Core installed on this cluster
+* Istio ingress installed on this cluster
+
 Before we start deploying Chroma server on AKS, we need to build the Docker image for Chroma server. We build and push this Chroma server image to ACR.
 
 > Note: There exists a [bug](https://github.com/chroma-core/chroma/issues/721) in the exisiting Chroma server image present on [ghcr](https://github.com/chroma-core/chroma/pkgs/container/chroma).
@@ -79,29 +84,53 @@ Run the embedding pipeline.
 python run.py -e
 ```
 
-## Deployment pipeline
+## Provision pre-trained LLM
+### Preparation
+To deploy a pre-trained LLM model, we first need a Kubernetes cluster with [Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/nav/getting-started.html). `matcha` tool can help you in provisioning the required resources. See the section above on how to set this up.
 
-> Note: Deployment pipeline requires an AKS cluster to provisioned.
+### Deploy model
 
-After the provisioning completes, run the following bash script
-
-```bash
-./setup_deploy.sh
-```
-
-Run the deployment pipeline.
+Apply the prepared kubernetes manifest to deploy the model:
 
 ```bash
-python run.py -d
+kubectl apply -f infrastructure/llm/seldondeployment.yaml
 ```
 
-You can take a look [here](docs/data-version-control.md) for guidance on interacting with data version control on this project.
+This will create a Seldon deployment, which consists of:
+* Pod, that loads the pipeline and the model for inference
+* Service and ingress routing, for accessing it from the outside
+
+### Query model
+You can get ingress IP with matcha:
+```
+matcha get model-deployer base-url
+```
+
+Full URL to query the model:
+```
+http://<INGRESS_IP>/seldon/matcha-seldon-workloads/llm/v2/models/transformer/infer
+```
+
+The expected payload structure is as follows:
+```json
+{
+    "inputs": [
+        {
+            "name": "array_inputs",
+            "shape": [-1],
+            "datatype": "string",
+            "data": "Some prompt text"
+        }
+    ]
+}
+```
 
 ## Streamlit Application
 
-Once the deployment has completed, run the following command to start a streamlit application.
+Once the deployment has completed, run the following command to start a streamlit application. Note: you need to first obtain the model ingress IP as described above. 
 
 ```bash
+export INGRESS_IP=<ingress IP from matcha>
 streamlit run app/app.py
 ```
 

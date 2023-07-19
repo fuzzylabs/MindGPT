@@ -47,8 +47,7 @@ def run_deployment_pipeline() -> None:
     "--prepare", "-p", is_flag=True, help="Run the data preparation pipeline."
 )
 @click.option("--embed", "-e", is_flag=True, help="Run the data embedding pipeline.")
-@click.option("--deploy", "-d", is_flag=True, help="Run the deployment pipeline.")
-def main(scrape: bool, prepare: bool, embed: bool, deploy: bool) -> None:
+def main(scrape: bool, prepare: bool, embed: bool) -> None:
     """Run all pipelines.
 
     Args:
@@ -68,10 +67,6 @@ def main(scrape: bool, prepare: bool, embed: bool, deploy: bool) -> None:
     if embed:
         logger.info("Running the data embedding pipeline.")
         run_data_embedding_pipeline()
-
-    if deploy:
-        logger.info("Running the deployment pipeline.")
-        run_deployment_pipeline()
 
 
 if __name__ == "__main__":
