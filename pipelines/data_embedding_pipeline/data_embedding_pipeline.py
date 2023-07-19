@@ -12,8 +12,8 @@ def data_embedding_pipeline() -> None:
     """The data embedding pipeline.
 
     Steps:
-        fetch_data: A ZenML step which loads the data from a specified DVC data version.
-        load_data: A ZenML step which embeds the text data into vectors and pushes to the vector database.
+        load_data: A ZenML step which loads the data from a specified DVC data version.
+        embed_data: A ZenML step which embeds the text data into vectors and pushes to the vector database.
     """
     mind_df, nhs_df = load_data()
 
