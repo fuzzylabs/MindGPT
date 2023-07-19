@@ -80,7 +80,14 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
         data (pd.DataFrame): The scraped data.
 
     Returns:
-        The cleaned data in the new format described above.
+        pd.DataFrame: The cleaned data in the new format described above.
+            Index:
+                RangeIndex
+            Columns:
+                Name: uuid, dtype: object
+                Name: text_scraped, dtype: object
+                Name: timestamp, dtype: datetime64[ns]
+                Name: url, dtype: object
     """
     data = data.dropna().copy()
 
