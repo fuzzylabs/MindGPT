@@ -1,6 +1,5 @@
-"""Conftest for the data preparation steps."""
+"""Conftest for the generic steps."""
 from typing import Tuple
-from unittest.mock import MagicMock, patch
 
 import pytest
 from pandas import DataFrame
@@ -29,18 +28,3 @@ def sample_scraping_data() -> Tuple[DataFrame, DataFrame]:
             }
         ),
     )
-
-
-@pytest.fixture
-def mocked_read_data(sample_scraping_data: Tuple[DataFrame, DataFrame]) -> MagicMock:
-    """Mocked _read_data function from the load_data step.
-
-    Args:
-        sample_scraping_data: sample data which is used as the return value of the mocked function.
-
-    Yields:
-        MagicMock: the mocked function.
-    """
-    with patch(f"{LOAD_DATA_STEP}._read_data") as read_data:
-        read_data.return_value = sample_scraping_data
-        yield read_data
