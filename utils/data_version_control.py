@@ -116,6 +116,8 @@ def git_checkout_folder(
         commit_hash (Optional[str]): Git commit hash to checkout.
         folder_name (str): Folder name to checkout e.g. 'data'.
     """
+    if not os.path.exists(os.path.join(PROJECT_ROOT_DIR, folder_name)):
+        raise FileNotFoundError(f"Folder with the name {folder_name} does not exist.")
     if tag_name is not None and git_tag_exists(tag_name):
         g = git.cmd.Git(PROJECT_ROOT_DIR)
         g.checkout(tag_name, folder_name)
