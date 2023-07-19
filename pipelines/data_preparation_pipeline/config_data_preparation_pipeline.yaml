@@ -5,3 +5,8 @@ steps:
     enable_cache: False
   validate_data:
     enable_cache: False
+  version_data:
+    parameters:
+      data_version_name: "first_version"
+      filename_roots: ["mind_data_validated", "nhs_data_validated"]
+      debug_mode: True

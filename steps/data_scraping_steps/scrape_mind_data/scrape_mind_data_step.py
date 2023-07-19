@@ -1,6 +1,7 @@
 """Scrape data from the Mind charity website."""
 import os
 import time
+import uuid
 from datetime import datetime
 from typing import Dict, List, Optional
 
@@ -79,12 +80,21 @@ class Scraper:
 
         Returns:
             pd.DataFrame: The created DataFrame with columns TextScraped, TimeStamp, URL, and ArchivedURL.
+                Index:
+                    RangeIndex
+                Columns:
+                    Name: uuid, dtype: object
+                    Name: text_scraped, dtype: object
+                    Name: timestamp, dtype: datetime64[ns]
+                    Name: url, dtype: object
         """
         df = pd.DataFrame(data.items(), columns=["url", "text_scraped"])
 
         df["timestamp"] = datetime.now()
 
-        df = df[["text_scraped", "timestamp", "url"]]  # Rearrange Columns
+        df["uuid"] = df.apply(lambda row: str(uuid.uuid4()), axis=1)
+
+        df = df[["uuid", "text_scraped", "timestamp", "url"]]  # Rearrange Columns
 
         return df
 
@@ -278,6 +288,13 @@ def scrape_mind_data() -> pd.DataFrame:
 
     Returns:
         pd.DataFrame: data scraped.
+            Index:
+                RangeIndex
+            Columns:
+                Name: uuid, dtype: object
+                Name: text_scraped, dtype: object
+                Name: timestamp, dtype: datetime64[ns]
+                Name: url, dtype: object
     """
     scraper = Scraper()
     data: Dict[str, str] = {}

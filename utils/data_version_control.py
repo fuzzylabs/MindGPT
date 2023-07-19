@@ -1,14 +1,32 @@
 """Data version control tools for interacting with DVC CLI."""
+import os
 import subprocess as sp
-from typing import Any, List
+from typing import List
 
-from config import PROJECT_ROOT_DIR
+from config import DATA_DIR, PROJECT_ROOT_DIR
 from pygit2 import Repository  # type: ignore
 
 
-def get_active_branch_name() -> Any:
+def files_exist(filepaths: List[str], error_message: str) -> bool:
+    """A function for checking files exist, and returning an interpretable error message.
+
+    Arguments:
+        filepaths (List[str]): A list of filepaths.
+        error_message (str): The error message to show in the event a file does not exist.
+
+    Returns:
+        True if all files exist.
+    """
+    files_present = [(fname, os.path.isfile(fname)) for fname in filepaths]
+    for fname, exists in files_present:
+        if not exists:
+            raise FileNotFoundError(f"{error_message}: {fname} does not exist.")
+    return all([exists for _, exists in files_present])
+
+
+def get_active_branch_name() -> str:
     """Get the name of the current active branch of the git tree."""
-    return Repository(PROJECT_ROOT_DIR).head.shorthand
+    return str(Repository(PROJECT_ROOT_DIR).head.shorthand)
 
 
 def pull_data() -> None:
@@ -27,8 +45,12 @@ def add_csv_files_to_dvc(filenames: List[str]) -> None:
     Args:
         filenames: .csv files to be added to data version control
     """
-    files = "".join(f"data/{fname} " for fname in filenames)
-    sp.run(f"dvc add {files}", shell=True, cwd=PROJECT_ROOT_DIR)
+    if files_exist(
+        filepaths=[os.path.join(DATA_DIR, filename) for filename in filenames],
+        error_message="Cannot add .csv files to dvc",
+    ):
+        files = "".join(f"data/{fname} " for fname in filenames)
+        sp.run(f"dvc add {files}", shell=True, cwd=PROJECT_ROOT_DIR)
 
 
 def add_and_commit_dvc_files_to_git(filenames: List[str]) -> None:
@@ -37,11 +59,17 @@ def add_and_commit_dvc_files_to_git(filenames: List[str]) -> None:
     Args:
         filenames: The .dvc filenames.
     """
-    files = "".join(f"data/{fname} " for fname in filenames)
-    sp.run(f"git add {files}", shell=True, cwd=PROJECT_ROOT_DIR)
-    sp.run(
-        f'git commit {files} -m "Update dvc files"', shell=True, cwd=PROJECT_ROOT_DIR
-    )
+    if files_exist(
+        filepaths=[os.path.join(DATA_DIR, filename) for filename in filenames],
+        error_message="Cannot add .dvc files to git",
+    ):
+        files = "".join(f"data/{fname} " for fname in filenames)
+        sp.run(f"git add {files}", shell=True, cwd=PROJECT_ROOT_DIR)
+        sp.run(
+            f'git commit {files} -m "Update dvc files"',
+            shell=True,
+            cwd=PROJECT_ROOT_DIR,
+        )
 
 
 def push_and_tag_dvc_changes_to_git(tag: str) -> None:
@@ -70,8 +98,3 @@ def version_new_data(filename_roots: List[str]) -> None:
     dvc_files = [f"{fname}.csv.dvc" for fname in filename_roots]
     add_csv_files_to_dvc(csv_files)
     add_and_commit_dvc_files_to_git(dvc_files)
-
-
-def pull_data_consistent_with_git() -> None:
-    """Checkout the data consistent with the dcv files in the current commit."""
-    sp.run("dvc checkout", shell=True, cwd=PROJECT_ROOT_DIR)
