@@ -55,7 +55,7 @@ jobs:
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
-          pip install "cython<3" && pip install --no-build-isolation "pyyaml==5.4.1"
+          pip install "cython<3" wheel && pip install --no-build-isolation "pyyaml==5.4.1"
           poetry install
 
       - name: Setup ZenML
