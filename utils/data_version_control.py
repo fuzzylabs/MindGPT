@@ -1,10 +1,14 @@
 """Data version control tools for interacting with DVC CLI."""
 import os
 import subprocess as sp
-from typing import List
+from typing import List, Optional
 
+import git
 from config import DATA_DIR, PROJECT_ROOT_DIR
 from pygit2 import Repository  # type: ignore
+from zenml.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def files_exist(filepaths: List[str], error_message: str) -> bool:
@@ -98,3 +102,64 @@ def version_new_data(filename_roots: List[str]) -> None:
     dvc_files = [f"{fname}.csv.dvc" for fname in filename_roots]
     add_csv_files_to_dvc(csv_files)
     add_and_commit_dvc_files_to_git(dvc_files)
+
+
+def _git_tag_exists(tag_name: str) -> bool:
+    """Checks for the existance of a given Git tag name.
+
+    Args:
+        tag_name (str): Name of tag to check existence.
+
+    Returns:
+        bool: True, if Git tag exists. False otherwise.
+    """
+    try:
+        repo = git.Repo(PROJECT_ROOT_DIR)
+        return tag_name in repo.tags
+    except git.GitCommandError as e:
+        logger.error(f"Error tag '{tag_name}' does not exist: {e}")
+        return False
+
+
+def _git_commit_hash_exists(commit_hash: str) -> bool:
+    """Check for commit hash existence.
+
+    Args:
+        commit_hash (str): Commit hash string.
+
+    Returns:
+        bool: True, if commit hash exists. False otherwise.
+    """
+    try:
+        repo = git.Repo(PROJECT_ROOT_DIR)
+        return commit_hash in {str(c) for c in repo.iter_commits()}
+    except Exception as e:
+        logger.error(f"Error: Commit hash '{commit_hash}' does not exist: {e}")
+        return False
+
+
+def git_checkout_folder(
+    tag_name: Optional[str] = None,
+    commit_hash: Optional[str] = None,
+    folder_name: str = "data",
+) -> None:
+    """Checkout a specified folder within a tagged commit or commit hash on Git.
+
+    Args:
+        tag_name (Optional[str]): Git tag to checkout.
+        commit_hash (Optional[str]): Git commit hash to checkout.
+        folder_name (str): Folder name to checkout e.g. 'data'.
+
+    Raises:
+        ValueError: If the tag or commit hash is invalid or both are None.
+    """
+    if not os.path.exists(os.path.join(PROJECT_ROOT_DIR, folder_name)):
+        raise FileNotFoundError(f"Folder with the name '{folder_name}' does not exist.")
+    if tag_name is not None and _git_tag_exists(tag_name):
+        g = git.cmd.Git(PROJECT_ROOT_DIR)
+        g.checkout(tag_name, folder_name)
+    elif commit_hash is not None and _git_commit_hash_exists(commit_hash):
+        g = git.cmd.Git(PROJECT_ROOT_DIR)
+        g.checkout(commit_hash, folder_name)
+    else:
+        raise ValueError("Error, you must specify a valid tag or commit hash.")
