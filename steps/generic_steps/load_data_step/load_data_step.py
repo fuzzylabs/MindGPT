@@ -20,8 +20,22 @@ def load_data(data_version: str, data_postfix: str) -> Output(mind_df=pd.DataFra
         data_postfix (str): Postfix to data 'raw' or 'validated'.
 
     Returns:
-        mind_data (pd.DataFrame): Data from the Mind website
-        nhs_data (pd.DataFrame): Data from the NHS website
+        mind_data (pd.DataFrame): Data from the Mind website.
+            Index:
+                RangeIndex
+            Columns:
+                Name: uuid, dtype: object
+                Name: text_scraped, dtype: object
+                Name: timestamp, dtype: datetime64[ns]
+                Name: url, dtype: object
+        nhs_data (pd.DataFrame): Data from the NHS website.
+            Index:
+                RangeIndex
+            Columns:
+                Name: uuid, dtype: object
+                Name: text_scraped, dtype: object
+                Name: timestamp, dtype: datetime64[ns]
+                Name: url, dtype: object
     """
     git_checkout_folder(data_version, "data")
     pull_data()
