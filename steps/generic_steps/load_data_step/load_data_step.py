@@ -3,7 +3,7 @@ import os
 
 import pandas as pd
 from config import DATA_DIR
-from utils.data_version_control import git_checkout_folder, pull_data
+from utils.data_version_control import files_exist, git_checkout_folder, pull_data
 from zenml import step
 from zenml.logger import get_logger
 from zenml.steps import Output
@@ -37,9 +37,18 @@ def load_data(data_version: str, data_postfix: str) -> Output(mind_df=pd.DataFra
                 Name: timestamp, dtype: datetime64[ns]
                 Name: url, dtype: object
     """
-    git_checkout_folder(data_version, "data")
+    git_checkout_folder(tag_name=data_version, folder_name="data")
     pull_data()
-    mind_df = pd.read_csv(os.path.join(DATA_DIR, f"mind_data_{data_postfix}.csv"))
-    nhs_df = pd.read_csv(os.path.join(DATA_DIR, f"nhs_data_{data_postfix}.csv"))
+
+    mind_file_path = os.path.join(DATA_DIR, f"mind_data_{data_postfix}.csv")
+    nhs_file_path = os.path.join(DATA_DIR, f"nhs_data_{data_postfix}.csv")
+
+    files_exist(
+        [mind_file_path, nhs_file_path],
+        error_message="Required CSV files do not exist in 'data' folder, ensure the previous pipeline has been run.",
+    )
+
+    mind_df = pd.read_csv(mind_file_path)
+    nhs_df = pd.read_csv(nhs_file_path)
 
     return mind_df, nhs_df
