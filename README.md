@@ -77,7 +77,7 @@ The expected payload structure is as follows:
             "name": "array_inputs",
             "shape": [-1],
             "datatype": "string",
-            "data": "String to summarize"
+            "data": "Some prompt text"
         }
     ]
 }
