@@ -55,12 +55,12 @@ jobs:
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
-          pip install "cython<3" wheel && pip install --no-build-isolation "pyyaml==5.4.1"
-          pip install "zenml==0.40.3"
           sed '/zenml/d' pyproject.toml > pyproject2.toml
           mv pyproject2.toml pyproject.toml
           poetry lock
           poetry install
+          pip install "cython<3" wheel && pip install --no-build-isolation "pyyaml==5.4.1"
+          pip install "zenml==0.40.3"
 
       - name: Setup ZenML
         run: poetry run zenml integration install huggingface pytorch seldon -y
