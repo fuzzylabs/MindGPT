@@ -153,6 +153,9 @@ def git_checkout_folder(
         tag_name (Optional[str]): Git tag to checkout.
         commit_hash (Optional[str]): Git commit hash to checkout.
         folder_name (str): Folder name to checkout e.g. 'data'.
+
+    Raises:
+        ValueError: If the tag or commit hash is invalid or both are None.
     """
     if not os.path.exists(os.path.join(PROJECT_ROOT_DIR, folder_name)):
         raise FileNotFoundError(f"Folder with the name {folder_name} does not exist.")
@@ -163,4 +166,4 @@ def git_checkout_folder(
         g = git.cmd.Git(PROJECT_ROOT_DIR)
         g.checkout(commit_hash, folder_name)
     else:
-        logger.error("Error, you must specify a valid tag or commit hash.")
+        raise ValueError("Error, you must specify a valid tag or commit hash.")
