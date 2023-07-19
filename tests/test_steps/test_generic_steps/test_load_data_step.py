@@ -37,22 +37,6 @@ def mock_pull_data():
 
 
 @pytest.fixture(autouse=True)
-def mock_project_root_directory(directory_for_testing: str):
-    """Mocked PROJECT_ROOT_DIR constant.
-
-    Args:
-        directory_for_testing (str): Mocked local directory.
-
-    Yields:
-        mock_project_root_dir (mock.MagicMock): Mocked directory.
-    """
-    with mock.patch(
-        "utils.data_version_control.PROJECT_ROOT_DIR", directory_for_testing
-    ) as mock_project_root_dir:
-        yield mock_project_root_dir
-
-
-@pytest.fixture(autouse=True)
 def mock_project_data_directory(directory_for_testing: str):
     """Mocked DATA_DIR constant.
 
