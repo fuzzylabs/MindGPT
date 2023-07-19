@@ -2,19 +2,32 @@
 import json
 import os
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import requests
 import streamlit as st
+from chroma_store import ChromaStore
+from chromadb.api.types import EmbeddingFunction
+from chromadb.utils import embedding_functions
+
+# Setup for chroma vector store
+CHROMA_SERVER_HOST_NAME = "localhost"  # "server.default"
+CHROMA_SERVER_PORT = 8000
+DEFAULT_EMBED_MODEL = "base"  # ["base", "large", "xl"]
+COLLECTION_NAMES = ["mind_data", "nhs_data"]
+N_CLOSEST_MATCHES = 5
+EMBED_MODEL_MAP = {
+    "xl": "hkunlp/instructor-xl",
+    "large": "hkunlp/instructor-large",
+    "base": "hkunlp/instructor-large",
+}
 
 # Paragraph from https://www.nhs.uk/mental-health/conditions/depression-in-adults/overview/
 DEFAULT_CONTEXT = """Most people experience feelings of stress, anxiety or low mood during difficult times.
 A low mood may improve after a short period of time, rather than being a sign of depression."""
 
-PIPELINE_NAME = "deployment_pipeline"
-PIPELINE_STEP = "seldon_llm_model_deployer_step"
-MODEL_NAME = "seldon-llm-custom-model"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 st.set_page_config(
     page_title="MindGPT",
@@ -44,6 +57,75 @@ def _get_prediction_endpoint() -> Optional[str]:
     return f"http://{ingress_ip}/seldon/matcha-seldon-workloads/llm/v2/models/transformer/infer"
 
 
+@st.cache_data(show_spinner=False)
+def _get_embedding_function(embed_model_type: str) -> Union[EmbeddingFunction, None]:
+    """_summary_
+
+    Args:
+        embed_model_type (str): _description_
+
+    Returns:
+        Union[EmbeddingFunction, None]: _description_
+    """
+    model_name = EMBED_MODEL_MAP.get(embed_model_type, None)
+    if model_name is None:
+        return None
+    # Create a embedding function
+    return embedding_functions.InstructorEmbeddingFunction(model_name=model_name)
+
+
+def connect_vector_store(chroma_server_host: str, chroma_server_port: int):
+    """_summary_.
+
+    Args:
+        chroma_server_host (str): _description_
+        chroma_server_port (int): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    try:
+        # Connect to vector store
+        chroma_client = ChromaStore(
+            chroma_server_hostname=chroma_server_host,
+            chroma_server_port=chroma_server_port,
+        )
+        return chroma_client
+    except Exception:
+        return None
+
+
+def query_vector_store(
+    chroma_client,
+    query_text: str,
+    collection_name: str,
+    n_results: int,
+    embedding_function: EmbeddingFunction,
+) -> str:
+    """_summary_
+
+    Args:
+        chroma_client (_type_): _description_
+        query_text (str): _description_
+        collection_name (str): _description_
+        n_results (int): _description_
+        embedding_function (EmbeddingFunction): _description_
+
+    Returns:
+        str: _description_
+    """
+    result_dict = chroma_client.query_collection(
+        collection_name=collection_name,
+        query_texts=query_text,
+        n_results=n_results,
+        embedding_function=embedding_function,
+    )
+    print(result_dict["documents"])
+    documents = " ".join(result_dict["documents"][0])
+    print(documents)
+    return documents
+
+
 def _create_payload(messages: List[Dict[str, str]]) -> Dict[str, List[Dict[str, str]]]:
     """Create a payload from the user input to send to the LLM model.
 
@@ -54,9 +136,8 @@ def _create_payload(messages: List[Dict[str, str]]) -> Dict[str, List[Dict[str, 
         Dict[str, List[Dict[str, str]]]: the payload to send in the correct format.
     """
     template = "Context: {context}\n\nQuestion: {question}\n\n"
-    input_text = template.format(
-        question=messages[-1]["content"], context=DEFAULT_CONTEXT
-    )
+    context = messages[-1].get("context", DEFAULT_CONTEXT)
+    input_text = template.format(question=messages[-1]["query"], context=context)
 
     return {
         "inputs": [
@@ -123,6 +204,7 @@ def show_disclaimer() -> bool:
     return accept
 
 
+# TODO: Remove chat history feature
 def main() -> None:
     """Main streamlit app function."""
     if "accept" not in st.session_state:
@@ -139,29 +221,54 @@ def main() -> None:
 
         for message in st.session_state.messages:
             with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+                st.markdown(message["query"])
 
         if prompt := st.chat_input("Enter a question"):
             # Display user message in chat message container
             with st.chat_message("user"):
                 st.markdown(prompt)
-            # Add user message to chat history
-            st.session_state.messages.append({"role": "user", "content": prompt})
 
+            # Add user message to chat history
+            st.session_state.messages.append({"role": "user", "query": prompt})
+
+            # Get seldon endpoint
             prediction_endpoint = _get_prediction_endpoint()
 
-            if prediction_endpoint is None:
+            # Get vector store client
+            chroma_client = connect_vector_store(
+                chroma_server_host=CHROMA_SERVER_HOST_NAME,
+                chroma_server_port=CHROMA_SERVER_PORT,
+            )
+            embed_function = _get_embedding_function(DEFAULT_EMBED_MODEL)
+
+            if prediction_endpoint is None or chroma_client is None:
                 st.session_state.error_placeholder.error(
                     "MindGPT is not currently reachable, please try again later.",
                     icon="🚨",
                 )
             else:
                 with st.chat_message("assistant"):
-                    message_placeholder = st.empty()
                     full_response = ""
+                    message_placeholder = st.empty()
+
+                    # Query vector store
+                    context = query_vector_store(
+                        chroma_client=chroma_client,
+                        query_text=prompt,
+                        collection_name="mind_data",
+                        n_results=N_CLOSEST_MATCHES,
+                        embedding_function=embed_function,
+                    )
+
+                    # Add context to chat history
+                    current_message = st.session_state.messages[-1]
+                    current_message["context"] = context
+
+                    # Query LLM by passing query and context
                     assistant_response = fetch_summary(
                         prediction_endpoint, st.session_state.messages
                     )
+
                     # Simulate stream of response with milliseconds delay
                     for chunk in assistant_response.split():
                         full_response += chunk + " "
@@ -172,7 +279,7 @@ def main() -> None:
 
                     # Add assistant response to chat history
                     st.session_state.messages.append(
-                        {"role": "assistant", "content": full_response}
+                        {"role": "assistant", "query": full_response}
                     )
 
 

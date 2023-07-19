@@ -134,19 +134,6 @@ class ChromaStore:
         embedding_function: Optional[EmbeddingFunction] = None,
         **kwargs,
     ):
-        """_summary_
-
-        Args:
-            collection_name (str): _description_
-            query_texts (Optional[List[str]], optional): _description_. Defaults to None.
-            n_results (int, optional): _description_. Defaults to DEFAULT_N_RESULTS.
-            where (Optional[Dict[str, str]], optional): _description_. Defaults to None.
-            embedding_function (Optional[EmbeddingFunction], optional): _description_. Defaults to None.
-
-        Returns:
-            _type_: _description_
-        """
-        # TODO: Check if embedding function matches to already created collection
         if self._collection is None:
             self._get_or_create_collection(collection_name, embedding_function)
 

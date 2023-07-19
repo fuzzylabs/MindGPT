@@ -3,6 +3,7 @@
         <default>
             <allow_experimental_lightweight_delete>1</allow_experimental_lightweight_delete>
             <mutations_sync>1</mutations_sync>
+            <max_query_size>100000000</max_query_size>
         </default>
     </profiles>
 </clickhouse>
