@@ -8,6 +8,7 @@ from utils import (
     add_csv_files_to_dvc,
     git_checkout_folder,
 )
+from utils.data_version_control import _git_tag_exists
 
 
 def test_file_not_found_error_csv(directory_for_testing):
@@ -107,3 +108,39 @@ def test_git_checkout_folder_raises_vaue_error_invalid_commit(
 
         with pytest.raises(ValueError):
             git_checkout_folder(commit_hash="abcdefg", folder_name="data")
+
+
+def test_git_tag_exists(
+    directory_for_testing,
+):
+    """Test the _git_tag_exists function works as expected.
+
+    Args:
+        directory_for_testing (str): Path to testing directory.
+    """
+    data_path = os.path.join(directory_for_testing, "data")
+    os.mkdir(data_path)
+    with mock.patch("utils.data_version_control.git.Repo") as mock_git_repo:
+        mock_git_repo_value = mock.MagicMock()
+        mock_git_repo.return_value = mock_git_repo_value
+        mock_git_repo_value.tags = ["tag1", "tag2"]
+
+        assert _git_tag_exists("tag2")
+
+
+def test_git_tag_exists_returns_false_when_tag_does_not_exist(
+    directory_for_testing,
+):
+    """Test the _git_tag_exists returns false when a Git tag does not exist.
+
+    Args:
+        directory_for_testing (str): Path to testing directory.
+    """
+    data_path = os.path.join(directory_for_testing, "data")
+    os.mkdir(data_path)
+    with mock.patch("utils.data_version_control.git.Repo") as mock_git_repo:
+        mock_git_repo_value = mock.MagicMock()
+        mock_git_repo.return_value = mock_git_repo_value
+        mock_git_repo_value.tags = ["tag1", "tag2"]
+
+        assert not _git_tag_exists("tag3")
