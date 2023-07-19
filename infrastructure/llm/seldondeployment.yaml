@@ -12,7 +12,7 @@ spec:
       parameters:
       - name: task
         type: STRING
-        value: summarization
+        value: text2text-generation
       - name: pretrained_model
         type: STRING
         value: google/flan-t5-small

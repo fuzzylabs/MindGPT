@@ -6,9 +6,9 @@ from typing import Any, Dict, List, Optional
 import requests
 import streamlit as st
 
-from zenml.integrations.seldon.model_deployers.seldon_model_deployer import (
-    SeldonModelDeployer,
-)
+# Paragraph from https://www.nhs.uk/mental-health/conditions/depression-in-adults/overview/
+DEFAULT_CONTEXT = """Most people experience feelings of stress, anxiety or low mood during difficult times. 
+A low mood may improve after a short period of time, rather than being a sign of depression."""
 
 PIPELINE_NAME = "deployment_pipeline"
 PIPELINE_STEP = "seldon_llm_model_deployer_step"
@@ -54,10 +54,9 @@ def _create_payload(
     Returns:
         Dict[str, List[Dict[str, str]]]: the payload to send in the correct format.
     """
-    # We currently just append all messages, this could be improved to append a summary of the conversation to the start of the current user message.
-    input_text = " ".join(
-        f"{x.get('role', '')}: {x.get('content', '')}" for x in messages
-    )
+    template = "Context: {context}\n\nQuestion: {question}\n\n"
+    input_text = template.format(question=messages[-1]["content"], context=DEFAULT_CONTEXT)
+
     return {
         "inputs": [
             {
@@ -88,7 +87,7 @@ def _get_predictions(
         headers={"Content-Type": "application/json"},
     )
     data = json.loads(json.loads(response.text)["outputs"][0]["data"][0])
-    return data["summary_text"]
+    return data["generated_text"]
 
 
 def fetch_summary(prediction_endpoint: str, messages: List[Dict[str, str]]) -> str:
