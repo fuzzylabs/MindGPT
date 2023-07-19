@@ -128,6 +128,10 @@ def test_list_collection_names(local_persist_api: API):
     store = ChromaStore()
     store._client = local_persist_api
 
+    # Add collections for testing
+    store._get_or_create_collection("test", MockEmbeddingFunction())
+    store._get_or_create_collection("test1", MockEmbeddingFunction())
+
     # Get list of all collections in chromadb
     assert {"test", "test1"} == set(store.list_collection_names())
 
@@ -140,6 +144,10 @@ def test_delete_collections(local_persist_api: API):
     """
     store = ChromaStore()
     store._client = local_persist_api
+
+    # Add collections for testing
+    store._get_or_create_collection("test", MockEmbeddingFunction())
+    store._get_or_create_collection("test1", MockEmbeddingFunction())
 
     # Delete collection "test"
     store.delete_collection("test")
