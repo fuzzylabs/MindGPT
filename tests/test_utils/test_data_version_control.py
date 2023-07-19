@@ -33,18 +33,20 @@ def mock_git_command():
         yield git_command
 
 
-# @pytest.fixture(autouse=True)
-# def mock_project_root_directory(directory_for_testing: str):
-#     """_summary_
+@pytest.fixture(autouse=True)
+def mock_project_root_directory(directory_for_testing: str):
+    """Mocked PROJECT_ROOT_DIR constant.
 
-#     Args:
-#         directory_for_testing (str): _description_
+    Args:
+        directory_for_testing (str): Mocked local directory.
 
-#     Yields:
-#         _type_: _description_
-#     """
-#     with mock.patch("utils.data_version_control.PROJECT_ROOT_DIR", directory_for_testing):
-# yield directory_for_testing
+    Yields:
+        mock_project_root_dir (str): Mocked directory name
+    """
+    with mock.patch(
+        "utils.data_version_control.PROJECT_ROOT_DIR", directory_for_testing
+    ) as mock_project_root_dir:
+        yield mock_project_root_dir
 
 
 def test_file_not_found_error_csv(directory_for_testing):
@@ -81,9 +83,7 @@ def test_git_checkout_folder_raises_file_not_found_error_without_directory(
         "utils.data_version_control._git_tag_exists"
     ) as mock_git_tag_exists, mock.patch(
         "utils.data_version_control._git_commit_hash_exists"
-    ) as mock_git_commit_hash_exists, mock.patch(
-        "utils.data_version_control.PROJECT_ROOT_DIR", directory_for_testing
-    ):
+    ) as mock_git_commit_hash_exists:
         mock_git_command.return_value = mock.MagicMock()
         mock_git_tag_exists.return_value = True
         mock_git_commit_hash_exists.return_value = True
@@ -108,9 +108,7 @@ def test_git_checkout_folder_raises_vaue_error_invalid_tag(
         "utils.data_version_control._git_tag_exists"
     ) as mock_git_tag_exists, mock.patch(
         "utils.data_version_control._git_commit_hash_exists"
-    ) as mock_git_commit_hash_exists, mock.patch(
-        "utils.data_version_control.PROJECT_ROOT_DIR", directory_for_testing
-    ):
+    ) as mock_git_commit_hash_exists:
         mock_git_command.return_value = mock.MagicMock()
         mock_git_tag_exists.return_value = False
         mock_git_commit_hash_exists.return_value = True
@@ -134,9 +132,7 @@ def test_git_checkout_folder_raises_vaue_error_invalid_commit(
         "utils.data_version_control._git_tag_exists"
     ) as mock_git_tag_exists, mock.patch(
         "utils.data_version_control._git_commit_hash_exists"
-    ) as mock_git_commit_hash_exists, mock.patch(
-        "utils.data_version_control.PROJECT_ROOT_DIR", directory_for_testing
-    ):
+    ) as mock_git_commit_hash_exists:
         mock_git_command.return_value = mock.MagicMock()
         mock_git_tag_exists.return_value = True
         mock_git_commit_hash_exists.return_value = False
