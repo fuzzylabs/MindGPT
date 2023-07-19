@@ -41,7 +41,7 @@ def mock_project_root_directory(directory_for_testing: str):
         directory_for_testing (str): Mocked local directory.
 
     Yields:
-        mock_project_root_dir (str): Mocked directory name
+        mock_project_root_dir (mock.MagicMock): Mocked directory.
     """
     with mock.patch(
         "utils.data_version_control.PROJECT_ROOT_DIR", directory_for_testing
