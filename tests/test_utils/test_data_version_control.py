@@ -41,9 +41,9 @@ def test_git_checkout_folder_raises_file_not_found_error_without_directory(
     with mock.patch(
         "utils.data_version_control.git.cmd.Git"
     ) as mock_git_command, mock.patch(
-        "utils.data_version_control.git_tag_exists"
+        "utils.data_version_control._git_tag_exists"
     ) as mock_git_tag_exists, mock.patch(
-        "utils.data_version_control.git_commit_hash_exists"
+        "utils.data_version_control._git_commit_hash_exists"
     ) as mock_git_commit_hash_exists, mock.patch(
         "utils.data_version_control.PROJECT_ROOT_DIR", directory_for_testing
     ):
