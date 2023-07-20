@@ -12,7 +12,7 @@ from chromadb.utils import embedding_functions
 from utils.chroma_store import ChromaStore
 
 # Setup for chroma vector store
-CHROMA_SERVER_HOST_NAME = "localhost"  # "server.default"
+CHROMA_SERVER_HOST_NAME = "server.default"
 CHROMA_SERVER_PORT = 8000
 DEFAULT_EMBED_MODEL = "base"  # ["base", "large", "xl"]
 COLLECTION_NAMES = ["mind_data", "nhs_data"]
@@ -255,7 +255,7 @@ def main() -> None:
                     context = query_vector_store(
                         chroma_client=chroma_client,
                         query_text=prompt,
-                        collection_name="mind_data",
+                        collection_name=COLLECTION_NAMES[0],
                         n_results=N_CLOSEST_MATCHES,
                         embedding_function=embed_function,
                     )
