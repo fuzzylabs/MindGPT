@@ -4,6 +4,7 @@ import tempfile
 import chromadb
 import pytest
 from chromadb.api import API
+from chromadb.api.types import Documents, EmbeddingFunction, Embeddings
 from chromadb.config import Settings
 from utils.chroma_store import ChromaStore
 
@@ -55,9 +56,7 @@ def test_get_or_create_collection(local_persist_api: API):
     Args:
         local_persist_api (API): Local chroma server for testing
     """
-
-    def embedding_function(x):
-        return [[1, 2, 3] for _ in range(len(x))]
+    embedding_function = lambda x: [[1, 2, 3] for _ in range(len(x))]
 
     store = ChromaStore()
     store._client = local_persist_api
@@ -79,18 +78,13 @@ def test_add_texts(local_persist_api: API):
     Args:
         local_persist_api (API): Local chroma server for testing
     """
-
-    def embedding_function(x):
-        return [[1, 2, 3] for _ in range(len(x))]
-
+    embedding_function = lambda x: [[1, 2, 3] for _ in range(len(x))]
     uuids = [
         "bdd640fb-0667-4ad1-9c80-317fa3b1799d",
         "bdd740fb-0667-4ad1-9c80-317fa3b1799d",
     ]
     input_texts = ["a", "b"]
-    expected_embeddings = [
-        [float(1.0)] * 9 + [float(i)] for i in range(len(input_texts))
-    ]
+    expected_embeddings = [[1.0, 2.0, 3.0, 1.0, 2.0, 3.0]]
 
     store = ChromaStore()
     store._client = local_persist_api
@@ -117,10 +111,7 @@ def test_list_collection_names(local_persist_api: API):
     Args:
         local_persist_api (API): Local chroma server for testing
     """
-
-    def embedding_function(x):
-        return [[1, 2, 3] for _ in range(len(x))]
-
+    embedding_function = lambda x: [[1, 2, 3] for _ in range(len(x))]
     store = ChromaStore()
     store._client = local_persist_api
 
@@ -138,10 +129,7 @@ def test_delete_collections(local_persist_api: API):
     Args:
         local_persist_api (API): Local chroma server for testing
     """
-
-    def embedding_function(x):
-        return [[1, 2, 3] for _ in range(len(x))]
-
+    embedding_function = lambda x: [[1, 2, 3] for _ in range(len(x))]
     store = ChromaStore()
     store._client = local_persist_api
 
@@ -177,10 +165,7 @@ def test_query_collection(local_persist_api: API):
     Args:
         local_persist_api (API): Local chroma server for testing
     """
-
-    def embedding_function(x):
-        return [[1, 2, 3] for _ in range(len(x))]
-
+    embedding_function = lambda x: [[1, 2, 3] for _ in range(len(x))]
     uuids = [
         "bdd440fb-0667-4ad1-9c80-317fa3b1799d",
         "bdd540fb-0667-4ad1-9c80-317fa3b1799d",
@@ -218,12 +203,8 @@ def test_query_collection_raise_embedding_function_error(local_persist_api: API)
     Args:
         local_persist_api (API): Local chroma server for testing
     """
-
-    def embedding_function(x):
-        return [[1, 2, 3] for _ in range(len(x))]
-
-    def dummy_embedding_function(x):
-        return [[1, 2] for _ in range(len(x))]
+    embedding_function = lambda x: [[1, 2, 3] for _ in range(len(x))]
+    dummy_embedding_function = lambda x: [[1, 2] for _ in range(len(x))]
 
     store = ChromaStore()
     store._client = local_persist_api
