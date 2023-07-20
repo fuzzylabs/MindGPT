@@ -33,7 +33,7 @@ The repository for this project is one method where you can monitor progress - w
 
 ## Embedding pipeline
 
-To run the Zenml embedding pipeline, the resources such as AKS and ACR have to provisioned. AKS is used running Chroma server on AKS and ACR is used to store Chroma server image.
+To run the embedding pipeline, both AKS and ARC need to be provisioned. We use AKS to run the Chroma (vector database) service and ACT is used to host the Chroma server image.
 
 `matcha` tool can help you in provisioning these resources. Install `matcha-ml` library and provision resources using `matcha provision` command.
 
@@ -138,7 +138,9 @@ The expected payload structure is as follows:
 
 ## Streamlit Application
 
-Once the deployment has completed, run the following command to start a streamlit application. Note: you need to first obtain the model ingress IP as described above.
+Once the deployment has completed, run the following command to start a streamlit application.
+
+> Note: you need to first obtain the model ingress IP as described above.
 
 ```bash
 export SELDON_INGRESS=<ingress IP from matcha>
