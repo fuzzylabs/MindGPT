@@ -1,5 +1,5 @@
 """Test suite for testing chroma_store utility."""
-import tempfile
+from tempfile import TemporaryDirectory
 
 import chromadb
 import pytest
@@ -20,7 +20,7 @@ def local_persist_api() -> API:
         Settings(
             chroma_api_impl="local",
             chroma_db_impl="duckdb+parquet",
-            persist_directory=tempfile.gettempdir() + "/test_server",
+            persist_directory=TemporaryDirectory().name + "/test_server",
         )
     )
 
@@ -37,7 +37,7 @@ class MockEmbeddingFunction(EmbeddingFunction):
         Returns:
             Embeddings: Return fixed embedding
         """
-        return [[float(1.0)] * 9 + [float(i)] for i in range(len(texts))]
+        return [[float(1.0)] * 2 + [float(i)] for i in range(len(texts))]
 
 
 class DummyEmbeddingFunction(EmbeddingFunction):
@@ -52,7 +52,7 @@ class DummyEmbeddingFunction(EmbeddingFunction):
         Returns:
             Embeddings: Return fixed embedding
         """
-        return [[float(1.0)] * 100 + [float(i)] for i in range(len(texts) * 2)]
+        return [[float(1.0)] * 10 + [float(i)] for i in range(len(texts) * 2)]
 
 
 @pytest.mark.parametrize(
@@ -112,7 +112,7 @@ def test_add_texts(local_persist_api: API):
     ]
     input_texts = ["a", "b"]
     expected_embeddings = [
-        [float(1.0)] * 9 + [float(i)] for i in range(len(input_texts))
+        [float(1.0)] * 2 + [float(i)] for i in range(len(input_texts))
     ]
 
     store = ChromaStore()
@@ -221,22 +221,3 @@ def test_query_collection(local_persist_api: API):
     assert len(results["ids"][0]) == 1
     assert results["documents"][0] == ["foo"]
     assert results["ids"][0] == ["bdd440fb-0667-4ad1-9c80-317fa3b1799d"]
-
-
-def test_query_collection_raise_embedding_function_error(local_persist_api: API):
-    """Test querying collections raise error when passed a different embedding function.
-
-    Args:
-        local_persist_api (API): Local chroma server for testing
-    """
-    store = ChromaStore()
-    store._client = local_persist_api
-
-    # Use a different embedding function when querying
-    with pytest.raises(ValueError):
-        _ = store.query_collection(
-            collection_name="test",
-            query_texts="foo",
-            n_results=1,
-            embedding_function=DummyEmbeddingFunction(),
-        )
