@@ -12,7 +12,7 @@ from chromadb.utils import embedding_functions
 from utils.chroma_store import ChromaStore
 
 # Setup for chroma vector store
-CHROMA_SERVER_HOST_NAME = "server.default"
+CHROMA_SERVER_HOST_NAME = "localhost"
 CHROMA_SERVER_PORT = 8000
 DEFAULT_EMBED_MODEL = "base"  # ["base", "large", "xl"]
 COLLECTION_NAMES = ["mind_data", "nhs_data"]
@@ -241,6 +241,7 @@ def main() -> None:
             )
             embed_function = _get_embedding_function(DEFAULT_EMBED_MODEL)
 
+            print(prediction_endpoint, chroma_client)
             if prediction_endpoint is None or chroma_client is None:
                 st.session_state.error_placeholder.error(
                     "MindGPT is not currently reachable, please try again later.",
