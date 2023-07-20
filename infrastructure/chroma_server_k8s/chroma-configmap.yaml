@@ -1,0 +1,31 @@
+# configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chroma-config
+data:
+  backup_disk.xml: |
+    <clickhouse>
+        <storage_configuration>
+            <disks>
+                <backups>
+                    <type>local</type>
+                    <path>/etc/clickhouse-server/</path>
+                </backups>
+            </disks>
+        </storage_configuration>
+        <backups>
+            <allowed_disk>backups</allowed_disk>
+            <allowed_path>/etc/clickhouse-server/</allowed_path>
+        </backups>
+    </clickhouse>
+  chroma_users.xml: |
+    <clickhouse>
+        <profiles>
+            <default>
+                <allow_experimental_lightweight_delete>1</allow_experimental_lightweight_delete>
+                <mutations_sync>1</mutations_sync>
+                <max_query_size>100000000</max_query_size>
+            </default>
+        </profiles>
+    </clickhouse>

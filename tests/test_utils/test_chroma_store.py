@@ -1,5 +1,5 @@
 """Test suite for testing chroma_store utility."""
-import tempfile
+from tempfile import TemporaryDirectory
 
 import chromadb
 import pytest
@@ -20,7 +20,7 @@ def local_persist_api() -> API:
         Settings(
             chroma_api_impl="local",
             chroma_db_impl="duckdb+parquet",
-            persist_directory=tempfile.gettempdir() + "/test_server",
+            persist_directory=TemporaryDirectory().name + "/test_server",
         )
     )
 
@@ -37,7 +37,7 @@ class MockEmbeddingFunction(EmbeddingFunction):
         Returns:
             Embeddings: Return fixed embedding
         """
-        return [[float(1.0)] * 9 + [float(i)] for i in range(len(texts))]
+        return [[float(1.0)] * 2 + [float(i)] for i in range(len(texts))]
 
 
 @pytest.mark.parametrize(
@@ -97,7 +97,7 @@ def test_add_texts(local_persist_api: API):
     ]
     input_texts = ["a", "b"]
     expected_embeddings = [
-        [float(1.0)] * 9 + [float(i)] for i in range(len(input_texts))
+        [float(1.0)] * 2 + [float(i)] for i in range(len(input_texts))
     ]
 
     store = ChromaStore()
@@ -169,3 +169,40 @@ def test_delete_collections_invalid_collection_name(local_persist_api: API):
     # Use invalid collection "dummy_test"
     with pytest.raises(ValueError):
         store.delete_collection("dummy_test")
+
+
+def test_query_collection(local_persist_api: API):
+    """Test querying collections in chromadb using `query_collection` function.
+
+    Args:
+        local_persist_api (API): Local chroma server for testing
+    """
+    uuids = [
+        "bdd440fb-0667-4ad1-9c80-317fa3b1799d",
+        "bdd540fb-0667-4ad1-9c80-317fa3b1799d",
+    ]
+    input_texts = ["foo", "dummy"]
+    store = ChromaStore()
+    store._client = local_persist_api
+
+    # Add example documents to the test collection
+    store.add_texts(
+        collection_name="test",
+        texts=input_texts,
+        embedding_function=MockEmbeddingFunction(),
+        ids=uuids,
+    )
+
+    results = store.query_collection(
+        collection_name="test",
+        query_texts="dummy",
+        n_results=1,
+        embedding_function=MockEmbeddingFunction(),
+        where_document={"$contains": "foo"},
+    )
+
+    assert results
+    assert len(results["documents"][0]) == 1
+    assert len(results["ids"][0]) == 1
+    assert results["documents"][0] == ["foo"]
+    assert results["ids"][0] == ["bdd440fb-0667-4ad1-9c80-317fa3b1799d"]
