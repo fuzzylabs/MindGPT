@@ -33,7 +33,7 @@ The repository for this project is one method where you can monitor progress - w
 
 ## Embedding pipeline
 
-To run the embedding pipeline, both AKS and ARC need to be provisioned. We use AKS to run the Chroma (vector database) service and ACT is used to host the Chroma server image.
+To run the embedding pipeline, both Azure Kubernetes Service (AKS) and Azure Container Registry (ACR) need to be provisioned. We use AKS to run the Chroma (vector database) service and ACR is used to host the Chroma server image.
 
 `matcha` tool can help you in provisioning these resources. Install `matcha-ml` library and provision resources using `matcha provision` command.
 
