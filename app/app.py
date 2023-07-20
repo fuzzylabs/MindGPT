@@ -12,7 +12,7 @@ from chromadb.utils import embedding_functions
 from utils.chroma_store import ChromaStore
 
 # Setup for chroma vector store
-CHROMA_SERVER_HOST_NAME = "localhost"
+CHROMA_SERVER_HOST_NAME = "server.default"
 CHROMA_SERVER_PORT = 8000
 DEFAULT_EMBED_MODEL = "base"  # ["base", "large", "xl"]
 COLLECTION_NAMES = ["mind_data", "nhs_data"]
