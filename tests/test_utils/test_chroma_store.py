@@ -25,6 +25,36 @@ def local_persist_api() -> API:
     )
 
 
+class MockEmbeddingFunction(EmbeddingFunction):
+    """Mock embedding class for testing."""
+
+    def __call__(self, texts: Documents) -> Embeddings:
+        """Calls the mock embedding function.
+
+        Args:
+            texts (Documents): Documents to embed
+
+        Returns:
+            Embeddings: Return fixed embedding
+        """
+        return [[float(1.0)] * 9 + [float(i)] for i in range(len(texts))]
+
+
+class DummyEmbeddingFunction(EmbeddingFunction):
+    """Dummy embedding class for testing."""
+
+    def __call__(self, texts: Documents) -> Embeddings:
+        """Calls the dummy embedding function.
+
+        Args:
+            texts (Documents): Documents to embed
+
+        Returns:
+            Embeddings: Return fixed embedding
+        """
+        return [[float(1.0)] * 100 + [float(i)] for i in range(len(texts) * 2)]
+
+
 @pytest.mark.parametrize(
     "collection_name, is_valid",
     [
@@ -56,17 +86,15 @@ def test_get_or_create_collection(local_persist_api: API):
     Args:
         local_persist_api (API): Local chroma server for testing
     """
-    embedding_function = lambda x: [[1, 2, 3] for _ in range(len(x))]
-
     store = ChromaStore()
     store._client = local_persist_api
 
     # Create collection "test"
-    store._get_or_create_collection("test", embedding_function)
+    store._get_or_create_collection("test", MockEmbeddingFunction())
     assert store._collection.name == "test"
 
     # Create collection "test1"
-    store._get_or_create_collection("test1", embedding_function)
+    store._get_or_create_collection("test1", MockEmbeddingFunction())
     assert store._collection.name == "test1"
 
     assert {"test", "test1"} == set(store.list_collection_names())
@@ -78,13 +106,14 @@ def test_add_texts(local_persist_api: API):
     Args:
         local_persist_api (API): Local chroma server for testing
     """
-    embedding_function = lambda x: [[1, 2, 3] for _ in range(len(x))]
     uuids = [
         "bdd640fb-0667-4ad1-9c80-317fa3b1799d",
         "bdd740fb-0667-4ad1-9c80-317fa3b1799d",
     ]
     input_texts = ["a", "b"]
-    expected_embeddings = [[1.0, 2.0, 3.0, 1.0, 2.0, 3.0]]
+    expected_embeddings = [
+        [float(1.0)] * 9 + [float(i)] for i in range(len(input_texts))
+    ]
 
     store = ChromaStore()
     store._client = local_persist_api
@@ -93,7 +122,7 @@ def test_add_texts(local_persist_api: API):
     store.add_texts(
         collection_name="test",
         texts=input_texts,
-        embedding_function=embedding_function,
+        embedding_function=MockEmbeddingFunction(),
         ids=uuids,
     )
     data = store._collection.get(include=["embeddings", "documents"])
@@ -111,13 +140,12 @@ def test_list_collection_names(local_persist_api: API):
     Args:
         local_persist_api (API): Local chroma server for testing
     """
-    embedding_function = lambda x: [[1, 2, 3] for _ in range(len(x))]
     store = ChromaStore()
     store._client = local_persist_api
 
     # Add collections for testing
-    store._get_or_create_collection("test", embedding_function)
-    store._get_or_create_collection("test1", embedding_function)
+    store._get_or_create_collection("test", MockEmbeddingFunction())
+    store._get_or_create_collection("test1", MockEmbeddingFunction())
 
     # Get list of all collections in chromadb
     assert {"test", "test1"} == set(store.list_collection_names())
@@ -129,13 +157,12 @@ def test_delete_collections(local_persist_api: API):
     Args:
         local_persist_api (API): Local chroma server for testing
     """
-    embedding_function = lambda x: [[1, 2, 3] for _ in range(len(x))]
     store = ChromaStore()
     store._client = local_persist_api
 
     # Add collections for testing
-    store._get_or_create_collection("test", embedding_function)
-    store._get_or_create_collection("test1", embedding_function)
+    store._get_or_create_collection("test", MockEmbeddingFunction())
+    store._get_or_create_collection("test1", MockEmbeddingFunction())
 
     # Delete collection "test"
     store.delete_collection("test")
@@ -165,7 +192,6 @@ def test_query_collection(local_persist_api: API):
     Args:
         local_persist_api (API): Local chroma server for testing
     """
-    embedding_function = lambda x: [[1, 2, 3] for _ in range(len(x))]
     uuids = [
         "bdd440fb-0667-4ad1-9c80-317fa3b1799d",
         "bdd540fb-0667-4ad1-9c80-317fa3b1799d",
@@ -178,7 +204,7 @@ def test_query_collection(local_persist_api: API):
     store.add_texts(
         collection_name="test",
         texts=input_texts,
-        embedding_function=embedding_function,
+        embedding_function=MockEmbeddingFunction(),
         ids=uuids,
     )
 
@@ -186,7 +212,7 @@ def test_query_collection(local_persist_api: API):
         collection_name="test",
         query_texts="dummy",
         n_results=1,
-        embedding_function=embedding_function,
+        embedding_function=MockEmbeddingFunction(),
         where_document={"$contains": "foo"},
     )
 
@@ -203,9 +229,6 @@ def test_query_collection_raise_embedding_function_error(local_persist_api: API)
     Args:
         local_persist_api (API): Local chroma server for testing
     """
-    embedding_function = lambda x: [[1, 2, 3] for _ in range(len(x))]
-    dummy_embedding_function = lambda x: [[1, 2] for _ in range(len(x))]
-
     store = ChromaStore()
     store._client = local_persist_api
 
@@ -213,7 +236,7 @@ def test_query_collection_raise_embedding_function_error(local_persist_api: API)
     with pytest.raises(ValueError):
         _ = store.query_collection(
             collection_name="test",
-            query_texts="dummy",
+            query_texts="foo",
             n_results=1,
-            embedding_function=dummy_embedding_function,
+            embedding_function=DummyEmbeddingFunction(),
         )
