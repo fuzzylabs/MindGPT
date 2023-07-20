@@ -1,14 +1,16 @@
 """ChromaDB vector store class."""
 import ipaddress
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 import chromadb
 from chromadb.api.types import CollectionMetadata, EmbeddingFunction
 from chromadb.config import Settings
+from chromadb.errors import InvalidDimensionException
 
 MIN_COLLECTION_NAME_LENGTH = 3
 MAX_COLLECTION_NAME_LENGTH = 64
+DEFAULT_N_RESULTS = 5
 
 
 @dataclass
@@ -123,6 +125,48 @@ class ChromaStore:
         if not collections:
             return []
         return [collection.name for collection in collections]
+
+    def query_collection(
+        self,
+        collection_name: str,
+        query_texts: Optional[List[str]] = None,
+        n_results: int = DEFAULT_N_RESULTS,
+        where: Optional[Dict[str, str]] = None,
+        embedding_function: Optional[EmbeddingFunction] = None,
+        **kwargs,
+    ) -> Dict[str, List[Any]]:
+        """Query the collection to return closest documents matching query.
+
+        Args:
+            collection_name (str): Name of the collection
+            query_texts (Optional[List[str]], optional): List of query texts. Defaults to None.
+            n_results (int, optional): Number of closest matches to return. Defaults to DEFAULT_N_RESULTS.
+            where (Optional[Dict[str, str]], optional): Additional filtering using where. Defaults to None.
+            embedding_function (Optional[EmbeddingFunction], optional):  Embedding function to use. Defaults to None.
+            **kwargs (Dict): Additional keyword arguments
+
+        Returns:
+            Dict[str, List[Any]]: Dictionary containing query results
+
+        Raises:
+            InvalidDimensionException: If the dimension of the embedding function does not match the dimension of the collection
+        """
+        if self._collection is None:
+            self._get_or_create_collection(collection_name, embedding_function)
+
+        # Chroma will embed each query_text with the collection's embedding function
+        # and then query using generated embeddings
+        try:
+            return self._collection.query(
+                query_texts=query_texts,
+                n_results=n_results,
+                where=where,
+                **kwargs,
+            )
+        except InvalidDimensionException:
+            raise ValueError(
+                "Invalid dimension. Please check if the embedding function matches to the collection's embedding function"
+            )
 
     def add_texts(
         self,

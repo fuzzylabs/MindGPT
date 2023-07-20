@@ -11,7 +11,7 @@ logger = get_logger(__name__)
 EMBED_MODEL_MAP = {
     "xl": "hkunlp/instructor-xl",
     "large": "hkunlp/instructor-large",
-    "base": "hkunlp/instructor-large",
+    "base": "hkunlp/instructor-base",
 }
 
 
