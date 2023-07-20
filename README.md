@@ -138,11 +138,38 @@ The expected payload structure is as follows:
 
 ## Streamlit Application
 
-Once the deployment has completed, run the following command to start a streamlit application. Note: you need to first obtain the model ingress IP as described above.
+To deploy streamlit application on AKS, we first build a Docker image for streamlit application and push the image to ACR.
+
+> Note: Run the following command from the root of the project.
 
 ```bash
-export SELDON_INGRESS=<ingress IP from matcha>
-python -m streamlit run app/app.py
+pwd
+
+/home/username/MindGPT
+```
+
+```bash
+acr_registry_uri=$(matcha get container-registry registry-url --output json | sed -n 's/.*"registry-url": "\(.*\)".*/\1/p')
+acr_registry_name=$(matcha get container-registry registry-name --output json | sed -n 's/.*"registry-name": "\(.*\)".*/\1/p')
+```
+
+```bash
+az acr login --name $acr_registry_name
+docker build -t $acr_registry_uri/mindgpt:latest -f app/Dockerfile .
+docker push $acr_registry_uri/mindgpt:latest
+```
+
+Next, we apply the Kubernetes manifest to deploy the streamlit application on AKS.
+
+```bash
+cd infrastructure/streamlit_app_k8s
+kubectl apply -f .
+```
+
+Finally, we verify the streamlit application. The command below should provide an IP address for the streamlit application.
+
+```bash
+kubectl get service streamlit-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 ```
 
 # &#129309; Acknowledgements
