@@ -38,3 +38,8 @@ repos:
         language: system
         args: ["--config-file=pyproject.toml"]
         exclude: ^tests/
+
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.16.1
+    hooks:
+      - id: typos
