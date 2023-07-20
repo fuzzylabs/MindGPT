@@ -1,0 +1,26 @@
+[files]
+extend-exclude = ["*.json", "*.js", "*.ipynb", "LICENSE", "*.css"]
+
+[default.extend-identifiers]
+HashiCorp = "HashiCorp"
+aks = "aks"
+AKS = "AKS"
+
+[default.extend-words]
+aks = "aks"
+hashi = "hashi"
+Hashi = "Hashi"
+AKS = "AKS"
+prev = "prev"
+goes = "goes"
+"ret" = "ret"
+"flavor" = "flavor"
+"artifact" = "artifact"
+"artifacts" = "artifacts"
+"ve" = "ve"
+"eq" = "eq"
+"seed" = "seed"
+"te" = "te"
+
+[default]
+locale = "en-us"
