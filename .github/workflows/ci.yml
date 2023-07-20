@@ -54,10 +54,25 @@ jobs:
       # Install dependencies if cache does not exist
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install
+        run: |
+          sed '/zenml/d' pyproject.toml > pyproject2.toml
+          mv pyproject2.toml pyproject.toml
+          poetry lock
+          poetry install
+
+      # Install zenml separately due to pyyaml bug : https://github.com/yaml/pyyaml/issues/724
+      - name: Install additional dependencies
+        run: |
+          source .venv/bin/activate
+          pip install "cython<3" wheel && pip install --no-build-isolation "pyyaml==5.4.1"
+          pip install "zenml==0.40.3"
 
       - name: Setup ZenML
-        run: poetry run zenml integration install huggingface pytorch seldon -y
+        run: |
+          source .venv/bin/activate
+          zenml integration install huggingface pytorch seldon -y
 
       - name: Run the full test suite
-        run: poetry run python -m pytest tests --cov
+        run: |
+          source .venv/bin/activate
+          python -m pytest tests --cov

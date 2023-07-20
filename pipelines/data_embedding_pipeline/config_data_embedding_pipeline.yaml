@@ -1,11 +1,11 @@
 steps:
-  fetch_data:
+  load_data:
     enable_cache: False
     parameters:
-      data_version: "v1.0"
+      data_version: "data/first_version"
+      data_postfix: "validated"
   embed_data:
     enable_cache: True
-  upload_data_to_vector_db:
-    enable_cache: False
     parameters:
-      data_version: "v1.0"
+      data_version: "data/first_version"
+      embed_model_type: "base"

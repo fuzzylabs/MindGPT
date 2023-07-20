@@ -5,6 +5,7 @@ from .data_version_control import (
     add_csv_files_to_dvc,
     checkout_data_files,
     get_active_branch_name,
+    git_checkout_folder,
     pull_data,
     push_and_tag_dvc_changes_to_git,
     push_data,
@@ -20,4 +21,5 @@ __all__ = [
     "checkout_data_files",
     "version_new_data",
     "get_active_branch_name",
+    "git_checkout_folder",
 ]

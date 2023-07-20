@@ -3,11 +3,12 @@ import json
 import os
 import time
 from typing import Any, Dict, List, Optional
+
 import requests
 import streamlit as st
 
 # Paragraph from https://www.nhs.uk/mental-health/conditions/depression-in-adults/overview/
-DEFAULT_CONTEXT = """Most people experience feelings of stress, anxiety or low mood during difficult times. 
+DEFAULT_CONTEXT = """Most people experience feelings of stress, anxiety or low mood during difficult times.
 A low mood may improve after a short period of time, rather than being a sign of depression."""
 
 PIPELINE_NAME = "deployment_pipeline"
@@ -43,9 +44,7 @@ def _get_prediction_endpoint() -> Optional[str]:
     return f"http://{ingress_ip}/seldon/matcha-seldon-workloads/llm/v2/models/transformer/infer"
 
 
-def _create_payload(
-    messages: List[Dict[str, str]]
-) -> Dict[str, List[Dict[str, str]]]:
+def _create_payload(messages: List[Dict[str, str]]) -> Dict[str, List[Dict[str, str]]]:
     """Create a payload from the user input to send to the LLM model.
 
     Args:
@@ -55,7 +54,9 @@ def _create_payload(
         Dict[str, List[Dict[str, str]]]: the payload to send in the correct format.
     """
     template = "Context: {context}\n\nQuestion: {question}\n\n"
-    input_text = template.format(question=messages[-1]["content"], context=DEFAULT_CONTEXT)
+    input_text = template.format(
+        question=messages[-1]["content"], context=DEFAULT_CONTEXT
+    )
 
     return {
         "inputs": [
@@ -63,7 +64,7 @@ def _create_payload(
                 "name": "array_inputs",
                 "shape": [-1],
                 "datatype": "string",
-                "data": str(input_text)
+                "data": str(input_text),
             }
         ]
     }
