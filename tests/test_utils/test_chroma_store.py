@@ -195,11 +195,14 @@ def test_query_collection(local_persist_api: API):
 
     results = store.query_collection(
         collection_name="test",
-        query_texts="foo",
+        query_texts="dummy",
         n_results=1,
         embedding_function=MockEmbeddingFunction(),
+        where_document={"$contains": "foo"},
     )
 
     assert results
     assert len(results["documents"][0]) == 1
     assert len(results["ids"][0]) == 1
+    assert results["documents"][0] == ["foo"]
+    assert results["ids"][0] == ["bdd440fb-0667-4ad1-9c80-317fa3b1799d"]

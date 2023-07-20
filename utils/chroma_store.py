@@ -1,7 +1,7 @@
 """ChromaDB vector store class."""
 import ipaddress
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import chromadb
 from chromadb.api.types import CollectionMetadata, EmbeddingFunction
@@ -133,7 +133,7 @@ class ChromaStore:
         where: Optional[Dict[str, str]] = None,
         embedding_function: Optional[EmbeddingFunction] = None,
         **kwargs,
-    ) -> None:
+    ) -> Dict[str, List[Any]]:
         """Query the collection to return closest documents matching query.
 
         Args:
@@ -142,6 +142,10 @@ class ChromaStore:
             n_results (int, optional): Number of closest matches to return. Defaults to DEFAULT_N_RESULTS.
             where (Optional[Dict[str, str]], optional): Additional filtering using where. Defaults to None.
             embedding_function (Optional[EmbeddingFunction], optional):  Embedding function to use. Defaults to None.
+            **kwargs (Dict): Additional keyword arguments
+
+        Returns:
+            Dict[str, List[Any]]
         """
         # TODO: Check if embedding function matches to already created collection
         if self._collection is None:

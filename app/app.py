@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import requests
 import streamlit as st
+from chromadb.api import API
 from chromadb.api.types import EmbeddingFunction
 from chromadb.utils import embedding_functions
 from utils.chroma_store import ChromaStore
@@ -59,13 +60,13 @@ def _get_prediction_endpoint() -> Optional[str]:
 
 @st.cache_data(show_spinner=False)
 def _get_embedding_function(embed_model_type: str) -> Union[EmbeddingFunction, None]:
-    """_summary_.
+    """Load embedding function to be used by Chroma vector store.
 
     Args:
-        embed_model_type (str): _description_
+        embed_model_type (str): String representation of the embedding model.
 
     Returns:
-        Union[EmbeddingFunction, None]: _description_
+        Union[EmbeddingFunction, None]: Embedding function if it exists, None otherwise.
     """
     # Create a embedding function
     model_name = EMBED_MODEL_MAP.get(embed_model_type, None)
@@ -74,15 +75,15 @@ def _get_embedding_function(embed_model_type: str) -> Union[EmbeddingFunction, N
     return embedding_functions.InstructorEmbeddingFunction(model_name=model_name)
 
 
-def connect_vector_store(chroma_server_host: str, chroma_server_port: int):
-    """_summary_.
+def connect_vector_store(chroma_server_host: str, chroma_server_port: int) -> API:
+    """Connect to Chroma vector store.
 
     Args:
-        chroma_server_host (str): _description_
-        chroma_server_port (int): _description_
+        chroma_server_host (str): Chroma server host name
+        chroma_server_port (int): Chroma server port
 
     Returns:
-        _type_: _description_
+        API: Chroma client object.
     """
     try:
         # Connect to vector store
@@ -96,23 +97,23 @@ def connect_vector_store(chroma_server_host: str, chroma_server_port: int):
 
 
 def query_vector_store(
-    chroma_client,
+    chroma_client: API,
     query_text: str,
     collection_name: str,
     n_results: int,
     embedding_function: EmbeddingFunction,
 ) -> str:
-    """_summary_.
+    """Query vector store to fetch `n_results` closest documents.
 
     Args:
-        chroma_client (_type_): _description_
-        query_text (str): _description_
-        collection_name (str): _description_
-        n_results (int): _description_
-        embedding_function (EmbeddingFunction): _description_
+        chroma_client (API): Chroma vector store client.
+        query_text (str): Query text.
+        collection_name (str): Name of collection
+        n_results (int): Number of closest documents to fetch
+        embedding_function (EmbeddingFunction): Embedding function used while creating collection
 
     Returns:
-        str: _description_
+        str: String containing the closest documents to the query.
     """
     result_dict = chroma_client.query_collection(
         collection_name=collection_name,
@@ -124,18 +125,18 @@ def query_vector_store(
     return documents
 
 
-def _create_payload(messages: List[Dict[str, str]]) -> Dict[str, List[Dict[str, str]]]:
+def _create_payload(messages: Dict[str, str]) -> Dict[str, List[Dict[str, Any]]]:
     """Create a payload from the user input to send to the LLM model.
 
     Args:
-        messages (List[Dict[str, str]]): List of previous messages from both the AI and user.
+        messages (Dict[str, str]): List of previous messages from both the AI and user.
 
     Returns:
-        Dict[str, List[Dict[str, str]]]: the payload to send in the correct format.
+        Dict[str, List[Dict[str, Any]]]: the payload to send in the correct format.
     """
     template = "Context: {context}\n\nQuestion: {question}\n\n"
-    context = messages[-1].get("context", DEFAULT_CONTEXT)
-    input_text = template.format(question=messages[-1]["query"], context=context)
+    context = messages.get("context", DEFAULT_CONTEXT)
+    input_text = template.format(question=messages["prompt_query"], context=context)
 
     return {
         "inputs": [
@@ -150,16 +151,16 @@ def _create_payload(messages: List[Dict[str, str]]) -> Dict[str, List[Dict[str, 
 
 
 def _get_predictions(
-    prediction_endpoint: str, payload: Dict[str, Dict[str, List[Dict[str, str]]]]
-) -> Dict[Any, Any]:
+    prediction_endpoint: str, payload: Dict[str, List[Dict[str, Any]]]
+) -> str:
     """Using the prediction endpont and payload, make a prediction request to the deployed model.
 
     Args:
         prediction_endpoint (str): the url endpoint.
-        payload (Dict[str, Dict[str, List[Dict[str, str]]]]): the payload to send to the model.
+        payload (Dict[str, List[Dict[str, Any]]]): the payload to send to the model.
 
     Returns:
-        Dict[Any, Any]: the predictions from the model.
+        str: the predictions from the model.
     """
     response = requests.post(
         url=prediction_endpoint,
@@ -170,12 +171,12 @@ def _get_predictions(
     return data["generated_text"]
 
 
-def fetch_summary(prediction_endpoint: str, messages: List[Dict[str, str]]) -> str:
+def query_llm(prediction_endpoint: str, messages: Dict[str, str]) -> str:
     """Query endpoint to fetch the summary.
 
     Args:
         prediction_endpoint (str): Prediction endpoint.
-        messages (List[Dict[str, str]]): List of previous messages from both the AI and user.
+        messages (Dict[str, str]): Dict of message containing prompt and context.
 
     Returns:
         str: Summarized text.
@@ -202,7 +203,6 @@ def show_disclaimer() -> bool:
     return accept
 
 
-# TODO: Remove chat history feature
 def main() -> None:
     """Main streamlit app function."""
     if "accept" not in st.session_state:
@@ -213,72 +213,53 @@ def main() -> None:
         if accept:
             st.session_state.accept = True
 
-    if st.session_state.accept:
-        if "messages" not in st.session_state:
-            st.session_state.messages = []
+    if st.session_state.accept and (prompt := st.chat_input("Enter a question")):
+        # Display user message in chat message container
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["query"])
+        # Get seldon endpoint
+        prediction_endpoint = _get_prediction_endpoint()
 
-        if prompt := st.chat_input("Enter a question"):
-            # Display user message in chat message container
-            with st.chat_message("user"):
-                st.markdown(prompt)
+        # Get vector store client
+        chroma_client = connect_vector_store(
+            chroma_server_host=CHROMA_SERVER_HOST_NAME,
+            chroma_server_port=CHROMA_SERVER_PORT,
+        )
+        embed_function = _get_embedding_function(DEFAULT_EMBED_MODEL)
 
-            # Add user message to chat history
-            st.session_state.messages.append({"role": "user", "query": prompt})
-
-            # Get seldon endpoint
-            prediction_endpoint = _get_prediction_endpoint()
-
-            # Get vector store client
-            chroma_client = connect_vector_store(
-                chroma_server_host=CHROMA_SERVER_HOST_NAME,
-                chroma_server_port=CHROMA_SERVER_PORT,
+        if prediction_endpoint is None or chroma_client is None:
+            st.session_state.error_placeholder.error(
+                "MindGPT is not currently reachable, please try again later.",
+                icon="🚨",
             )
-            embed_function = _get_embedding_function(DEFAULT_EMBED_MODEL)
+        else:
+            with st.chat_message("assistant"):
+                full_response = ""
+                message_placeholder = st.empty()
 
-            if prediction_endpoint is None or chroma_client is None:
-                st.session_state.error_placeholder.error(
-                    "MindGPT is not currently reachable, please try again later.",
-                    icon="🚨",
+                # Query vector store
+                context = query_vector_store(
+                    chroma_client=chroma_client,
+                    query_text=prompt,
+                    collection_name="mind_data",
+                    n_results=N_CLOSEST_MATCHES,
+                    embedding_function=embed_function,
                 )
-            else:
-                with st.chat_message("assistant"):
-                    full_response = ""
-                    message_placeholder = st.empty()
 
-                    # Query vector store
-                    context = query_vector_store(
-                        chroma_client=chroma_client,
-                        query_text=prompt,
-                        collection_name="mind_data",
-                        n_results=N_CLOSEST_MATCHES,
-                        embedding_function=embed_function,
-                    )
+                # Create a dict of prompt and context
+                message = {"prompt_query": prompt, "context": context}
 
-                    # Add context to chat history
-                    current_message = st.session_state.messages[-1]
-                    current_message["context"] = context
+                # Query LLM by passing query and context
+                assistant_response = query_llm(prediction_endpoint, message)
 
-                    # Query LLM by passing query and context
-                    assistant_response = fetch_summary(
-                        prediction_endpoint, st.session_state.messages
-                    )
-
-                    # Simulate stream of response with milliseconds delay
-                    for chunk in assistant_response.split():
-                        full_response += chunk + " "
-                        time.sleep(0.05)
-                        # Add a blinking cursor to simulate typing
-                        message_placeholder.markdown(full_response + "▌")
-                    message_placeholder.markdown(full_response)
-
-                    # Add assistant response to chat history
-                    st.session_state.messages.append(
-                        {"role": "assistant", "query": full_response}
-                    )
+                # Simulate stream of response with milliseconds delay
+                for chunk in assistant_response.split():
+                    full_response += chunk + " "
+                    time.sleep(0.05)
+                    # Add a blinking cursor to simulate typing
+                    message_placeholder.markdown(full_response + "▌")
+                message_placeholder.markdown(full_response)
 
 
 if __name__ == "__main__":
