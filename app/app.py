@@ -6,16 +6,16 @@ from typing import Any, Dict, List, Optional, Union
 
 import requests
 import streamlit as st
-from chroma_store import ChromaStore
 from chromadb.api.types import EmbeddingFunction
 from chromadb.utils import embedding_functions
+from utils.chroma_store import ChromaStore
 
 # Setup for chroma vector store
 CHROMA_SERVER_HOST_NAME = "localhost"  # "server.default"
 CHROMA_SERVER_PORT = 8000
 DEFAULT_EMBED_MODEL = "base"  # ["base", "large", "xl"]
 COLLECTION_NAMES = ["mind_data", "nhs_data"]
-N_CLOSEST_MATCHES = 5
+N_CLOSEST_MATCHES = 3
 EMBED_MODEL_MAP = {
     "xl": "hkunlp/instructor-xl",
     "large": "hkunlp/instructor-large",
@@ -59,7 +59,7 @@ def _get_prediction_endpoint() -> Optional[str]:
 
 @st.cache_data(show_spinner=False)
 def _get_embedding_function(embed_model_type: str) -> Union[EmbeddingFunction, None]:
-    """_summary_
+    """_summary_.
 
     Args:
         embed_model_type (str): _description_
@@ -67,10 +67,10 @@ def _get_embedding_function(embed_model_type: str) -> Union[EmbeddingFunction, N
     Returns:
         Union[EmbeddingFunction, None]: _description_
     """
+    # Create a embedding function
     model_name = EMBED_MODEL_MAP.get(embed_model_type, None)
     if model_name is None:
         return None
-    # Create a embedding function
     return embedding_functions.InstructorEmbeddingFunction(model_name=model_name)
 
 
@@ -102,7 +102,7 @@ def query_vector_store(
     n_results: int,
     embedding_function: EmbeddingFunction,
 ) -> str:
-    """_summary_
+    """_summary_.
 
     Args:
         chroma_client (_type_): _description_
@@ -120,9 +120,7 @@ def query_vector_store(
         n_results=n_results,
         embedding_function=embedding_function,
     )
-    print(result_dict["documents"])
     documents = " ".join(result_dict["documents"][0])
-    print(documents)
     return documents
 
 

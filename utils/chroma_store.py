@@ -133,7 +133,7 @@ class ChromaStore:
         where: Optional[Dict[str, str]] = None,
         embedding_function: Optional[EmbeddingFunction] = None,
         **kwargs,
-    ):
+    ) -> None:
         """_summary_
 
         Args:

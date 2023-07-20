@@ -33,7 +33,7 @@ The repository for this project is one method where you can monitor progress - w
 
 ## Embedding pipeline
 
-To run the Zenml embedding pipeline, the resources such as AKS and ACR have to provisioned. AKS is used running Chroma server on AKS and ACR is used to store Chroma server image. 
+To run the Zenml embedding pipeline, the resources such as AKS and ACR have to provisioned. AKS is used running Chroma server on AKS and ACR is used to store Chroma server image.
 
 `matcha` tool can help you in provisioning these resources. Install `matcha-ml` library and provision resources using `matcha provision` command.
 
@@ -43,6 +43,7 @@ matcha provision
 ```
 
 After the provisioning completes, we will have on hand these resources:
+
 * Kubernetes cluster on Azure
 * Seldon Core installed on this cluster
 * Istio ingress installed on this cluster
@@ -73,8 +74,6 @@ Finally, we run Kubernetes manifests to deploy Chroma server on AKS using follow
 
 ```bash
 cd infrastructure/chroma_server_k8s
-kubectl create configmap clickhouse-config --from-file=config/backup_disk.xml
-kubectl create configmap chroma-config --from-file=config/chroma_users.xml
 kubectl apply -f .
 ```
 
@@ -85,7 +84,9 @@ python run.py -e
 ```
 
 ## Provision pre-trained LLM
+
 ### Preparation
+
 To deploy a pre-trained LLM model, we first need a Kubernetes cluster with [Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/nav/getting-started.html). `matcha` tool can help you in provisioning the required resources. See the section above on how to set this up.
 
 ### Deploy model
@@ -97,21 +98,26 @@ kubectl apply -f infrastructure/llm/seldondeployment.yaml
 ```
 
 This will create a Seldon deployment, which consists of:
+
 * Pod, that loads the pipeline and the model for inference
 * Service and ingress routing, for accessing it from the outside
 
 ### Query model
+
 You can get ingress IP with matcha:
-```
+
+```bash
 matcha get model-deployer base-url
 ```
 
 Full URL to query the model:
-```
+
+```bash
 http://<INGRESS_IP>/seldon/matcha-seldon-workloads/llm/v2/models/transformer/infer
 ```
 
 The expected payload structure is as follows:
+
 ```json
 {
     "inputs": [
@@ -127,11 +133,11 @@ The expected payload structure is as follows:
 
 ## Streamlit Application
 
-Once the deployment has completed, run the following command to start a streamlit application. Note: you need to first obtain the model ingress IP as described above. 
+Once the deployment has completed, run the following command to start a streamlit application. Note: you need to first obtain the model ingress IP as described above.
 
 ```bash
-export INGRESS_IP=<ingress IP from matcha>
-streamlit run app/app.py
+export SELDON_INGRESS=<ingress IP from matcha>
+python -m streamlit run app/app.py
 ```
 
 # &#129309; Acknowledgements
