@@ -20,22 +20,30 @@ spec:
               value: "8123"
             - name: CLICKHOUSE_TCP_PORT
               value: "9000"
+            - name: CLICKHOUSE_DO_NOT_CHOWN
+              value: "1"
           image: clickhouse/clickhouse-server:22.9-alpine
           ports:
             - containerPort: 8123
             - containerPort: 9000
-          resources: {}
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 256m
+            limits:
+              memory: 2Gi
+              cpu: 2
           volumeMounts:
             - mountPath: /bitnami/clickhouse
               name: chroma-clickhouse-data
             - mountPath: /backups
               name: chroma-clickhouse-backups
-            - mountPath: /etc/clickhouse-server/config.d#backup_disk.xml
-              name: backup-disk-config
+            - mountPath: /etc/clickhouse-server/config.d/backup_disk.xml
+              name: config-volume
               subPath: backup_disk.xml
-            - mountPath: /etc/clickhouse-server/users.d#chroma_users.xml
-              name: chroma-users-config
-              subPath: chroma.xml
+            - mountPath: /etc/clickhouse-server/users.d/chroma_users.xml
+              name: config-volume
+              subPath: chroma_users.xml
 
         - name: chroma-server
           env:
@@ -48,7 +56,13 @@ spec:
           image: ghcr.io/chroma-core/chroma:0.3.29
           ports:
             - containerPort: 8000
-          resources: {}
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 256m
+            limits:
+              memory: 2Gi
+              cpu: 2
           volumeMounts:
             - mountPath: /index_data
               name: chroma-server-index
@@ -65,9 +79,6 @@ spec:
         - name: chroma-clickhouse-backups
           persistentVolumeClaim:
             claimName: chroma-clickhouse-backups
-        - name: backup-disk-config
-          configMap:
-            name: clickhouse-config
-        - name: chroma-users-config
+        - name: config-volume
           configMap:
             name: chroma-config
