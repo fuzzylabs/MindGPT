@@ -25,14 +25,14 @@ class ChromaStore:
 
     def __init__(
         self,
-        chroma_server_hostname: str,
-        chroma_server_port: int,
+        chroma_server_hostname: str = "server.default",
+        chroma_server_port: int = 8000,
     ) -> None:
-        """Initialize Chroma client by connecting it to Chroma server.
+        """Initialize chroma client by connecting it to chroma server.
 
         Args:
-            chroma_server_hostname (str): Hostname for Chroma server.
-            chroma_server_port (int): Port for Chroma server.
+            chroma_server_hostname (str, optional): Hostname for chroma server. Defaults to "server.default".
+            chroma_server_port (int, optional): Port for chroma server. Defaults to 8000.
         """
         self._client = chromadb.Client(
             Settings(
@@ -134,7 +134,7 @@ class ChromaStore:
         embedding_function: Optional[EmbeddingFunction] = None,
         **kwargs,
     ) -> None:
-        """_summary_.
+        """_summary_
 
         Args:
             collection_name (str): _description_
