@@ -232,13 +232,17 @@ def test_query_collection_raise_embedding_function_error(local_persist_api: API)
     store = ChromaStore()
     store._client = local_persist_api
 
-    print(store.list_collection_names())
+    print(
+        store.list_collection_names(),
+        MockEmbeddingFunction()(texts=["dummy"]),
+        DummyEmbeddingFunction()(texts=["dummy"]),
+    )
 
     # Use a different embedding function when querying
     with pytest.raises(ValueError):
         _ = store.query_collection(
             collection_name="test",
-            query_texts="foo",
+            query_embeddings=DummyEmbeddingFunction()(texts=["dummy"]),
             n_results=1,
             embedding_function=DummyEmbeddingFunction(),
         )
