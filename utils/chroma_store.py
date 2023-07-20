@@ -134,17 +134,14 @@ class ChromaStore:
         embedding_function: Optional[EmbeddingFunction] = None,
         **kwargs,
     ) -> None:
-        """_summary_.
+        """Query the collection to return closest documents matching query.
 
         Args:
-            collection_name (str): _description_
-            query_texts (Optional[List[str]], optional): _description_. Defaults to None.
-            n_results (int, optional): _description_. Defaults to DEFAULT_N_RESULTS.
-            where (Optional[Dict[str, str]], optional): _description_. Defaults to None.
-            embedding_function (Optional[EmbeddingFunction], optional): _description_. Defaults to None.
-
-        Returns:
-            _type_: _description_
+            collection_name (str): Name of the collection
+            query_texts (Optional[List[str]], optional): List of query texts. Defaults to None.
+            n_results (int, optional): Number of closest matches to return. Defaults to DEFAULT_N_RESULTS.
+            where (Optional[Dict[str, str]], optional): Additional filtering using where. Defaults to None.
+            embedding_function (Optional[EmbeddingFunction], optional):  Embedding function to use. Defaults to None.
         """
         # TODO: Check if embedding function matches to already created collection
         if self._collection is None:

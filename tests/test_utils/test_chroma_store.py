@@ -169,3 +169,37 @@ def test_delete_collections_invalid_collection_name(local_persist_api: API):
     # Use invalid collection "dummy_test"
     with pytest.raises(ValueError):
         store.delete_collection("dummy_test")
+
+
+def test_query_collection(local_persist_api: API):
+    """Test querying collections in chromadb using `query_collection` function.
+
+    Args:
+        local_persist_api (API): Local chroma server for testing
+    """
+    uuids = [
+        "bdd440fb-0667-4ad1-9c80-317fa3b1799d",
+        "bdd540fb-0667-4ad1-9c80-317fa3b1799d",
+    ]
+    input_texts = ["foo", "dummy"]
+    store = ChromaStore()
+    store._client = local_persist_api
+
+    # Add example documents to the test collection
+    store.add_texts(
+        collection_name="test",
+        texts=input_texts,
+        embedding_function=MockEmbeddingFunction(),
+        ids=uuids,
+    )
+
+    results = store.query_collection(
+        collection_name="test",
+        query_texts="foo",
+        n_results=1,
+        embedding_function=MockEmbeddingFunction(),
+    )
+
+    assert results
+    assert len(results["documents"][0]) == 1
+    assert len(results["ids"][0]) == 1
