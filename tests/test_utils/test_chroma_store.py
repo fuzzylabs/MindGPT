@@ -6,6 +6,7 @@ import pytest
 from chromadb.api import API
 from chromadb.api.types import Documents, EmbeddingFunction, Embeddings
 from chromadb.config import Settings
+from chromadb.utils import embedding_functions
 from utils.chroma_store import ChromaStore
 
 
@@ -238,5 +239,5 @@ def test_query_collection_raise_embedding_function_error(local_persist_api: API)
             collection_name="test",
             query_texts="foo",
             n_results=1,
-            embedding_function=DummyEmbeddingFunction(),
+            embedding_function=embedding_functions.ONNXMiniLM_L6_V2(),
         )
