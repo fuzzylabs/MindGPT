@@ -40,21 +40,6 @@ class MockEmbeddingFunction(EmbeddingFunction):
         return [[float(1.0)] * 2 + [float(i)] for i in range(len(texts))]
 
 
-class DummyEmbeddingFunction(EmbeddingFunction):
-    """Dummy embedding class for testing."""
-
-    def __call__(self, texts: Documents) -> Embeddings:
-        """Calls the dummy embedding function.
-
-        Args:
-            texts (Documents): Documents to embed
-
-        Returns:
-            Embeddings: Return fixed embedding
-        """
-        return [[float(1.0)] * 10 + [float(i)] for i in range(len(texts) * 2)]
-
-
 @pytest.mark.parametrize(
     "collection_name, is_valid",
     [
