@@ -134,7 +134,7 @@ class ChromaStore:
         embedding_function: Optional[EmbeddingFunction] = None,
         **kwargs,
     ) -> None:
-        """_summary_
+        """_summary_.
 
         Args:
             collection_name (str): _description_
