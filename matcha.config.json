@@ -1,7 +1,0 @@
-{
-    "remote_state_bucket": {
-        "account_name": "shuteststatestacc",
-        "container_name": "shuteststatestore",
-        "resource_group_name": "shutest-resources"
-    }
-}
