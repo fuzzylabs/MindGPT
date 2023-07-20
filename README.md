@@ -11,11 +11,11 @@
     </a>
 </p>
 
-MindGPT is a conversational system where users can ask mental health-orientated questions and receive answers which summarises content from two leading mental health websites: [Mind](https://www.mind.org.uk/) and [NHS Mental Health](https://www.nhs.uk/mental-health/).
+MindGPT is a conversational system where users can ask mental health-orientated questions and receive answers which summarizes content from two leading mental health websites: [Mind](https://www.mind.org.uk/) and [NHS Mental Health](https://www.nhs.uk/mental-health/).
 
-**It's not a digital counsellor or therapist and the output from the system should not be treated as such**, MindGPT is purely focused on acting as a gateway to vital information sources, summarising two authoritative perspectives and providing pointers to the original content.
+**It's not a digital counselor or therapist and the output from the system should not be treated as such**, MindGPT is purely focused on acting as a gateway to vital information sources, summarizing two authoritative perspectives and providing pointers to the original content.
 
-In building this, we've drawn on our expertise in MLOps and prior experience in fine-tuning open-source LLMs for various tasks (see [here](https://github.com/fuzzylabs/matcha-examples/tree/main/llm) for an example of one tuned to summarise legal text). If you're interested in how MindGPT works under the hood and what technologies and data we've used, then take a look [here](docs/inside-mindgpt.md).
+In building this, we've drawn on our expertise in MLOps and prior experience in fine-tuning open-source LLMs for various tasks (see [here](https://github.com/fuzzylabs/matcha-examples/tree/main/llm) for an example of one tuned to summarize legal text). If you're interested in how MindGPT works under the hood and what technologies and data we've used, then take a look [here](docs/inside-mindgpt.md).
 
 # &#8265; Why?
 
@@ -49,7 +49,7 @@ After the provisioning completes, we will have on hand these resources:
 
 Before we start deploying Chroma server on AKS, we need to build the Docker image for Chroma server. We build and push this Chroma server image to ACR.
 
-> Note: There exists a [bug](https://github.com/chroma-core/chroma/issues/721) in the exisiting Chroma server image present on [ghcr](https://github.com/chroma-core/chroma/pkgs/container/chroma).
+> Note: There exists a [bug](https://github.com/chroma-core/chroma/issues/721) in the existing Chroma server image present on [ghcr](https://github.com/chroma-core/chroma/pkgs/container/chroma).
 
 ```bash
 acr_registry_uri=$(matcha get container-registry registry-url --output json | sed -n 's/.*"registry-url": "\(.*\)".*/\1/p')

@@ -25,7 +25,7 @@ st.set_page_config(
 st.title("MindGPT 🧠")
 st.caption("_made by [Fuzzy Labs](https://www.fuzzylabs.ai/)_")
 st.caption(
-    "MindGPT is not a digital counsellor and the answers provided may be innacurate. If you or someone you know is in crisis or experiencing a mental health emergency, please contact your local emergency services or a helpline immediately such as https://www.mind.org.uk/need-urgent-help/using-this-tool/ . This chatbot is not designed to provide immediate crisis intervention or emergency assistance."
+    "MindGPT is not a digital counselor and the answers provided may be inaccurate. If you or someone you know is in crisis or experiencing a mental health emergency, please contact your local emergency services or a helpline immediately such as https://www.mind.org.uk/need-urgent-help/using-this-tool/ . This chatbot is not designed to provide immediate crisis intervention or emergency assistance."
 )
 
 st.session_state.error_placeholder = st.empty()
@@ -73,7 +73,7 @@ def _create_payload(messages: List[Dict[str, str]]) -> Dict[str, List[Dict[str, 
 def _get_predictions(
     prediction_endpoint: str, payload: Dict[str, Dict[str, List[Dict[str, str]]]]
 ) -> Dict[Any, Any]:
-    """Using the prediction endpont and payload, make a prediction request to the deployed model.
+    """Using the prediction endpoint and payload, make a prediction request to the deployed model.
 
     Args:
         prediction_endpoint (str): the url endpoint.
@@ -108,10 +108,10 @@ def fetch_summary(prediction_endpoint: str, messages: List[Dict[str, str]]) -> s
 
 
 def show_disclaimer() -> bool:
-    """Show disclamer on sidebar with streamlit.
+    """Show disclaimer on sidebar with streamlit.
 
     Returns:
-        bool: True if disclamer accepted, False if not.
+        bool: True if disclaimer accepted, False if not.
     """
     st.sidebar.title("Disclaimer")
     with open("app/disclaimer.txt") as f:

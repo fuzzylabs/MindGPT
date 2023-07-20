@@ -104,7 +104,7 @@ class NHSMentalHealthScraper:
         )
 
     def scrape_recursively(self) -> None:
-        """A method for recursivley scraping all nested links found within a target website or Tag subject to conditions.
+        """A method for recursively scraping all nested links found within a target website or Tag subject to conditions.
 
         Conditions:
             - the URL begins "https://www.nhs.uk/mental-health
@@ -116,7 +116,7 @@ class NHSMentalHealthScraper:
                 valid_link = str(f"https://www.nhs.uk{link}")
             else:
                 valid_link = str(link)
-            # if the link has a URL beginning https://www.nhs.uk/mental-health and has not already been scraped, it will be scraped recursivley.
+            # if the link has a URL beginning https://www.nhs.uk/mental-health and has not already been scraped, it will be scraped recursively.
             if (
                 re.match(r"^(https:\/\/www.nhs.uk\/mental-health){1}.+", valid_link)
                 and valid_link not in self._scraped_list

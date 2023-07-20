@@ -21,6 +21,7 @@ goes = "goes"
 "eq" = "eq"
 "seed" = "seed"
 "te" = "te"
+"ba" = "ba"
 
 [default]
 locale = "en-us"

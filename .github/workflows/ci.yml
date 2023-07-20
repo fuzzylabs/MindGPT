@@ -42,13 +42,13 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
           installer-parallel: true
-      
+
       - name: Spelling checker
         uses: crate-ci/typos@master
         with:
             files: "."
             config: ./.typos.toml
-  
+
 
       # Cache your dependencies (i.e. all the stuff in your `pyproject.toml`).
       - name: Load cached venv
