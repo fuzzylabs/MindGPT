@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional
 import chromadb
 from chromadb.api.types import CollectionMetadata, EmbeddingFunction
 from chromadb.config import Settings
+from chromadb.errors import InvalidDimensionException
 
 MIN_COLLECTION_NAME_LENGTH = 3
 MAX_COLLECTION_NAME_LENGTH = 64
@@ -145,20 +146,27 @@ class ChromaStore:
             **kwargs (Dict): Additional keyword arguments
 
         Returns:
-            Dict[str, List[Any]]
+            Dict[str, List[Any]]: Dictionary containing query results
+
+        Raises:
+            InvalidDimensionException: If the dimension of the embedding function does not match the dimension of the collection
         """
-        # TODO: Check if embedding function matches to already created collection
         if self._collection is None:
             self._get_or_create_collection(collection_name, embedding_function)
 
         # Chroma will embed each query_text with the collection's embedding function
         # and then query using generated embeddings
-        return self._collection.query(
-            query_texts=query_texts,
-            n_results=n_results,
-            where=where,
-            **kwargs,
-        )
+        try:
+            return self._collection.query(
+                query_texts=query_texts,
+                n_results=n_results,
+                where=where,
+                **kwargs,
+            )
+        except InvalidDimensionException:
+            raise ValueError(
+                "Invalid dimension. Please check if the embedding function matches to the collection's embedding function"
+            )
 
     def add_texts(
         self,

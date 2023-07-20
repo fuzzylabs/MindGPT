@@ -73,7 +73,7 @@ cd ..
 rm -rf chroma
 ```
 
-Line number 48 in [server-deployment.yml](./infrastructure/chroma_server_k8s/server-deployment.yaml#L48) should be updated to the name Docker image pushed to ACR, in this case it will be of format `<name-of-acr-registry>.azurecr.io/chroma-server`.
+Line number 56 in [server-deployment.yml](./infrastructure/chroma_server_k8s/server-deployment.yaml#L56) should be updated to the name Docker image pushed to ACR, in this case it will be of format `<name-of-acr-registry>.azurecr.io/chroma-server`.
 
 Finally, we apply Kubernetes manifests to deploy Chroma server on AKS using following commands
 

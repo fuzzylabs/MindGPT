@@ -20,7 +20,7 @@ N_CLOSEST_MATCHES = 3
 EMBED_MODEL_MAP = {
     "xl": "hkunlp/instructor-xl",
     "large": "hkunlp/instructor-large",
-    "base": "hkunlp/instructor-large",
+    "base": "hkunlp/instructor-base",
 }
 
 # Paragraph from https://www.nhs.uk/mental-health/conditions/depression-in-adults/overview/
@@ -213,53 +213,71 @@ def main() -> None:
         if accept:
             st.session_state.accept = True
 
-    if st.session_state.accept and (prompt := st.chat_input("Enter a question")):
-        # Display user message in chat message container
-        with st.chat_message("user"):
-            st.markdown(prompt)
+    if st.session_state.accept:
+        # Initialize chat history
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
 
-        # Get seldon endpoint
-        prediction_endpoint = _get_prediction_endpoint()
+        # Display chat messages from history on app rerun
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
 
-        # Get vector store client
-        chroma_client = connect_vector_store(
-            chroma_server_host=CHROMA_SERVER_HOST_NAME,
-            chroma_server_port=CHROMA_SERVER_PORT,
-        )
-        embed_function = _get_embedding_function(DEFAULT_EMBED_MODEL)
+        if prompt := st.chat_input("Enter a question"):
+            # Display user message in chat message container
+            with st.chat_message("user"):
+                st.markdown(prompt)
 
-        if prediction_endpoint is None or chroma_client is None:
-            st.session_state.error_placeholder.error(
-                "MindGPT is not currently reachable, please try again later.",
-                icon="🚨",
+            # Add user message to chat history
+            st.session_state.messages.append({"role": "user", "content": prompt})
+
+            # Get seldon endpoint
+            prediction_endpoint = _get_prediction_endpoint()
+
+            # Get vector store client
+            chroma_client = connect_vector_store(
+                chroma_server_host=CHROMA_SERVER_HOST_NAME,
+                chroma_server_port=CHROMA_SERVER_PORT,
             )
-        else:
-            with st.chat_message("assistant"):
-                full_response = ""
-                message_placeholder = st.empty()
+            embed_function = _get_embedding_function(DEFAULT_EMBED_MODEL)
 
-                # Query vector store
-                context = query_vector_store(
-                    chroma_client=chroma_client,
-                    query_text=prompt,
-                    collection_name="mind_data",
-                    n_results=N_CLOSEST_MATCHES,
-                    embedding_function=embed_function,
+            if prediction_endpoint is None or chroma_client is None:
+                st.session_state.error_placeholder.error(
+                    "MindGPT is not currently reachable, please try again later.",
+                    icon="🚨",
                 )
+            else:
+                with st.chat_message("assistant"):
+                    full_response = ""
+                    message_placeholder = st.empty()
 
-                # Create a dict of prompt and context
-                message = {"prompt_query": prompt, "context": context}
+                    # Query vector store
+                    context = query_vector_store(
+                        chroma_client=chroma_client,
+                        query_text=prompt,
+                        collection_name="mind_data",
+                        n_results=N_CLOSEST_MATCHES,
+                        embedding_function=embed_function,
+                    )
 
-                # Query LLM by passing query and context
-                assistant_response = query_llm(prediction_endpoint, message)
+                    # Create a dict of prompt and context
+                    message = {"prompt_query": prompt, "context": context}
 
-                # Simulate stream of response with milliseconds delay
-                for chunk in assistant_response.split():
-                    full_response += chunk + " "
-                    time.sleep(0.05)
-                    # Add a blinking cursor to simulate typing
-                    message_placeholder.markdown(full_response + "▌")
-                message_placeholder.markdown(full_response)
+                    # Query LLM by passing query and context
+                    assistant_response = query_llm(prediction_endpoint, message)
+
+                    # Simulate stream of response with milliseconds delay
+                    for chunk in assistant_response.split():
+                        full_response += chunk + " "
+                        time.sleep(0.05)
+                        # Add a blinking cursor to simulate typing
+                        message_placeholder.markdown(full_response + "▌")
+                    message_placeholder.markdown(full_response)
+
+                    # Add assistant response to chat history
+                    st.session_state.messages.append(
+                        {"role": "assistant", "content": full_response}
+                    )
 
 
 if __name__ == "__main__":

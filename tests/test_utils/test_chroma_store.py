@@ -40,6 +40,21 @@ class MockEmbeddingFunction(EmbeddingFunction):
         return [[float(1.0)] * 9 + [float(i)] for i in range(len(texts))]
 
 
+class DummyEmbeddingFunction(EmbeddingFunction):
+    """Dummy embedding class for testing."""
+
+    def __call__(self, texts: Documents) -> Embeddings:
+        """Calls the dummy embedding function.
+
+        Args:
+            texts (Documents): Documents to embed
+
+        Returns:
+            Embeddings: Return fixed embedding
+        """
+        return [[float(1.0)] * 100 + [float(i)] for i in range(len(texts) * 2)]
+
+
 @pytest.mark.parametrize(
     "collection_name, is_valid",
     [
@@ -206,3 +221,22 @@ def test_query_collection(local_persist_api: API):
     assert len(results["ids"][0]) == 1
     assert results["documents"][0] == ["foo"]
     assert results["ids"][0] == ["bdd440fb-0667-4ad1-9c80-317fa3b1799d"]
+
+
+def test_query_collection_raise_embedding_function_error(local_persist_api: API):
+    """Test querying collections raise error when passed a different embedding function.
+
+    Args:
+        local_persist_api (API): Local chroma server for testing
+    """
+    store = ChromaStore()
+    store._client = local_persist_api
+
+    # Use a different embedding function when querying
+    with pytest.raises(ValueError):
+        _ = store.query_collection(
+            collection_name="test",
+            query_texts="foo",
+            n_results=1,
+            embedding_function=DummyEmbeddingFunction(),
+        )
