@@ -163,7 +163,7 @@ docker build -t $acr_registry_uri/mindgpt:latest -f app/Dockerfile .
 docker push $acr_registry_uri/mindgpt:latest
 ```
 
-Line number 19 in [streamlit-deployment.yaml](./infrastructure/streamlit_k8s/streamlit-deployment.yaml#L19) should be updated to the name Docker image pushed to ACR, in this case it will be of format `<name-of-acr-registry>.azurecr.io:mindgpt`.
+Line number 19 in [streamlit-deployment.yaml](./infrastructure/streamlit_k8s/streamlit-deployment.yaml#L19) should be updated to the name Docker image pushed to ACR, in this case it will be of format `<name-of-acr-registry>.azurecr.io/mindgpt`.
 
 Next, we apply the Kubernetes manifest to deploy the streamlit application on AKS.
 
