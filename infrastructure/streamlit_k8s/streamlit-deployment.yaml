@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: streamlit
-          image: crmindgpt.azurecr.io/mindgpt
+          image: <acr-registry-name>.azurecr.io/mindgpt
           imagePullPolicy: Always
           ports:
             - containerPort: 8501
