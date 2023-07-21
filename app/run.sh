@@ -21,7 +21,7 @@ trap stopRunningProcess EXIT TERM
 
 source ${VIRTUAL_ENV}/bin/activate
 
-python -m streamlit run ${HOME}/app/app.py &
+nohup python -m streamlit run ${HOME}/app/app.py &
 APP_ID=${!}
 
 wait ${APP_ID}

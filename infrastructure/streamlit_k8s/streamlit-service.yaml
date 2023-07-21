@@ -10,4 +10,4 @@ spec:
     - name: streamlit-port
       protocol: TCP
       port: 80
-      targetPort: 4180
+      targetPort: 8501

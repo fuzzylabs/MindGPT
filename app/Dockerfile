@@ -15,13 +15,15 @@ RUN apt-get update && apt-get install -y \
 USER appuser
 WORKDIR /home/appuser
 
-COPY app /home/appuser/app
-COPY utils/chroma_store.py /home/appuser/utils/chroma_store.py
-COPY app/run.sh /home/appuser
+COPY app/requirements.txt /home/appuser/app/requirements.txt
 
 ENV VIRTUAL_ENV=/home/appuser/venv
 RUN virtualenv ${VIRTUAL_ENV}
 RUN . ${VIRTUAL_ENV}/bin/activate && pip install -r app/requirements.txt
+
+COPY app /home/appuser/app
+COPY utils/chroma_store.py /home/appuser/utils/chroma_store.py
+COPY app/run.sh /home/appuser
 
 ENV SELDON_INGRESS=20.68.109.147
 EXPOSE 8501
