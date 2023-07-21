@@ -26,6 +26,7 @@ EMBED_MODEL_MAP = {
 # Seldon configuration
 SELDON_SERVICE_NAME = "llm-default-transformer"
 SELDON_NAMESPACE = "matcha-seldon-workloads"
+SELDON_PORT = 9000
 
 # Paragraph from https://www.nhs.uk/mental-health/conditions/depression-in-adults/overview/
 DEFAULT_CONTEXT = """Most people experience feelings of stress, anxiety or low mood during difficult times.
@@ -56,7 +57,7 @@ def _get_prediction_endpoint() -> Optional[str]:
     Returns:
         Optional[str]: the url endpoint if it exists and is valid, None otherwise.
     """
-    return f"http://{SELDON_SERVICE_NAME}.{SELDON_NAMESPACE}:9000/v2/models/transformer/infer"
+    return f"http://{SELDON_SERVICE_NAME}.{SELDON_NAMESPACE}:{SELDON_PORT}/v2/models/transformer/infer"
 
 
 @st.cache_data(show_spinner=False)
