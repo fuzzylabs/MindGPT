@@ -12,7 +12,7 @@ from chromadb.utils import embedding_functions
 from utils.chroma_store import ChromaStore
 
 # Setup for chroma vector store
-CHROMA_SERVER_HOST_NAME = "server.default"
+CHROMA_SERVER_HOST_NAME = "localhost"
 CHROMA_SERVER_PORT = 8000
 DEFAULT_EMBED_MODEL = "base"  # ["base", "large", "xl"]
 COLLECTION_NAMES = ["mind_data", "nhs_data"]
@@ -251,28 +251,45 @@ def main() -> None:
                     full_response = ""
                     message_placeholder = st.empty()
 
-                    # Query vector store
-                    context = query_vector_store(
-                        chroma_client=chroma_client,
-                        query_text=prompt,
-                        collection_name=COLLECTION_NAMES[0],
-                        n_results=N_CLOSEST_MATCHES,
-                        embedding_function=embed_function,
+                    response = {}
+
+                    for collection in COLLECTION_NAMES:
+                        print(collection)
+                        # Query vector store
+                        context = query_vector_store(
+                            chroma_client=chroma_client,
+                            query_text=prompt,
+                            collection_name=collection,
+                            n_results=N_CLOSEST_MATCHES,
+                            embedding_function=embed_function,
+                        )
+
+                        # Create a dict of prompt and context
+                        message = {"prompt_query": prompt, "context": context}
+
+                        # Query LLM by passing query and context
+                        assistant_response = query_llm(prediction_endpoint, message)
+
+                        response[collection] = assistant_response
+
+                    # # Simulate stream of response with milliseconds delay
+                    # for chunk in assistant_response.split():
+                    #     full_response += chunk + " "
+                    #     time.sleep(0.05)
+                    #     # Add a blinking cursor to simulate typing
+                    #     message_placeholder.markdown(full_response + "▌")
+                    # message_placeholder.markdown(full_response)
+
+                    print(response)
+                    message = f"Here's what the NHS and Mind each have to say:\n{COLLECTION_NAMES[0]}: {response[COLLECTION_NAMES[0]]}\{COLLECTION_NAMES[1]}: {response[COLLECTION_NAMES[1]]}"
+
+                    message_placeholder.markdown(
+                        "Here's what the NHS and Mind each have to say:   \n\n"
+
+                        f"{COLLECTION_NAMES[0]}: {response[COLLECTION_NAMES[0]]}  \n"
+                        f"{COLLECTION_NAMES[1]}: {response[COLLECTION_NAMES[1]]}  "
                     )
 
-                    # Create a dict of prompt and context
-                    message = {"prompt_query": prompt, "context": context}
-
-                    # Query LLM by passing query and context
-                    assistant_response = query_llm(prediction_endpoint, message)
-
-                    # Simulate stream of response with milliseconds delay
-                    for chunk in assistant_response.split():
-                        full_response += chunk + " "
-                        time.sleep(0.05)
-                        # Add a blinking cursor to simulate typing
-                        message_placeholder.markdown(full_response + "▌")
-                    message_placeholder.markdown(full_response)
 
                     # Add assistant response to chat history
                     st.session_state.messages.append(
