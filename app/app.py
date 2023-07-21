@@ -245,7 +245,6 @@ def main() -> None:
             )
             embed_function = _get_embedding_function(DEFAULT_EMBED_MODEL)
 
-            print(prediction_endpoint, chroma_client)
             if prediction_endpoint is None or chroma_client is None:
                 st.session_state.error_placeholder.error(
                     "MindGPT is not currently reachable, please try again later.",
