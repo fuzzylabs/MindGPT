@@ -10,7 +10,8 @@ RUN pip3 install --no-cache-dir --upgrade \
 RUN apt-get update && apt-get install -y \
     build-essential \
     software-properties-common \
-    git
+    git \
+    procps && rm -rf /var/lib/apt/lists/*
 
 USER appuser
 WORKDIR /home/appuser
@@ -25,7 +26,6 @@ COPY app /home/appuser/app
 COPY utils/chroma_store.py /home/appuser/utils/chroma_store.py
 COPY app/run.sh /home/appuser
 
-ENV SELDON_INGRESS=20.68.109.147
 EXPOSE 8501
 
 ENTRYPOINT ["./run.sh"]

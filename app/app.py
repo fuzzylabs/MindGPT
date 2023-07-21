@@ -23,6 +23,10 @@ EMBED_MODEL_MAP = {
     "base": "hkunlp/instructor-base",
 }
 
+# Seldon configuration
+SELDON_SERVICE_NAME = "llm-default-transformer"
+SELDON_NAMESPACE = "matcha-seldon-workloads"
+
 # Paragraph from https://www.nhs.uk/mental-health/conditions/depression-in-adults/overview/
 DEFAULT_CONTEXT = """Most people experience feelings of stress, anxiety or low mood during difficult times.
 A low mood may improve after a short period of time, rather than being a sign of depression."""
@@ -52,10 +56,7 @@ def _get_prediction_endpoint() -> Optional[str]:
     Returns:
         Optional[str]: the url endpoint if it exists and is valid, None otherwise.
     """
-    ingress_ip = os.environ.get("SELDON_INGRESS")
-    if ingress_ip is None:
-        return None
-    return f"http://{ingress_ip}/seldon/matcha-seldon-workloads/llm/v2/models/transformer/infer"
+    return f"http://{SELDON_SERVICE_NAME}.{SELDON_NAMESPACE}:9000/v2/models/transformer/infer"
 
 
 @st.cache_data(show_spinner=False)
@@ -223,7 +224,9 @@ def main() -> None:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-        if prompt := st.chat_input("Enter a question"):
+        prompt = st.chat_input("Enter a question")
+
+        if prompt is not None:
             # Display user message in chat message container
             with st.chat_message("user"):
                 st.markdown(prompt)
@@ -270,10 +273,9 @@ def main() -> None:
                     # Simulate stream of response with milliseconds delay
                     for chunk in assistant_response.split():
                         full_response += chunk + " "
-                        time.sleep(0.05)
+                        time.sleep(0.1)
                         # Add a blinking cursor to simulate typing
                         message_placeholder.markdown(full_response + "▌")
-                    message_placeholder.markdown(full_response)
 
                     # Add assistant response to chat history
                     st.session_state.messages.append(
