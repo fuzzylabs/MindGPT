@@ -142,6 +142,8 @@ To deploy streamlit application on AKS, we first build a Docker image for stream
 
 > Note: Run the following command from the root of the project.
 
+Verify that you are in the root of the project.
+
 ```bash
 pwd
 
