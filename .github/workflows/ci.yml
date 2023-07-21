@@ -47,7 +47,7 @@ jobs:
         uses: crate-ci/typos@master
         with:
             files: "."
-            config: ./.typos.toml
+            config: _typos.toml
 
 
       # Cache your dependencies (i.e. all the stuff in your `pyproject.toml`).
