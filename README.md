@@ -150,7 +150,7 @@ pwd
 /home/username/MindGPT
 ```
 
-We build and push the streamlit application to ACR. This image will be used by Kubernetes.
+We build and push the streamlit application to ACR. This image will be used by Kubernetes deployment.
 
 ```bash
 acr_registry_uri=$(matcha get container-registry registry-url --output json | sed -n 's/.*"registry-url": "\(.*\)".*/\1/p')
@@ -177,6 +177,8 @@ Finally, we verify the streamlit application. The command below should provide a
 ```bash
 kubectl get service streamlit-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 ```
+
+Visiting the address should open a streamlit application for you to interact.
 
 # &#129309; Acknowledgements
 
