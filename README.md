@@ -150,6 +150,8 @@ pwd
 /home/username/MindGPT
 ```
 
+We build and push the streamlit application to ACR. This image will be used by Kubernetes.
+
 ```bash
 acr_registry_uri=$(matcha get container-registry registry-url --output json | sed -n 's/.*"registry-url": "\(.*\)".*/\1/p')
 acr_registry_name=$(matcha get container-registry registry-name --output json | sed -n 's/.*"registry-name": "\(.*\)".*/\1/p')
@@ -160,6 +162,8 @@ az acr login --name $acr_registry_name
 docker build -t $acr_registry_uri/mindgpt:latest -f app/Dockerfile .
 docker push $acr_registry_uri/mindgpt:latest
 ```
+
+Line number 19 in [streamlit-deployment.yaml](./infrastructure/streamlit_app_k8s/streamlit-deployment#L19) should be updated to the name Docker image pushed to ACR, in this case it will be of format `<name-of-acr-registry>.azurecr.io:mindgpt`.
 
 Next, we apply the Kubernetes manifest to deploy the streamlit application on AKS.
 
