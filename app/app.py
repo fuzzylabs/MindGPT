@@ -39,7 +39,7 @@ st.set_page_config(
 st.title("MindGPT 🧠")
 st.caption("_made by [Fuzzy Labs](https://www.fuzzylabs.ai/)_")
 st.caption(
-    "MindGPT is not a digital counselor and the answers provided may be inaccurate. If you or someone you know is in crisis or experiencing a mental health emergency, please contact your local emergency services or a helpline immediately such as https://www.mind.org.uk/need-urgent-help/using-this-tool/ . This chatbot is not designed to provide immediate crisis intervention or emergency assistance."
+    "MindGPT is not a digital counsellor and the answers provided may be inaccurate. If you or someone you know is in crisis or experiencing a mental health emergency, please contact your local emergency services or a helpline immediately such as https://www.mind.org.uk/need-urgent-help/using-this-tool/ . This chatbot is not designed to provide immediate crisis intervention or emergency assistance."
 )
 
 st.session_state.error_placeholder = st.empty()
@@ -179,7 +179,7 @@ def query_llm(prediction_endpoint: str, messages: Dict[str, str]) -> str:
         messages (Dict[str, str]): Dict of message containing prompt and context.
 
     Returns:
-        str: Summarized text.
+        str: Summarised text.
     """
     with st.spinner("Loading response..."):
         payload = _create_payload(messages)
@@ -214,7 +214,7 @@ def main() -> None:
             st.session_state.accept = True
 
     if st.session_state.accept:
-        # Initialize chat history
+        # Initialise chat history
         if "messages" not in st.session_state:
             st.session_state.messages = []
 

@@ -29,7 +29,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-# Byte-compiled / optimized / DLL files
+# Byte-compiled / optimised / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -147,7 +147,7 @@ __pypackages__/
 celerybeat-schedule
 celerybeat.pid
 
-# SageMath parsed files
+# SageMaths parsed files
 *.sage.py
 
 # Environments
@@ -180,7 +180,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# pytype static type analyzer
+# pytype static type analyser
 .pytype/
 
 # Cython debug symbols
@@ -190,7 +190,7 @@ cython_debug/
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
+#  option (not recommended) you can uncomment the following to ignore the entire idaea folder.
 #.idea/
 
 .vscode/*
@@ -261,7 +261,7 @@ cmake-build-*/
 out/
 
 # mpeltonen/sbt-idea plugin
-.idea_modules/
+.idaea_modules/
 
 # JIRA plugin
 atlassian-ide-plugin.xml
@@ -281,14 +281,14 @@ fabric.properties
 # Editor-based Rest Client
 .idea/httpRequests
 
-# Android studio 3.1+ serialized cache file
+# Android studio 3.1+ serialised cache file
 .idea/caches/build_file_checksums.ser
 
 # Virtualenv
 # http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
 .Python
 [Bb]in
-[Ii]nclude
+[Ii]include
 [Ll]ib
 [Ll]ib64
 [Ll]ocal
@@ -317,5 +317,5 @@ pip-selfcheck.json
 .nfs*
 
 .vscode
-.idea
+.idaea
 .matcha

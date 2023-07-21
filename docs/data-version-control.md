@@ -43,7 +43,7 @@ are tracked. DVC will handle the storage of the `.csv` files when you execute th
 ### Automatic data versioning for MindGPT
 MindGPT will to some extent manage your data version control for you.
 This is done using the subprocess functions found in the utils submodule, in the data_version_control.py file.
-The behavior upon a data-versionable event is as follows:
+The behaviour upon a data-versionable event is as follows:
 1. Add to dvc.
 2. Add the `.dvc` files to git.
 3. Commit the changes to git.
@@ -56,7 +56,7 @@ A data-versionable event is defined as being one of the following:
 1. The scraping pipeline has been run and there exists some new raw data.
 2. Raw data has been passed through the cleaning and validation steps.
 
-Everything outlined above is parameterized as part of the data scraping and data preparation pipelines.
+Everything outlined above is parameterised as part of the data scraping and data preparation pipelines.
 To modify the filenames, or to avoid pushing to remote, edit the pipeline configuration .yaml files found in the various
 pipeline submodules. If the `debug_mode` parameter is set to `True`, the data will be versioned locally but not pushed.
 The automatic data versioning will also not allow you to push to the develop branch to avoid accidental polluting of a
