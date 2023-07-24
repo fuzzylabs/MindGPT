@@ -1,7 +1,6 @@
 """MindGPT Streamlit app."""
 import json
 import os
-import time
 from typing import Any, Dict, List, Optional, Union
 
 import requests
@@ -22,6 +21,7 @@ EMBED_MODEL_MAP = {
     "large": "hkunlp/instructor-large",
     "base": "hkunlp/instructor-base",
 }
+collection_name_map = {COLLECTION_NAMES[0]: "Mind", COLLECTION_NAMES[1]: "NHS"}
 
 # Paragraph from https://www.nhs.uk/mental-health/conditions/depression-in-adults/overview/
 DEFAULT_CONTEXT = """Most people experience feelings of stress, anxiety or low mood during difficult times.
@@ -254,7 +254,6 @@ def main() -> None:
                     response = {}
 
                     for collection in COLLECTION_NAMES:
-                        print(collection)
                         # Query vector store
                         context = query_vector_store(
                             chroma_client=chroma_client,
@@ -272,24 +271,15 @@ def main() -> None:
 
                         response[collection] = assistant_response
 
-                    # # Simulate stream of response with milliseconds delay
-                    # for chunk in assistant_response.split():
-                    #     full_response += chunk + " "
-                    #     time.sleep(0.05)
-                    #     # Add a blinking cursor to simulate typing
-                    #     message_placeholder.markdown(full_response + "▌")
-                    # message_placeholder.markdown(full_response)
+                    # Two trailing-whitespaces are required at the end of the first response in order to output the response in the format we want
+                    full_response = f'''
+                        Here's what the NHS and Mind each have to say:
 
-                    print(response)
-                    message = f"Here's what the NHS and Mind each have to say:\n{COLLECTION_NAMES[0]}: {response[COLLECTION_NAMES[0]]}\{COLLECTION_NAMES[1]}: {response[COLLECTION_NAMES[1]]}"
+                        {collection_name_map[COLLECTION_NAMES[0]]}: {response[COLLECTION_NAMES[0]]}  
+                        {collection_name_map[COLLECTION_NAMES[1]]}: {response[COLLECTION_NAMES[1]]}
+                    '''
 
-                    message_placeholder.markdown(
-                        "Here's what the NHS and Mind each have to say:   \n\n"
-
-                        f"{COLLECTION_NAMES[0]}: {response[COLLECTION_NAMES[0]]}  \n"
-                        f"{COLLECTION_NAMES[1]}: {response[COLLECTION_NAMES[1]]}  "
-                    )
-
+                    message_placeholder.markdown(full_response)
 
                     # Add assistant response to chat history
                     st.session_state.messages.append(
