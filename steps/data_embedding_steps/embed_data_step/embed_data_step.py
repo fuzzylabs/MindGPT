@@ -44,8 +44,9 @@ def embed_data(
     ef = embedding_functions.InstructorEmbeddingFunction(model_name=model_name)
 
     # Create a chromadb client
+    # Switch hostname to server.default if running the pipeline on k8s
     chroma_client = ChromaStore(
-        chroma_server_hostname="server.default", chroma_server_port=8000
+        chroma_server_hostname="localhost", chroma_server_port=8000
     )
 
     chroma_client.add_texts(
