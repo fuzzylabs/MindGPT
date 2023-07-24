@@ -1,4 +1,4 @@
-"""Data versioning steps initializer."""
+"""Data versioning steps initialiser."""
 
 from .version_data_step import version_data
 
