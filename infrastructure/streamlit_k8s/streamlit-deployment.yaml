@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: streamlit-deployment
+  labels:
+    app: streamlit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: streamlit
+  template:
+    metadata:
+      labels:
+        app: streamlit
+    spec:
+      containers:
+        - name: streamlit
+          image: <acr-registry-name>.azurecr.io/mindgpt # UPDATE THIS LINE!!
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8501
+          livenessProbe:
+            httpGet:
+              path: /_stcore/health
+              port: 8501
+              scheme: HTTP
+            timeoutSeconds: 1
+          readinessProbe:
+            httpGet:
+              path: /_stcore/health
+              port: 8501
+              scheme: HTTP
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 1
+              memory: 3Gi
+            requests:
+              cpu: 100m
+              memory: 1500Mi

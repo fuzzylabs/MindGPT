@@ -14,7 +14,6 @@ from utils.chroma_store import ChromaStore
 CHROMA_SERVER_HOST_NAME = "server.default"
 CHROMA_SERVER_PORT = 8000
 DEFAULT_EMBED_MODEL = "base"  # ["base", "large", "xl"]
-COLLECTION_NAMES = ["mind_data", "nhs_data"]
 N_CLOSEST_MATCHES = 3
 EMBED_MODEL_MAP = {
     "xl": "hkunlp/instructor-xl",
@@ -22,6 +21,11 @@ EMBED_MODEL_MAP = {
     "base": "hkunlp/instructor-base",
 }
 COLLECTION_NAME_MAP = {"mind_data": "Mind", "nhs_data": "NHS"}
+
+# Seldon configuration
+SELDON_SERVICE_NAME = "llm-default-transformer"
+SELDON_NAMESPACE = "matcha-seldon-workloads"
+SELDON_PORT = 9000
 
 # Paragraph from https://www.nhs.uk/mental-health/conditions/depression-in-adults/overview/
 DEFAULT_CONTEXT = """Most people experience feelings of stress, anxiety or low mood during difficult times.
@@ -52,10 +56,7 @@ def _get_prediction_endpoint() -> Optional[str]:
     Returns:
         Optional[str]: the url endpoint if it exists and is valid, None otherwise.
     """
-    ingress_ip = os.environ.get("SELDON_INGRESS")
-    if ingress_ip is None:
-        return None
-    return f"http://{ingress_ip}/seldon/matcha-seldon-workloads/llm/v2/models/transformer/infer"
+    return f"http://{SELDON_SERVICE_NAME}.{SELDON_NAMESPACE}:{SELDON_PORT}/v2/models/transformer/infer"
 
 
 @st.cache_data(show_spinner=False)

@@ -138,14 +138,49 @@ The expected payload structure is as follows:
 
 ## Streamlit Application
 
-Once the deployment has completed, run the following command to start a streamlit application.
+To deploy the Streamlit application on AKS, we first need to build a Docker image and then push it to ACR.
 
-> Note: you need to first obtain the model ingress IP as described above.
+> Note: Run the following command from the root of the project.
+
+Verify that you are in the root of the project.
 
 ```bash
-export SELDON_INGRESS=<ingress IP from matcha>
-python -m streamlit run app/app.py
+pwd
+
+/home/username/MindGPT
 ```
+
+We build and push the streamlit application to ACR. This image will be used by Kubernetes deployment. Before that, we need to set two bash variables, one for ACR registry URI and another for ACR registry name. We will use `matcha get` command to do this.
+
+```bash
+acr_registry_uri=$(matcha get container-registry registry-url --output json | sed -n 's/.*"registry-url": "\(.*\)".*/\1/p')
+acr_registry_name=$(matcha get container-registry registry-name --output json | sed -n 's/.*"registry-name": "\(.*\)".*/\1/p')
+```
+
+Now we're ready to login into ACR, build and push the image to the ACR.
+
+```bash
+az acr login --name $acr_registry_name
+docker build -t $acr_registry_uri/mindgpt:latest -f app/Dockerfile .
+docker push $acr_registry_uri/mindgpt:latest
+```
+
+Line number 19 in [streamlit-deployment.yaml](./infrastructure/streamlit_k8s/streamlit-deployment.yaml#L19) should be updated to match the Docker image name which we've just pushed to the ACR, and it will need to be in the following format: `<name-of-acr-registry>.azurecr.io/mindgpt`.
+
+Next, we apply the Kubernetes manifest to deploy the streamlit application on AKS.
+
+```bash
+cd infrastructure/streamlit_app_k8s
+kubectl apply -f .
+```
+
+Finally, we verify the streamlit application. The command below should provide an IP address for the streamlit application.
+
+```bash
+kubectl get service streamlit-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+```
+
+If you visit that URL in browser, you should be able to interact with the deployed streamlit application.
 
 # &#129309; Acknowledgements
 
