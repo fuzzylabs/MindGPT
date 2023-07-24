@@ -14,7 +14,6 @@ from utils.chroma_store import ChromaStore
 CHROMA_SERVER_HOST_NAME = "server.default"
 CHROMA_SERVER_PORT = 8000
 DEFAULT_EMBED_MODEL = "base"  # ["base", "large", "xl"]
-COLLECTION_NAMES = ["mind_data", "nhs_data"]
 N_CLOSEST_MATCHES = 3
 EMBED_MODEL_MAP = {
     "xl": "hkunlp/instructor-xl",
