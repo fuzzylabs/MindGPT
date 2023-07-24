@@ -225,9 +225,7 @@ def main() -> None:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-        prompt = st.chat_input("Enter a question")
-
-        if prompt is not None:
+        if prompt := st.chat_input("Enter a question"):
             # Display user message in chat message container
             with st.chat_message("user"):
                 st.markdown(prompt)
