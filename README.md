@@ -50,7 +50,7 @@ After the provisioning completes, we will have on hand these resources:
 
 Before we start deploying Chroma server on AKS, we need to build the Docker image for Chroma server. We build and push this Chroma server image to ACR.
 
-> Note: There exists a [bug](https://github.com/chroma-core/chroma/issues/721) in the exisiting Chroma server image present on [ghcr](https://github.com/chroma-core/chroma/pkgs/container/chroma).
+> Note: There exists a [bug](https://github.com/chroma-core/chroma/issues/721) in the existing Chroma server image present on [ghcr](https://github.com/chroma-core/chroma/pkgs/container/chroma).
 
 ```bash
 acr_registry_uri=$(matcha get container-registry registry-url --output json | sed -n 's/.*"registry-url": "\(.*\)".*/\1/p')

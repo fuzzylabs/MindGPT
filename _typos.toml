@@ -1,0 +1,16 @@
+[files]
+extend-exclude=[".gitignore", "LICENSE", ".*",]
+
+[default.extend-identifiers]
+aks="aks"
+AKS="AKS"
+
+[default.extend-words]
+"ba"="ba"
+"center"="center"
+"ve"="ve"
+"tes"="tes"
+"parametrize"="parametrize"
+
+[default]
+locale="en-gb"

@@ -29,7 +29,7 @@ repos:
     rev: "v0.0.257"
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix] # enable autofix
+        args: [--fix, --exit-non-zero-on-fix, "--config=pyproject.toml"] # enable autofix
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.1.1
@@ -38,3 +38,9 @@ repos:
         language: system
         args: ["--config-file=pyproject.toml"]
         exclude: ^tests/
+
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.16.1
+    hooks:
+      - id: typos
+        args: [--config=_typos.toml]

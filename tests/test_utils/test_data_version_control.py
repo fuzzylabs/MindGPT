@@ -113,7 +113,7 @@ def test_git_checkout_folder_raises_file_not_found_error_without_directory(
         git_checkout_folder(tag_name="version1", folder_name="data")
 
 
-def test_git_checkout_folder_raises_vaue_error_invalid_tag(
+def test_git_checkout_folder_raises_value_error_invalid_tag(
     directory_for_testing,
     mock_git_command,
     mock_git_tag_exists,
@@ -138,7 +138,7 @@ def test_git_checkout_folder_raises_vaue_error_invalid_tag(
         git_checkout_folder(tag_name="version1", folder_name="data")
 
 
-def test_git_checkout_folder_raises_vaue_error_invalid_commit(
+def test_git_checkout_folder_raises_value_error_invalid_commit(
     directory_for_testing, mock_git_command, mock_git_tag_exists
 ):
     """Test the git_checkout_folder function raises ValueError when the commit is invalid.
