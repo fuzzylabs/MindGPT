@@ -1,7 +1,6 @@
 """MindGPT Streamlit app."""
 import json
 import os
-import time
 from typing import Any, Dict, List, Optional, Union
 
 import requests
@@ -22,6 +21,7 @@ EMBED_MODEL_MAP = {
     "large": "hkunlp/instructor-large",
     "base": "hkunlp/instructor-base",
 }
+COLLECTION_NAME_MAP = {"mind_data": "Mind", "nhs_data": "NHS"}
 
 # Seldon configuration
 SELDON_SERVICE_NAME = "llm-default-transformer"
@@ -253,27 +253,27 @@ def main() -> None:
                     full_response = ""
                     message_placeholder = st.empty()
 
-                    # Query vector store
-                    context = query_vector_store(
-                        chroma_client=chroma_client,
-                        query_text=prompt,
-                        collection_name=COLLECTION_NAMES[0],
-                        n_results=N_CLOSEST_MATCHES,
-                        embedding_function=embed_function,
-                    )
+                    full_response = "Here's what the NHS and Mind each have to say:\n\n"
 
-                    # Create a dict of prompt and context
-                    message = {"prompt_query": prompt, "context": context}
+                    for collection, source in COLLECTION_NAME_MAP.items():
+                        # Query vector store
+                        context = query_vector_store(
+                            chroma_client=chroma_client,
+                            query_text=prompt,
+                            collection_name=collection,
+                            n_results=N_CLOSEST_MATCHES,
+                            embedding_function=embed_function,
+                        )
 
-                    # Query LLM by passing query and context
-                    assistant_response = query_llm(prediction_endpoint, message)
+                        # Create a dict of prompt and context
+                        message = {"prompt_query": prompt, "context": context}
 
-                    # Simulate stream of response with milliseconds delay
-                    for chunk in assistant_response.split():
-                        full_response += chunk + " "
-                        time.sleep(0.05)
-                        # Add a blinking cursor to simulate typing
-                        message_placeholder.markdown(full_response + "▌")
+                        # Query LLM by passing query and context
+                        assistant_response = query_llm(prediction_endpoint, message)
+
+                        full_response += f"{source}: {assistant_response}  \n"
+
+                    message_placeholder.markdown(full_response)
 
                     # Add assistant response to chat history
                     st.session_state.messages.append(
