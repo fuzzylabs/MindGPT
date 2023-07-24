@@ -178,7 +178,7 @@ Finally, we verify the streamlit application. The command below should provide a
 kubectl get service streamlit-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 ```
 
-Visiting the address should open a streamlit application for you to interact.
+Interact with the streamlit application by visiting the address.
 
 # &#129309; Acknowledgements
 
