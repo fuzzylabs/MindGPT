@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 import chromadb
 import pytest
 from chromadb.api import API
+from chromadb.api.models.Collection import Collection
 from chromadb.api.types import Documents, EmbeddingFunction, Embeddings
 from chromadb.config import Settings
 from utils.chroma_store import ChromaStore
@@ -75,12 +76,14 @@ def test_get_or_create_collection(local_persist_api: API):
     store._client = local_persist_api
 
     # Create collection "test"
-    store._get_or_create_collection("test", MockEmbeddingFunction())
-    assert store._collection.name == "test"
+    collection = store._get_or_create_collection("test", MockEmbeddingFunction())
+    assert isinstance(collection, Collection)
+    assert collection.name == "test"
 
     # Create collection "test1"
-    store._get_or_create_collection("test1", MockEmbeddingFunction())
-    assert store._collection.name == "test1"
+    collection = store._get_or_create_collection("test1", MockEmbeddingFunction())
+    assert isinstance(collection, Collection)
+    assert collection.name == "test1"
 
     assert {"test", "test1"} == set(store.list_collection_names())
 
