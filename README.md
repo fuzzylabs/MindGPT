@@ -102,7 +102,13 @@ cd infrastructure/chroma_server_k8s
 kubectl apply -f .
 ```
 
-Run the embedding pipeline.
+Port-forward the chroma server service to localhost using the following command. This will ensure we can access the server from localhost.
+
+```bash
+kubectl port-forward service/server 8000:8000
+```
+
+Finally, in a separate terminal we can run the data embedding pipeline.
 
 ```bash
 python run.py --embed
