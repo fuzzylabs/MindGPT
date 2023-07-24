@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 import chromadb
+from chromadb.api.models.Collection import Collection
 from chromadb.api.types import CollectionMetadata, EmbeddingFunction
 from chromadb.config import Settings
 from chromadb.errors import InvalidDimensionException
@@ -92,13 +93,16 @@ class ChromaStore:
         collection_name: str,
         embedding_function: Optional[EmbeddingFunction] = None,
         metadata: Optional[CollectionMetadata] = None,
-    ) -> None:
+    ) -> Collection:
         """Function to create or get a collection.
 
         Args:
             collection_name (str): Name of collection
             embedding_function (Optional[EmbeddingFunction], optional): Embedding function to use. Defaults to None.
             metadata (Optional[CollectionMetadata], optional): Additional metadata for collection. Defaults to None.
+
+        Returns:
+            Collection: a collection retrieved or created
 
         Raises:
             ValueError: If `collection_name` is invalid
@@ -109,7 +113,7 @@ class ChromaStore:
 
         # If you supply an embedding function, you must supply it every time you get the collection.
         # By default, all-MiniLM-L6-v2 model is as embedding function
-        self._collection = self._client.get_or_create_collection(
+        return self._client.get_or_create_collection(
             name=collection_name,
             embedding_function=embedding_function,
             metadata=metadata,
@@ -151,8 +155,9 @@ class ChromaStore:
         Raises:
             InvalidDimensionException: If the dimension of the embedding function does not match the dimension of the collection
         """
-        if self._collection is None:
-            self._get_or_create_collection(collection_name, embedding_function)
+        self._collection = self._get_or_create_collection(
+            collection_name, embedding_function
+        )
 
         # Chroma will embed each query_text with the collection's embedding function
         # and then query using generated embeddings
@@ -185,8 +190,9 @@ class ChromaStore:
             metadatas (Optional[List[dict]], optional): Optional list of metadatas for documents. Defaults to None.
             embedding_function (Optional[EmbeddingFunction], optional): Embedding function to be used by collection. Defaults to None.
         """
-        if self._collection is None:
-            self._get_or_create_collection(collection_name, embedding_function)
+        self._collection = self._get_or_create_collection(
+            collection_name, embedding_function
+        )
 
         # Automatically tokenize and embed them with the collection's embedding function
         self._collection.upsert(documents=texts, ids=ids, metadatas=metadatas)
