@@ -31,59 +31,6 @@ The repository for this project is one method where you can monitor progress - w
 
 # &#127939; How do I get started?
 
-## Provision Resources
-
-To run this process on cloud, we require following resources
-
-* Azure Kubernetes Service (AKS) cluster with Seldon Core and ZenServer installed
-* Azure Container Registry (ACR)
-* Azure Blob Storage
-
-> Note: We use [matcha](https://github.com/fuzzylabs/matcha) tool to provision these resources.
-
-`matcha` tool can help you in provisioning these resources. Install `matcha-ml` library and provision resources using `matcha provision` command.
-
-```bash
-pip install matcha-ml
-matcha provision
-```
-
-After the provisioning completes, we will have on hand these resources:
-
-* Kubernetes cluster on Azure
-* Seldon Core and ZenServer installed on this cluster
-* Istio ingress installed on this cluster
-
-## Setup
-
-Next, we create a remote ZenML stack to run all the pipelines. This process involves installing required ZenML integration, connecting to ZenServer and activating the new stack. As part of this remote stack, we are using ACR as [Container Registry](https://docs.zenml.io/user-guide/component-guide/container-registries) and Kuberenetes as [Orchestrator](https://docs.zenml.io/user-guide/component-guide/orchestrators).
-
-```bash
-./setup_remote_stack.sh
-```
-
-Verify new stack is active using `zenml stack list` command and checking if 👉 points to `mindgpt_cloud_stack` stack.
-
-```bash
-zenml stack list
-
-Your ZenML client version (0.40.3) does not match the server version (0.36.1). This version mismatch might lead to errors or unexpected behavior.
-To disable this warning message, set the environment variable ZENML_DISABLE_CLIENT_SERVER_MISMATCH_WARNING=True
-Connected to the ZenML server: 'http://50.142.146.918'
-Running with active workspace: 'default' (repository)
-┏━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━┯━━━━━━━━━┯━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ ACTIVE │ STACK NAME                         │ STACK ID                             │ SHARED │ OWNER   │ ARTIFACT_STORE │ ORCHESTRATOR          │ MODEL_DEPLOYER  │ CONTAINER_REGISTRY │ IMAGE_BUILDER       │ EXPERIMENT_TRACKER        ┃
-┠────────┼────────────────────────────────────┼──────────────────────────────────────┼────────┼─────────┼────────────────┼───────────────────────┼─────────────────┼────────────────────┼─────────────────────┼───────────────────────────┨
-┃        │ default                            │ 9a5f4d08-5cfa-4c94-b5c3-a87fab0cc079 │ ➖     │ default │ default        │ default               │                 │                    │                     │                           ┃
-┠────────┼────────────────────────────────────┼──────────────────────────────────────┼────────┼─────────┼────────────────┼───────────────────────┼─────────────────┼────────────────────┼─────────────────────┼───────────────────────────┨
-┃   👉   │ mindgpt_cloud_stack                │ 64e3ce21-d33b-44e5-b90a-e7f6dee4d4e5 │ ➖     │ default │ mgpt_az_store  │ mgpt_k8s_orchestrator │                 │ mgpt_acr_registry  │ mgpt_docker_builder │                           ┃
-┗━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━┷━━━━━━━━━┷━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-Page `(1/1)`, `2` items found for the applied filters.
-
-```
-
-> Note: You can ignore the version mismatch warning.
-
 ## Data Scraping pipeline
 
 Before we start running the pipeline, an additional setup for creating a storage container on Azure is required to store the data. We use [DVC](https://dvc.org/doc/user-guide/data-management/remote-storage/azure-blob-storage) tool for data versioning and data management.
@@ -107,6 +54,19 @@ python run.py --prepare
 ## Data Embedding pipeline
 
 To run the embedding pipeline, both Azure Kubernetes Service (AKS) and Azure Container Registry (ACR) need to be provisioned. We use AKS to run the Chroma (vector database) service and ACR is used to host the Chroma server image.
+
+`matcha` tool can help you in provisioning these resources. Install `matcha-ml` library and provision resources using `matcha provision` command.
+
+```bash
+pip install matcha-ml
+matcha provision
+```
+
+After the provisioning completes, we will have on hand these resources:
+
+* Kubernetes cluster on Azure
+* Seldon Core and ZenServer installed on this cluster
+* Istio ingress installed on this cluster
 
 Before we start deploying Chroma server on AKS, we need to build the Docker image for Chroma server. We build and push this Chroma server image to ACR.
 
