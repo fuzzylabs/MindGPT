@@ -43,6 +43,11 @@ Run the data scraping pipeline.
 python run.py --scrape
 ```
 
+In this pipeline, there are two steps:
+
+* Scrape data from Mind and NHS Mental Health websites
+* Store and version the scraped data in a storage container on Azure using DVC
+
 ## Data Preparation pipeline
 
 Run the data preparation pipeline.
@@ -50,6 +55,8 @@ Run the data preparation pipeline.
 ```bash
 python run.py --prepare
 ```
+
+In data preparation pipeline, we clean, validate, and, version the scraped data from the data scraping pipeline. This final validated dataset is versioned and stored in a storage container on Azure using DVC.
 
 ## Data Embedding pipeline
 
@@ -113,6 +120,8 @@ Finally, in a separate terminal we can run the data embedding pipeline.
 ```bash
 python run.py --embed
 ```
+
+In data embedding pipeline, we use the validated dataset from data preparation pipeline and use Chroma vector store to embedding of the text data. This process is performed for both Mind and NHS data.
 
 ## Provision pre-trained LLM
 
