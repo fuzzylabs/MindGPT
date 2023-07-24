@@ -21,7 +21,7 @@ EMBED_MODEL_MAP = {
     "large": "hkunlp/instructor-large",
     "base": "hkunlp/instructor-base",
 }
-collection_name_map = {"mind_data": "Mind",  "nhs_data": "NHS"}
+COLLECTION_NAME_MAP = {"mind_data": "Mind",  "nhs_data": "NHS"}
 
 # Paragraph from https://www.nhs.uk/mental-health/conditions/depression-in-adults/overview/
 DEFAULT_CONTEXT = """Most people experience feelings of stress, anxiety or low mood during difficult times.
@@ -251,9 +251,9 @@ def main() -> None:
                     full_response = ""
                     message_placeholder = st.empty()
 
-                    response = {}
+                    full_response = "Here's what the NHS and Mind each have to say:\n\n"
 
-                    for collection in COLLECTION_NAMES:
+                    for collection, source in COLLECTION_NAME_MAP.items():
                         # Query vector store
                         context = query_vector_store(
                             chroma_client=chroma_client,
@@ -269,15 +269,7 @@ def main() -> None:
                         # Query LLM by passing query and context
                         assistant_response = query_llm(prediction_endpoint, message)
 
-                        response[collection] = assistant_response
-
-                    # Two trailing-whitespaces are required at the end of the first response in order to output the response in the format we want
-                    full_response = f'''
-                        Here's what the NHS and Mind each have to say:
-
-                        {collection_name_map["mind_data"]}: {response["mind_data"]}  
-                        {collection_name_map["nhs_data"]}: {response["nhs_data"]}
-                    '''
+                        full_response += f"{source}: {assistant_response}  \n"
 
                     message_placeholder.markdown(full_response)
 
