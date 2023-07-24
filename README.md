@@ -121,7 +121,9 @@ Finally, in a separate terminal we can run the data embedding pipeline.
 python run.py --embed
 ```
 
-In data embedding pipeline, we use the validated dataset from data preparation pipeline and use Chroma vector store to embedding of the text data. This process is performed for both Mind and NHS data.
+In data embedding pipeline, we take the validated dataset from data preparation pipeline and use Chroma vector database to store the embedding of the text data. This pipelines uses both the Mind and NHS data.
+
+> Note: This pipelines might take somewhere between 5-10 mins to run.
 
 ## Provision pre-trained LLM
 
