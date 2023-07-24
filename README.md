@@ -65,7 +65,7 @@ matcha provision
 After the provisioning completes, we will have on hand these resources:
 
 * Kubernetes cluster on Azure
-* Seldon Core and ZenServer installed on this cluster
+* Seldon Core installed on this cluster
 * Istio ingress installed on this cluster
 
 Before we start deploying Chroma server on AKS, we need to build the Docker image for Chroma server. We build and push this Chroma server image to ACR.
