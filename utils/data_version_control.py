@@ -105,7 +105,7 @@ def version_new_data(filename_roots: List[str]) -> None:
 
 
 def _git_tag_exists(tag_name: str) -> bool:
-    """Checks for the existance of a given Git tag name.
+    """Checks for the existence of a given Git tag name.
 
     Args:
         tag_name (str): Name of tag to check existence.

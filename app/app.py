@@ -21,7 +21,7 @@ EMBED_MODEL_MAP = {
     "large": "hkunlp/instructor-large",
     "base": "hkunlp/instructor-base",
 }
-COLLECTION_NAME_MAP = {"mind_data": "Mind",  "nhs_data": "NHS"}
+COLLECTION_NAME_MAP = {"mind_data": "Mind", "nhs_data": "NHS"}
 
 # Paragraph from https://www.nhs.uk/mental-health/conditions/depression-in-adults/overview/
 DEFAULT_CONTEXT = """Most people experience feelings of stress, anxiety or low mood during difficult times.
@@ -39,7 +39,7 @@ st.set_page_config(
 st.title("MindGPT 🧠")
 st.caption("_made by [Fuzzy Labs](https://www.fuzzylabs.ai/)_")
 st.caption(
-    "MindGPT is not a digital counsellor and the answers provided may be innacurate. If you or someone you know is in crisis or experiencing a mental health emergency, please contact your local emergency services or a helpline immediately such as https://www.mind.org.uk/need-urgent-help/using-this-tool/ . This chatbot is not designed to provide immediate crisis intervention or emergency assistance."
+    "MindGPT is not a digital counsellor and the answers provided may be inaccurate. If you or someone you know is in crisis or experiencing a mental health emergency, please contact your local emergency services or a helpline immediately such as https://www.mind.org.uk/need-urgent-help/using-this-tool/ . This chatbot is not designed to provide immediate crisis intervention or emergency assistance."
 )
 
 st.session_state.error_placeholder = st.empty()
@@ -153,7 +153,7 @@ def _create_payload(messages: Dict[str, str]) -> Dict[str, List[Dict[str, Any]]]
 def _get_predictions(
     prediction_endpoint: str, payload: Dict[str, List[Dict[str, Any]]]
 ) -> str:
-    """Using the prediction endpont and payload, make a prediction request to the deployed model.
+    """Using the prediction endpoint and payload, make a prediction request to the deployed model.
 
     Args:
         prediction_endpoint (str): the url endpoint.
@@ -179,7 +179,7 @@ def query_llm(prediction_endpoint: str, messages: Dict[str, str]) -> str:
         messages (Dict[str, str]): Dict of message containing prompt and context.
 
     Returns:
-        str: Summarized text.
+        str: Summarised text.
     """
     with st.spinner("Loading response..."):
         payload = _create_payload(messages)
@@ -188,10 +188,10 @@ def query_llm(prediction_endpoint: str, messages: Dict[str, str]) -> str:
 
 
 def show_disclaimer() -> bool:
-    """Show disclamer on sidebar with streamlit.
+    """Show disclaimer on sidebar with streamlit.
 
     Returns:
-        bool: True if disclamer accepted, False if not.
+        bool: True if disclaimer accepted, False if not.
     """
     st.sidebar.title("Disclaimer")
     with open("app/disclaimer.txt") as f:
@@ -214,7 +214,7 @@ def main() -> None:
             st.session_state.accept = True
 
     if st.session_state.accept:
-        # Initialize chat history
+        # Initialise chat history
         if "messages" not in st.session_state:
             st.session_state.messages = []
 

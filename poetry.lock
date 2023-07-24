@@ -6578,6 +6578,26 @@ files = [
 ]
 
 [[package]]
+name = "typos"
+version = "1.16.1"
+description = "Source Code Spelling Correction"
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "typos-1.16.1-py3-none-macosx_10_7_x86_64.whl", hash = "sha256:fe0db4a62d5edf621ef0dbd4fe9f93fb28240e89ad291e19ea0f0168664e25b6"},
+    {file = "typos-1.16.1-py3-none-macosx_11_0_arm64.whl", hash = "sha256:922790bc48660105eb4432adb7d5e602d66fe1494f8d54d5115da33568f35e67"},
+    {file = "typos-1.16.1-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:82744651b44bace20c7fff9f85700192663c4552ca1404e95719ad40cada6b06"},
+    {file = "typos-1.16.1-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:c44cea7a7617ee518632a4a05d7a6f7eeb463f114cebd641375a59a4a9115aaf"},
+    {file = "typos-1.16.1-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:aaaa599d15a969ae957ed025467e2218bfad363e95f0564b5ddf278addd39243"},
+    {file = "typos-1.16.1-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:b2caa32c47787be4fc6465d635f8075f3d2c0dd8d673cea2b153956c8f09bd9c"},
+    {file = "typos-1.16.1-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:fd4da506dec382257065c2d21e7ffadf28c931801cd4b512a489ecd2e23ec0bd"},
+    {file = "typos-1.16.1-py3-none-win32.whl", hash = "sha256:ce61b4f8fb04a035a186aadca18a5b5e6eafc323f490bfdd87df70efa7fba99a"},
+    {file = "typos-1.16.1-py3-none-win_amd64.whl", hash = "sha256:21519c0c5b717eeeb49aa4487e5f4ac1c88c73c4535986069741ecbc89a7d818"},
+    {file = "typos-1.16.1.tar.gz", hash = "sha256:88b1553e0aa1b2c56cb57ee5eab48fd9fe408c1ccf420675ae61f79facd3b15d"},
+]
+
+[[package]]
 name = "tzdata"
 version = "2023.3"
 description = "Provider of IANA time zone data"
@@ -7249,4 +7269,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.11" # ZenML requires <3.11
-content-hash = "24c82a39d836e552e01042ca1810d0200c4514ae92e5a0b332bdf131ca8cc51b"
+content-hash = "ef49b29652562f4cc7a044062db7c2bdffb992390de94962b1b9cafeb30ff74c"

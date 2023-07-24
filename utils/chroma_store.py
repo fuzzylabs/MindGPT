@@ -30,7 +30,7 @@ class ChromaStore:
         chroma_server_hostname: str = "server.default",
         chroma_server_port: int = 8000,
     ) -> None:
-        """Initialize chroma client by connecting it to chroma server.
+        """Initialise chroma client by connecting it to chroma server.
 
         Args:
             chroma_server_hostname (str, optional): Hostname for chroma server. Defaults to "server.default".

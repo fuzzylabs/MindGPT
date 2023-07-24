@@ -25,13 +25,14 @@ sentence-transformers = "^2.2.2"
 zenml = "0.40.3"
 chromadb-client = "0.3.30.dev0"
 
+
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.1.1"
 pytest = "^7.2.2"
 pytest-cov = "^4.0.0"
 mypy = "1.1.1"
 chromadb = "0.3.29"
-
+typos = "^1.16.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -76,7 +77,8 @@ show-fixes = true
 ignore = [
     "E501",  # Line too long
     "UP006", # See https://github.com/bokeh/bokeh/issues/13143
-    "UP007" # See https://github.com/bokeh/bokeh/pull/13144
+    "UP007", # See https://github.com/bokeh/bokeh/pull/13144
+    "PLR0913" # max-args = 5
 ]
 
 ignore-init-module-imports = true
@@ -87,11 +89,9 @@ src = ["src", "test"]
 [tool.ruff.mccabe]
 max-complexity = 18
 
-
 [tool.ruff.pydocstyle]
 # Use Google-style docstrings.
 convention = "google"
-
 
 [tool.black]
 line-length = 88
