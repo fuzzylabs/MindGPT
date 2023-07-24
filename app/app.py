@@ -21,7 +21,7 @@ EMBED_MODEL_MAP = {
     "large": "hkunlp/instructor-large",
     "base": "hkunlp/instructor-base",
 }
-collection_name_map = {COLLECTION_NAMES[0]: "Mind", COLLECTION_NAMES[1]: "NHS"}
+collection_name_map = {"mind_data": "Mind",  "nhs_data": "NHS"}
 
 # Paragraph from https://www.nhs.uk/mental-health/conditions/depression-in-adults/overview/
 DEFAULT_CONTEXT = """Most people experience feelings of stress, anxiety or low mood during difficult times.
@@ -275,8 +275,8 @@ def main() -> None:
                     full_response = f'''
                         Here's what the NHS and Mind each have to say:
 
-                        {collection_name_map[COLLECTION_NAMES[0]]}: {response[COLLECTION_NAMES[0]]}  
-                        {collection_name_map[COLLECTION_NAMES[1]]}: {response[COLLECTION_NAMES[1]]}
+                        {collection_name_map["mind_data"]}: {response["mind_data"]}  
+                        {collection_name_map["nhs_data"]}: {response["nhs_data"]}
                     '''
 
                     message_placeholder.markdown(full_response)
