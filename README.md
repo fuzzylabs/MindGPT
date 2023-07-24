@@ -33,30 +33,28 @@ The repository for this project is one method where you can monitor progress - w
 
 ## Data Scraping pipeline
 
-Before we start running the pipeline, an additional setup for creating a storage container on Azure is required to store the data. We use [DVC](https://dvc.org/doc/user-guide/data-management/remote-storage/azure-blob-storage) tool for data versioning and data management.
-
-> Data version [documentation](docs/data-version-control.md) guides you through the process of setting up a storage container on Azure and configuring DVC.
-
-Run the data scraping pipeline.
-
-```bash
-python run.py --scrape
-```
+Before running the data scraping pipeline, an additional setup for creating a storage container on Azure is required to store the data. We use the [DVC](https://dvc.org/doc/user-guide/data-management/remote-storage/azure-blob-storage) tool for data versioning and data management. Data version [documentation](docs/data-version-control.md) guides you through the process of setting up a storage container on Azure and configuring DVC.
 
 In this pipeline, there are two steps:
 
 * Scrape data from Mind and NHS Mental Health websites
 * Store and version the scraped data in a storage container on Azure using DVC
 
+Now that you're all setup, let's run the data scraping pipeline.
+
+```bash
+python run.py --scrape
+```
+
 ## Data Preparation pipeline
 
-Run the data preparation pipeline.
+Now that we have data scraped, we're ready to prepare that data for the model. We've created a separate pipeline for this, where we clean, validate, and version the data.
+
+We run the data preparation pipeline using the following command.
 
 ```bash
 python run.py --prepare
 ```
-
-In data preparation pipeline, we clean, validate, and, version the scraped data from the data scraping pipeline. This final validated dataset is versioned and stored in a storage container on Azure using DVC.
 
 ## Data Embedding pipeline
 
@@ -115,13 +113,13 @@ Port-forward the chroma server service to localhost using the following command.
 kubectl port-forward service/server 8000:8000
 ```
 
+In data embedding pipeline, we take the validated dataset from data preparation pipeline and use Chroma vector database to store the embedding of the text data. This pipelines uses both the Mind and NHS data.
+
 Finally, in a separate terminal we can run the data embedding pipeline.
 
 ```bash
 python run.py --embed
 ```
-
-In data embedding pipeline, we take the validated dataset from data preparation pipeline and use Chroma vector database to store the embedding of the text data. This pipelines uses both the Mind and NHS data.
 
 > Note: This pipelines might take somewhere between 5-10 mins to run.
 
