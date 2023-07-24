@@ -113,13 +113,11 @@ class ChromaStore:
 
         # If you supply an embedding function, you must supply it every time you get the collection.
         # By default, all-MiniLM-L6-v2 model is as embedding function
-        self._collection = self._client.get_or_create_collection(
+        return self._client.get_or_create_collection(
             name=collection_name,
             embedding_function=embedding_function,
             metadata=metadata,
         )
-
-        return self._collection
 
     def list_collection_names(self) -> List[str]:
         """List all the collection names in ChromaDB.
