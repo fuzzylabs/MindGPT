@@ -3,7 +3,7 @@ import os
 import time
 import uuid
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Annotated, Dict, List, Optional
 
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -283,7 +283,7 @@ def scrape_helping_someone_section(
 
 
 @step
-def scrape_mind_data() -> pd.DataFrame:
+def scrape_mind_data() -> Annotated[pd.DataFrame, "output_mind_data"]:
     """Scrape data from Mind.
 
     Returns:
