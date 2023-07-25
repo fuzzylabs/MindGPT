@@ -26,13 +26,13 @@ class ChromaStore:
 
     def __init__(
         self,
-        chroma_server_hostname: str = "server.default",
+        chroma_server_hostname: str = "chroma-service.default",
         chroma_server_port: int = 8000,
     ) -> None:
         """Initialise chroma client by connecting it to chroma server.
 
         Args:
-            chroma_server_hostname (str, optional): Hostname for chroma server. Defaults to "server.default".
+            chroma_server_hostname (str, optional): Hostname for chroma server. Defaults to "chroma-service.default".
             chroma_server_port (int, optional): Port for chroma server. Defaults to 8000.
         """
         self._client = chromadb.HttpClient(

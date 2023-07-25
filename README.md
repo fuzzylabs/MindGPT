@@ -83,7 +83,7 @@ kubectl apply -f .
 Port-forward the chroma server service to localhost using the following command. This will ensure we can access the server from localhost.
 
 ```bash
-kubectl port-forward service/server 8000:8000
+kubectl port-forward service/chroma-server 8000:8000
 ```
 
 In data embedding pipeline, we take the validated dataset from data preparation pipeline and use Chroma vector database to store the embedding of the text data. This pipelines uses both the Mind and NHS data.
