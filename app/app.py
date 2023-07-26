@@ -4,14 +4,20 @@ import os
 from typing import Any, Dict, List, Optional, Union
 
 import requests
+import argparse
 import streamlit as st
 from chromadb.api import API
 from chromadb.api.types import EmbeddingFunction
 from chromadb.utils import embedding_functions
+from transformers import pipeline
+
 from utils.chroma_store import ChromaStore
+from streamlit.logger import get_logger
+
+logger = get_logger("streamlit")
 
 # Setup for chroma vector store
-CHROMA_SERVER_HOST_NAME = "server.default"
+CHROMA_SERVER_HOST_NAME = "localhost"
 CHROMA_SERVER_PORT = 8000
 DEFAULT_EMBED_MODEL = "base"  # ["base", "large", "xl"]
 N_CLOSEST_MATCHES = 3
@@ -22,7 +28,7 @@ EMBED_MODEL_MAP = {
 }
 COLLECTION_NAME_MAP = {"mind_data": "Mind", "nhs_data": "NHS"}
 
-# Seldon configuration
+# Inference model configuration
 SELDON_SERVICE_NAME = "llm-default-transformer"
 SELDON_NAMESPACE = "matcha-seldon-workloads"
 SELDON_PORT = 9000
@@ -32,7 +38,6 @@ DEFAULT_CONTEXT = """Most people experience feelings of stress, anxiety or low m
 A low mood may improve after a short period of time, rather than being a sign of depression."""
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 
 st.set_page_config(
     page_title="MindGPT",
@@ -98,11 +103,11 @@ def connect_vector_store(chroma_server_host: str, chroma_server_port: int) -> AP
 
 
 def query_vector_store(
-    chroma_client: API,
-    query_text: str,
-    collection_name: str,
-    n_results: int,
-    embedding_function: EmbeddingFunction,
+        chroma_client: API,
+        query_text: str,
+        collection_name: str,
+        n_results: int,
+        embedding_function: EmbeddingFunction,
 ) -> str:
     """Query vector store to fetch `n_results` closest documents.
 
@@ -122,57 +127,78 @@ def query_vector_store(
         n_results=n_results,
         embedding_function=embedding_function,
     )
-    documents = " ".join(result_dict["documents"][0])
+    documents = "\n".join(result_dict["documents"][0])
     return documents
 
 
-def _create_payload(messages: Dict[str, str]) -> Dict[str, List[Dict[str, Any]]]:
+def _create_payload(prompt: str) -> Dict[str, List[Dict[str, Any]]]:
     """Create a payload from the user input to send to the LLM model.
 
     Args:
-        messages (Dict[str, str]): List of previous messages from both the AI and user.
+        prompt (str): A formatted user prompt to send to the model.
 
     Returns:
         Dict[str, List[Dict[str, Any]]]: the payload to send in the correct format.
     """
-    template = "Context: {context}\n\nQuestion: {question}\n\n"
-    context = messages.get("context", DEFAULT_CONTEXT)
-    input_text = template.format(question=messages["prompt_query"], context=context)
-
     return {
         "inputs": [
             {
                 "name": "array_inputs",
                 "shape": [-1],
                 "datatype": "string",
-                "data": str(input_text),
+                "data": str(prompt),
             }
         ]
     }
 
 
+def _construct_prompt(question: str, context: str) -> str:
+    """Construct a prompt from the user input to send to the LLM model.
+
+    Args:
+        question (str): user's question
+        context (str): context relevant to the question
+
+    Returns:
+        str: constructed prompt
+    """
+    template = "Question: {question}\n\nContext: {context}\n\n"
+    prompt = template.format(question=question, context=context)
+
+    logger.info(f"Constructed LLM prompt: {prompt}")
+
+    return prompt
+
+
 def _get_predictions(
-    prediction_endpoint: str, payload: Dict[str, List[Dict[str, Any]]]
+        prediction_endpoint: str, prompt: str, local_llm_pipeline: bool = False,
 ) -> str:
     """Using the prediction endpoint and payload, make a prediction request to the deployed model.
 
     Args:
         prediction_endpoint (str): the url endpoint.
-        payload (Dict[str, List[Dict[str, Any]]]): the payload to send to the model.
+        prompt (str): the payload to send to the model.
+        local_llm_pipeline (bool): Debugging: use local HF LLM pipeline
 
     Returns:
         str: the predictions from the model.
     """
-    response = requests.post(
-        url=prediction_endpoint,
-        data=json.dumps(payload),
-        headers={"Content-Type": "application/json"},
-    )
-    data = json.loads(json.loads(response.text)["outputs"][0]["data"][0])
-    return data["generated_text"]
+    if not local_llm_pipeline:
+        payload = _create_payload(prompt)
+        response = requests.post(
+            url=prediction_endpoint,
+            data=json.dumps(payload),
+            headers={"Content-Type": "application/json"},
+        )
+        data = json.loads(json.loads(response.text)["outputs"][0]["data"][0])
+        return data["generated_text"]
+    else:
+        llm = pipeline(model="google/flan-t5-small", task="text2text-generation")
+        data = llm(prompt, max_length=200)
+        return data[0]["generated_text"]
 
 
-def query_llm(prediction_endpoint: str, messages: Dict[str, str]) -> str:
+def query_llm(prediction_endpoint: str, question: str, context: str, local_llm_pipeline: bool) -> str:
     """Query endpoint to fetch the summary.
 
     Args:
@@ -183,8 +209,8 @@ def query_llm(prediction_endpoint: str, messages: Dict[str, str]) -> str:
         str: Summarised text.
     """
     with st.spinner("Loading response..."):
-        payload = _create_payload(messages)
-        summary_txt = _get_predictions(prediction_endpoint, payload)
+        prompt = _construct_prompt(question, context)
+        summary_txt = _get_predictions(prediction_endpoint, prompt, local_llm_pipeline)
     return summary_txt
 
 
@@ -204,7 +230,9 @@ def show_disclaimer() -> bool:
     return accept
 
 
-def main() -> None:
+def main(
+    local_llm_pipeline: bool
+) -> None:
     """Main streamlit app function."""
     if "accept" not in st.session_state:
         st.session_state.accept = False
@@ -225,7 +253,9 @@ def main() -> None:
                 st.markdown(message["content"])
 
         if prompt := st.chat_input("Enter a question"):
+            logger.info(f"Got user prompt: {prompt}")
             # Display user message in chat message container
+
             with st.chat_message("user"):
                 st.markdown(prompt)
 
@@ -264,11 +294,12 @@ def main() -> None:
                             embedding_function=embed_function,
                         )
 
-                        # Create a dict of prompt and context
-                        message = {"prompt_query": prompt, "context": context}
+                        logger.info(f"Context from collection {collection}: {json.dumps(context)}")
 
                         # Query LLM by passing query and context
-                        assistant_response = query_llm(prediction_endpoint, message)
+                        assistant_response = query_llm(prediction_endpoint, prompt, context, local_llm_pipeline)
+
+                        logger.info(f"Got LLM response: {assistant_response}")
 
                         full_response += f"{source}: {assistant_response}  \n"
 
@@ -281,4 +312,12 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        prog="MindGPT",
+        description="MindGPT streamlit app. Most of the CLI arguments are for debugging purposes."
+    )
+    parser.add_argument("--local-llm-pipeline", help="Load local LLM, instead of querying the remote deployed model.", action="store_true")
+
+    args = parser.parse_args()
+
+    main(args.local_llm_pipeline)
