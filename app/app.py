@@ -403,15 +403,12 @@ if __name__ == "__main__":
         help="Name of LLM model to load",
         type=str,
         default="flan-t5-small",
-        choices=[
-            "googleflan-t5-small",
-        ],
     )
     parser.add_argument(
         "--temperature", help="Temperature of LLM model", type=float, default=0
     )
     parser.add_argument(
-        "--max_length", help="Max length of LLM model", type=int, default=128
+        "--max-length", help="Max length of LLM model", type=int, default=128
     )
     parser.add_argument(
         "--load-8-bit", help="Boolean to load 8-bit model", action="store_true"
