@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Optional
 import chromadb
 from chromadb.api.models.Collection import Collection
 from chromadb.api.types import CollectionMetadata, EmbeddingFunction
-from chromadb.config import Settings
 from chromadb.errors import InvalidDimensionException
 
 MIN_COLLECTION_NAME_LENGTH = 3
@@ -27,21 +26,17 @@ class ChromaStore:
 
     def __init__(
         self,
-        chroma_server_hostname: str = "server.default",
+        chroma_server_hostname: str = "chroma-service.default",
         chroma_server_port: int = 8000,
     ) -> None:
         """Initialise chroma client by connecting it to chroma server.
 
         Args:
-            chroma_server_hostname (str, optional): Hostname for chroma server. Defaults to "server.default".
+            chroma_server_hostname (str, optional): Hostname for chroma server. Defaults to "chroma-service.default".
             chroma_server_port (int, optional): Port for chroma server. Defaults to 8000.
         """
-        self._client = chromadb.Client(
-            Settings(
-                chroma_api_impl="rest",
-                chroma_server_host=chroma_server_hostname,
-                chroma_server_http_port=chroma_server_port,
-            )
+        self._client = chromadb.HttpClient(
+            host=chroma_server_hostname, port=chroma_server_port
         )
         self._collection = None
 
