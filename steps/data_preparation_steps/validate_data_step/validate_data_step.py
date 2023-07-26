@@ -1,13 +1,13 @@
 """Validate data step."""
 import os
 import re
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
 import requests
 from config import DATA_DIR, VALIDATED_FILE_NAME_POSTFIX
 from zenml import step
-from zenml.steps import Output
 
 
 def validate_links(s: str) -> bool:
@@ -157,9 +157,7 @@ def _write_data(data: pd.DataFrame, destination: str, data_source: str) -> None:
 
 
 @step
-def validate_data(
-    data: pd.DataFrame, source: str
-) -> Output(is_valid=bool, rows_with_warning=pd.DataFrame):  # type: ignore
+def validate_data(data: pd.DataFrame, source: str) -> Tuple[bool, pd.DataFrame]:
     """A step to validate text within the data DataFrame.
 
     Args:

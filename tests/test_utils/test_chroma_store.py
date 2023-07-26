@@ -1,5 +1,5 @@
 """Test suite for testing chroma_store utility."""
-from tempfile import TemporaryDirectory
+import tempfile
 
 import chromadb
 import pytest
@@ -19,10 +19,15 @@ def local_persist_api() -> API:
     """
     return chromadb.Client(
         Settings(
-            chroma_api_impl="local",
-            chroma_db_impl="duckdb+parquet",
-            persist_directory=TemporaryDirectory().name + "/test_server",
-        )
+            chroma_api_impl="chromadb.api.segment.SegmentAPI",
+            chroma_sysdb_impl="chromadb.db.impl.sqlite.SqliteDB",
+            chroma_producer_impl="chromadb.db.impl.sqlite.SqliteDB",
+            chroma_consumer_impl="chromadb.db.impl.sqlite.SqliteDB",
+            chroma_segment_manager_impl="chromadb.segment.impl.manager.local.LocalSegmentManager",
+            allow_reset=True,
+            is_persistent=True,
+            persist_directory=tempfile.gettempdir(),
+        ),
     )
 
 

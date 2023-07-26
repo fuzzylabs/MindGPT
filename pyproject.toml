@@ -22,8 +22,8 @@ streamlit = "^1.24.0"
 dvc = {version = ">=3.4.0", extras = ["azure"]}
 instructorembedding = "^1.0.1"
 sentence-transformers = "^2.2.2"
-zenml = "0.40.3"
-chromadb-client = "0.3.30.dev0"
+zenml = "^0.42.1"
+chromadb = "^0.4.3"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -31,7 +31,6 @@ pre-commit = "^3.1.1"
 pytest = "^7.2.2"
 pytest-cov = "^4.0.0"
 mypy = "1.1.1"
-chromadb = "0.3.29"
 typos = "^1.16.1"
 
 [build-system]

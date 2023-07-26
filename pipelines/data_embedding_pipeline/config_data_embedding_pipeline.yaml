@@ -5,7 +5,7 @@ steps:
       data_version: "data/first_version"
       data_postfix: "validated"
   embed_data:
-    enable_cache: True
+    enable_cache: False
     parameters:
       data_version: "data/first_version"
       embed_model_type: "base"
