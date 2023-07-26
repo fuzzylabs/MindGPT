@@ -1,18 +1,17 @@
 """MindGPT Streamlit app."""
+import argparse
 import json
 import os
 from typing import Any, Dict, List, Optional, Union
 
 import requests
-import argparse
 import streamlit as st
 from chromadb.api import API
 from chromadb.api.types import EmbeddingFunction
 from chromadb.utils import embedding_functions
-from transformers import pipeline
-
-from utils.chroma_store import ChromaStore
 from streamlit.logger import get_logger
+from transformers import pipeline
+from utils.chroma_store import ChromaStore
 
 logger = get_logger("streamlit")
 
@@ -103,11 +102,11 @@ def connect_vector_store(chroma_server_host: str, chroma_server_port: int) -> AP
 
 
 def query_vector_store(
-        chroma_client: API,
-        query_text: str,
-        collection_name: str,
-        n_results: int,
-        embedding_function: EmbeddingFunction,
+    chroma_client: API,
+    query_text: str,
+    collection_name: str,
+    n_results: int,
+    embedding_function: EmbeddingFunction,
 ) -> str:
     """Query vector store to fetch `n_results` closest documents.
 
@@ -170,14 +169,49 @@ def _construct_prompt(question: str, context: str) -> str:
     return prompt
 
 
+def _get_llm_model(model_name: str) -> str:
+    """_summary_.
+
+    Args:
+        model_name (str): _description_
+
+    Returns:
+        str: _description_
+    """
+    model_id = None
+    if model_name == "flan-t5-small":
+        model_id = "google/flan-t5-small"
+    if model_name == "flan-t5-base":
+        model_id = "google/flan-t5-base"
+    if model_name == "flan-t5-large":
+        model_id = "google/flan-t5-large"
+    if model_name == "flan-t5-large":
+        model_id = "google/flan-t5-large"
+    if model_name == "fastchat":
+        model_id = "lmsys/fastchat-t5-3b-v1.0"
+    if model_name == "dolly-v2-3b":
+        model_id = "databricks/dolly-v2-3b"
+    return model_id
+
+
 def _get_predictions(
-        prediction_endpoint: str, prompt: str, local_llm_pipeline: bool = False,
+    prediction_endpoint: str,
+    prompt: str,
+    model_name: str,
+    max_length: int,
+    temperature: float,
+    load_8_bit: bool,
+    local_llm_pipeline: bool = False,
 ) -> str:
     """Using the prediction endpoint and payload, make a prediction request to the deployed model.
 
     Args:
         prediction_endpoint (str): the url endpoint.
         prompt (str): the payload to send to the model.
+        model_name (str): _description_
+        max_length (int): _description_
+        temperature (float): _description_
+        load_8_bit (bool): _description_
         local_llm_pipeline (bool): Debugging: use local HF LLM pipeline
 
     Returns:
@@ -193,12 +227,30 @@ def _get_predictions(
         data = json.loads(json.loads(response.text)["outputs"][0]["data"][0])
         return data["generated_text"]
     else:
-        llm = pipeline(model="google/flan-t5-small", task="text2text-generation")
-        data = llm(prompt, max_length=200)
+        llm = pipeline(
+            model=_get_llm_model(model_name),
+            task="text2text-generation",
+            model_kwargs={
+                "device_map": "auto",
+                "max_length": max_length,
+                "load_in_8bit": load_8_bit,
+                "temperature": temperature,
+            },
+        )
+        data = llm(prompt)
         return data[0]["generated_text"]
 
 
-def query_llm(prediction_endpoint: str, question: str, context: str, local_llm_pipeline: bool) -> str:
+def query_llm(
+    prediction_endpoint: str,
+    question: str,
+    context: str,
+    model_name: str,
+    max_length: int,
+    temperature: float,
+    load_8_bit: bool,
+    local_llm_pipeline: bool = False,
+) -> str:
     """Query endpoint to fetch the summary.
 
     Args:
@@ -210,7 +262,15 @@ def query_llm(prediction_endpoint: str, question: str, context: str, local_llm_p
     """
     with st.spinner("Loading response..."):
         prompt = _construct_prompt(question, context)
-        summary_txt = _get_predictions(prediction_endpoint, prompt, local_llm_pipeline)
+        summary_txt = _get_predictions(
+            prediction_endpoint,
+            prompt,
+            model_name,
+            max_length,
+            temperature,
+            load_8_bit,
+            local_llm_pipeline,
+        )
     return summary_txt
 
 
@@ -230,9 +290,7 @@ def show_disclaimer() -> bool:
     return accept
 
 
-def main(
-    local_llm_pipeline: bool
-) -> None:
+def main(args) -> None:
     """Main streamlit app function."""
     if "accept" not in st.session_state:
         st.session_state.accept = False
@@ -251,6 +309,12 @@ def main(
         for message in st.session_state.messages:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
+
+        logger.info("Model parameters")
+        logger.info(f"Model name: {args.model_name}")
+        logger.info(f"Temperature: {args.temperature}")
+        logger.info(f"Max length: {args.max_length}")
+        logger.info(f"Load 8-bit: {args.load_8_bit}")
 
         if prompt := st.chat_input("Enter a question"):
             logger.info(f"Got user prompt: {prompt}")
@@ -294,12 +358,25 @@ def main(
                             embedding_function=embed_function,
                         )
 
-                        logger.info(f"Context from collection {collection}: {json.dumps(context)}")
+                        logger.info(
+                            f"Context from collection {collection}: {json.dumps(context)}"
+                        )
 
                         # Query LLM by passing query and context
-                        assistant_response = query_llm(prediction_endpoint, prompt, context, local_llm_pipeline)
+                        assistant_response = query_llm(
+                            prediction_endpoint,
+                            prompt,
+                            context,
+                            args.model_name,
+                            args.max_length,
+                            args.temperature,
+                            args.load_8_bit,
+                            args.local_llm_pipeline,
+                        )
 
-                        logger.info(f"Got LLM response: {assistant_response}")
+                        logger.info(
+                            f"Got LLM response: {assistant_response} for source : {source}"
+                        )
 
                         full_response += f"{source}: {assistant_response}  \n"
 
@@ -314,10 +391,32 @@ def main(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog="MindGPT",
-        description="MindGPT streamlit app. Most of the CLI arguments are for debugging purposes."
+        description="MindGPT streamlit app. Most of the CLI arguments are for debugging purposes.",
     )
-    parser.add_argument("--local-llm-pipeline", help="Load local LLM, instead of querying the remote deployed model.", action="store_true")
+    parser.add_argument(
+        "--local-llm-pipeline",
+        help="Load local LLM, instead of querying the remote deployed model.",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--model-name",
+        help="Name of LLM model to load",
+        type=str,
+        default="flan-t5-small",
+        choices=[
+            "googleflan-t5-small",
+        ],
+    )
+    parser.add_argument(
+        "--temperature", help="Temperature of LLM model", type=float, default=0
+    )
+    parser.add_argument(
+        "--max_length", help="Max length of LLM model", type=int, default=128
+    )
+    parser.add_argument(
+        "--load-8-bit", help="Boolean to load 8-bit model", action="store_true"
+    )
 
     args = parser.parse_args()
 
-    main(args.local_llm_pipeline)
+    main(args)
