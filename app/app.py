@@ -3,6 +3,7 @@ import argparse
 import json
 import os
 from typing import Any, Dict, List, Optional, Union
+import time
 
 import requests
 import streamlit as st
@@ -231,7 +232,6 @@ def _get_predictions(
             model=_get_llm_model(model_name),
             task="text2text-generation",
             model_kwargs={
-                "device_map": "auto",
                 "max_length": max_length,
                 "load_in_8bit": load_8_bit,
                 "temperature": temperature,
@@ -349,6 +349,8 @@ def main(args) -> None:
                     full_response = "Here's what the NHS and Mind each have to say:\n\n"
 
                     for collection, source in COLLECTION_NAME_MAP.items():
+                        start = time.perf_counter()
+
                         # Query vector store
                         context = query_vector_store(
                             chroma_client=chroma_client,
@@ -362,6 +364,11 @@ def main(args) -> None:
                             f"Context from collection {collection}: {json.dumps(context)}"
                         )
 
+                        logger.info(
+                            f"Time for querying vector store: {time.perf_counter()-start} sec"
+                        )
+
+                        start = time.perf_counter()
                         # Query LLM by passing query and context
                         assistant_response = query_llm(
                             prediction_endpoint,
@@ -373,10 +380,11 @@ def main(args) -> None:
                             args.load_8_bit,
                             args.local_llm_pipeline,
                         )
-
                         logger.info(
-                            f"Got LLM response: {assistant_response} for source : {source}"
+                            f"Time for querying llm model: {time.perf_counter()-start} sec"
                         )
+                        logger.infoo(f"Source: {source}")
+                        logger.info(f"Got LLM response: {assistant_response}")
 
                         full_response += f"{source}: {assistant_response}  \n"
 
