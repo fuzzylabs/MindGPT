@@ -58,7 +58,7 @@ python run.py --prepare
 
 ## Data Embedding pipeline
 
-To run the embedding pipeline, both Azure Kubernetes Service (AKS) and Azure Container Registry (ACR) need to be provisioned. We use AKS to run the Chroma (vector database) service and ACR is used to host the Chroma server image.
+To run the embedding pipeline, Azure Kubernetes Service (AKS) needs to be provisioned. We use AKS to run the Chroma (vector database) service.
 
 `matcha` tool can help you in provisioning these resources. Install `matcha-ml` library and provision resources using `matcha provision` command.
 
@@ -73,34 +73,7 @@ After the provisioning completes, we will have on hand these resources:
 * Seldon Core installed on this cluster
 * Istio ingress installed on this cluster
 
-Before we start deploying Chroma server on AKS, we need to build the Docker image for Chroma server. We build and push this Chroma server image to ACR.
-
-> Note: There exists a [bug](https://github.com/chroma-core/chroma/issues/721) in the existing Chroma server image present on [ghcr](https://github.com/chroma-core/chroma/pkgs/container/chroma).
-
-```bash
-acr_registry_uri=$(matcha get container-registry registry-url --output json | sed -n 's/.*"registry-url": "\(.*\)".*/\1/p')
-acr_registry_name=$(matcha get container-registry registry-name --output json | sed -n 's/.*"registry-name": "\(.*\)".*/\1/p')
-```
-
-```bash
-cd infrastructure/chroma_server_k8s
-git clone -b dockerfileChanges --single-branch https://github.com/petersolimine/chroma.git
-cd chroma
-az acr login --name $acr_registry_name
-docker build -t $acr_registry_uri/chroma-server:latest .
-docker push $acr_registry_uri/chroma-server:latest
-```
-
-Optionally, the `chroma` directory downloaded to build a Docker image can be removed since it's not longer required.
-
-```bash
-cd ..
-rm -rf chroma
-```
-
-Line number 56 in [server-deployment.yml](./infrastructure/chroma_server_k8s/server-deployment.yaml#L56) should be updated to the name Docker image pushed to ACR, in this case it will be of format `<name-of-acr-registry>.azurecr.io/chroma-server`.
-
-Finally, we apply Kubernetes manifests to deploy Chroma server on AKS using following commands
+Next, we apply Kubernetes manifests to deploy Chroma server on AKS using following commands
 
 ```bash
 cd infrastructure/chroma_server_k8s
@@ -110,7 +83,7 @@ kubectl apply -f .
 Port-forward the chroma server service to localhost using the following command. This will ensure we can access the server from localhost.
 
 ```bash
-kubectl port-forward service/server 8000:8000
+kubectl port-forward service/chroma-service 8000:8000
 ```
 
 In data embedding pipeline, we take the validated dataset from data preparation pipeline and use Chroma vector database to store the embedding of the text data. This pipelines uses both the Mind and NHS data.

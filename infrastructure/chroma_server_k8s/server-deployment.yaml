@@ -1,59 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: server
+  name: chroma-server
 spec:
   selector:
     matchLabels:
-      app: server
+      app: chroma-server
   template:
     metadata:
       labels:
-        app: server
+        app: chroma-server
     spec:
       containers:
-        - name: clickhouse
-          env:
-            - name: ALLOW_EMPTY_PASSWORD
-              value: "yes"
-            - name: CLICKHOUSE_HTTP_PORT
-              value: "8123"
-            - name: CLICKHOUSE_TCP_PORT
-              value: "9000"
-            - name: CLICKHOUSE_DO_NOT_CHOWN
-              value: "1"
-          image: clickhouse/clickhouse-server:22.9-alpine
-          ports:
-            - containerPort: 8123
-            - containerPort: 9000
-          resources:
-            requests:
-              memory: 256Mi
-              cpu: 256m
-            limits:
-              memory: 2Gi
-              cpu: 2
-          volumeMounts:
-            - mountPath: /bitnami/clickhouse
-              name: chroma-clickhouse-data
-            - mountPath: /backups
-              name: chroma-clickhouse-backups
-            - mountPath: /etc/clickhouse-server/config.d/backup_disk.xml
-              name: config-volume
-              subPath: backup_disk.xml
-            - mountPath: /etc/clickhouse-server/users.d/chroma_users.xml
-              name: config-volume
-              subPath: chroma_users.xml
-
         - name: chroma-server
-          env:
-            - name: CHROMA_DB_IMPL
-              value: clickhouse
-            - name: CLICKHOUSE_HOST
-              value: localhost
-            - name: CLICKHOUSE_PORT
-              value: "8123"
-          image: ghcr.io/chroma-core/chroma:0.3.29
+          image: ghcr.io/chroma-core/chroma:0.4.3
           ports:
             - containerPort: 8000
           resources:
@@ -73,12 +33,3 @@ spec:
         - name: chroma-server-index
           persistentVolumeClaim:
             claimName: chroma-server-index
-        - name: chroma-clickhouse-data
-          persistentVolumeClaim:
-            claimName: chroma-clickhouse-data
-        - name: chroma-clickhouse-backups
-          persistentVolumeClaim:
-            claimName: chroma-clickhouse-backups
-        - name: config-volume
-          configMap:
-            name: chroma-config
