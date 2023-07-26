@@ -22,7 +22,7 @@ streamlit = "^1.24.0"
 dvc = {version = ">=3.4.0", extras = ["azure"]}
 instructorembedding = "^1.0.1"
 sentence-transformers = "^2.2.2"
-zenml = "0.40.3"
+zenml = "^0.42.1"
 chromadb = "^0.4.3"
 
 

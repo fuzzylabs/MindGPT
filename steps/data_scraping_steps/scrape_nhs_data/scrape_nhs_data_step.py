@@ -3,7 +3,7 @@ import os
 import re
 import uuid
 from datetime import datetime
-from typing import Dict, List, Optional, Union
+from typing import Annotated, Dict, List, Optional, Union
 
 import pandas as pd
 from bs4 import BeautifulSoup, NavigableString, Tag
@@ -133,7 +133,7 @@ class NHSMentalHealthScraper:
 
 
 @step
-def scrape_nhs_data() -> pd.DataFrame:
+def scrape_nhs_data() -> Annotated[pd.DataFrame, "output_nhs_data"]:
     """A ZenML pipeline step for scraping the NHS Mental Health website.
 
     Returns:
