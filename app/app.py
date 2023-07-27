@@ -383,7 +383,7 @@ def main(args) -> None:
                         logger.info(
                             f"Time for querying llm model: {time.perf_counter()-start} sec"
                         )
-                        logger.infoo(f"Source: {source}")
+                        logger.info(f"Source: {source}")
                         logger.info(f"Got LLM response: {assistant_response}")
 
                         full_response += f"{source}: {assistant_response}  \n"
