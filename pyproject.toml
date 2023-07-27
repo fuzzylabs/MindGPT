@@ -24,6 +24,7 @@ instructorembedding = "^1.0.1"
 sentence-transformers = "^2.2.2"
 zenml = "^0.42.1"
 chromadb = "^0.4.3"
+textstat = "0.7.3"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -112,6 +113,7 @@ exclude = '''
 module = [
     "python_terraform.*",
     "transformers.*",
-    "chromadb.*"
+    "chromadb.*",
+    "textstat.*"
 ]
 ignore_missing_imports = true
