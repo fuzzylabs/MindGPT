@@ -108,6 +108,7 @@ def query_vector_store(
         collection_name: str,
         n_results: int,
         embedding_function: EmbeddingFunction,
+        save_context: bool
 ) -> str:
     """Query vector store to fetch `n_results` closest documents.
 
@@ -127,7 +128,11 @@ def query_vector_store(
         n_results=n_results,
         embedding_function=embedding_function,
     )
-    documents = "\n".join(result_dict["documents"][0])
+    logger.info(result_dict)
+    documents = "\n\n".join(result_dict["documents"][0])
+    if save_context:
+        with open(f"{collection_name}.context.txt", "w") as f:
+            f.write(documents)
     return documents
 
 
@@ -231,9 +236,16 @@ def show_disclaimer() -> bool:
 
 
 def main(
-    local_llm_pipeline: bool
+    local_llm_pipeline: bool,
+    context_paths: Dict[str, Optional[str]],
+    save_context: bool,
 ) -> None:
-    """Main streamlit app function."""
+    """Main streamlit app function.
+
+    Args:
+        local_llm_pipeline (bool): flag to use local LLM pipeline
+        context_path (path): path to the static context, when set, context will not be fetched from the vector store
+    """
     if "accept" not in st.session_state:
         st.session_state.accept = False
 
@@ -286,13 +298,18 @@ def main(
 
                     for collection, source in COLLECTION_NAME_MAP.items():
                         # Query vector store
-                        context = query_vector_store(
-                            chroma_client=chroma_client,
-                            query_text=prompt,
-                            collection_name=collection,
-                            n_results=N_CLOSEST_MATCHES,
-                            embedding_function=embed_function,
-                        )
+                        if context_paths[collection] is None:
+                            context = query_vector_store(
+                                chroma_client=chroma_client,
+                                query_text=prompt,
+                                collection_name=collection,
+                                n_results=N_CLOSEST_MATCHES,
+                                embedding_function=embed_function,
+                                save_context=save_context,
+                            )
+                        else:
+                            with open(context_paths[collection]) as f:
+                                context = f.read()
 
                         logger.info(f"Context from collection {collection}: {json.dumps(context)}")
 
@@ -317,7 +334,19 @@ if __name__ == "__main__":
         description="MindGPT streamlit app. Most of the CLI arguments are for debugging purposes."
     )
     parser.add_argument("--local-llm-pipeline", help="Load local LLM, instead of querying the remote deployed model.", action="store_true")
+    parser.add_argument("--mind-context-file", help="Path to the text file to use for static context", default=None)
+    parser.add_argument("--nhs-context-file", help="Path to the text file to use for static context", default=None)
+    parser.add_argument("--save-context", help="Saves fetch context to files named {collection}.context.txt", action="store_true")
 
     args = parser.parse_args()
 
-    main(args.local_llm_pipeline)
+    context_files = {
+        "mind_data": args.mind_context_file,
+        "nhs_data": args.nhs_context_file
+    }
+
+    main(
+        args.local_llm_pipeline,
+        context_files,
+        args.save_context
+    )
