@@ -36,7 +36,7 @@ def test_readability_score_for_bad_sentences() -> None:
 def test_readability_score_for_good_sentences() -> None:
     """Test that the compute_readability() function accurately calculates a score that appropriately distinguishes easily understood sentences."""
     good_sentence = "Depression is a low mood that lasts for weeks or months and affects your daily life."
-    very_easy_to_rea_sentence = "I like cats."
+    very_easy_to_read_sentence = "I like cats."
 
     assert compute_readability(good_sentence) == pytest.approx(80, 5)
-    assert compute_readability(very_easy_to_rea_sentence) >= 100
+    assert compute_readability(very_easy_to_read_sentence) >= 100
