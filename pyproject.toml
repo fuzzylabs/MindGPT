@@ -24,6 +24,7 @@ instructorembedding = "^1.0.1"
 sentence-transformers = "^2.2.2"
 zenml = "^0.42.1"
 chromadb = "^0.4.3"
+textstat = "0.7.3"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -77,7 +78,8 @@ ignore = [
     "E501",  # Line too long
     "UP006", # See https://github.com/bokeh/bokeh/issues/13143
     "UP007", # See https://github.com/bokeh/bokeh/pull/13144
-    "PLR0913" # max-args = 5
+    "PLR0913", # max-args = 5
+    "PLR2004" # Readability score test value comparison
 ]
 
 ignore-init-module-imports = true
@@ -112,6 +114,7 @@ exclude = '''
 module = [
     "python_terraform.*",
     "transformers.*",
-    "chromadb.*"
+    "chromadb.*",
+    "textstat.*"
 ]
 ignore_missing_imports = true
