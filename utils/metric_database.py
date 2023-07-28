@@ -54,7 +54,7 @@ def getconn() -> psycopg2.extensions.connection:
     """Connect to Postgres database instance.
 
     Returns:
-        psycopg2.extensions.connection: a connection established using 4 local variables and the “pg8000” driver
+        psycopg2.extensions.connection: a connection established using the environment variables set.
     """
     db_credentials = DatabaseCredentials()
 
