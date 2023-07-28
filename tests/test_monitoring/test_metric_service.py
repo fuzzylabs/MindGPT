@@ -2,26 +2,28 @@
 from contextlib import nullcontext as does_not_raise
 
 import pytest
-from monitoring import compute_readability
+from monitoring import compute_readability, validate_llm_response
 
 
 @pytest.mark.parametrize(
     "response, expectation",
     [
         (int(123), pytest.raises(TypeError)),
-        ("", pytest.raises(ValueError)),
-        ("Valid response", does_not_raise()),
+        ({"incorrect key": "mock response"}, pytest.raises(ValueError)),
+        ({"response": int(123)}, pytest.raises(TypeError)),
+        ({"response": ""}, pytest.raises(ValueError)),
+        ({"response": "mock response"}, does_not_raise()),
     ],
 )
-def test_compute_readability(response: str, expectation: pytest.raises) -> None:
-    """Test whether the compute_readability function would raise an error when the input response is incorrect.
+def test_validate_llm_response(response: dict, expectation: pytest.raises) -> None:
+    """Test whether the validate_llm_response function would raise an error when the response payload is incorrect.
 
     Args:
-        response (str): mock responses
+        response (dict): mock responses
         expectation (pytest.raises): exception to raise
     """
     with expectation:
-        compute_readability(response)
+        validate_llm_response(response)
 
 
 def test_readability_score_for_bad_sentences() -> None:

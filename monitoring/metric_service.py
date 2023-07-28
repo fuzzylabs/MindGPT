@@ -1,5 +1,6 @@
 """The metric service interface for computing readability and handling post and get requests."""
 import logging
+from typing import Dict
 
 import textstat
 from flask import Flask, request
@@ -22,9 +23,8 @@ def send_metric_to_database() -> None:
     ...
 
 
-@app.route("/compute_readability", methods=["POST"])
-def compute_readability() -> str:
-    """This function compute a readability score using the Flesch–Kincaid readability tests. The function is triggered by a post request to the "/"compute_readability" route of the Flask sever.
+def compute_readability(llm_response: str) -> float:
+    """This function compute a readability score using the Flesch–Kincaid readability tests.
 
     Note:
         The maximum score possible is 121.22 but that's only the case if every sentence consists of only one one-syllable word.
@@ -39,6 +39,25 @@ def compute_readability() -> str:
             30-49   Difficult
             0-29    Very Confusing
 
+    Args:
+        llm_response (str): the model's response post by Streamlit
+
+    Raises:
+        TypeError: raise if the model response received is not a string
+        ValueError: raise if the model response received is a empty string
+
+    Returns:
+        str: the readability score of the response with type string
+    """
+    return float(textstat.flesch_reading_ease(llm_response))
+
+
+def validate_llm_response(llm_response_dict: Dict[str, str]) -> str:
+    """This function validate the payload which should be a dictionary containing the response text.
+
+    Args:
+        llm_response_dict (Dict[str, str]): the post request payload
+
     Raises:
         TypeError: raise if the json payload is not a dictionary.
         ValueError: raise if the dictionary payload does not have the response item.
@@ -46,10 +65,8 @@ def compute_readability() -> str:
         ValueError: raise if the model response received is a empty string
 
     Returns:
-        str: the readability score of the response with type string
+        str: the validated response text
     """
-    llm_response_dict = request.get_json()
-
     if not isinstance(llm_response_dict, dict):
         raise TypeError("The model response is not a dictionary.")
 
@@ -64,8 +81,22 @@ def compute_readability() -> str:
     elif len(response) == 0:
         raise ValueError("The model response must not be an empty string.")
 
+    return response
+
+
+@app.route("/readability", methods=["POST"])
+def readability() -> str:
+    """The function is triggered by a post request to the "/"compute_readability" route of the Flask sever which will validate the post request payload and compute a readability score.
+
+    Returns:
+        str: the readability score of the response with type string
+    """
+    llm_response_dict = request.get_json()
+
+    validated_response = validate_llm_response(llm_response_dict)
+
     return str(
-        textstat.flesch_reading_ease(response)
+        compute_readability(validated_response)
     )  # Flask response cannot return float
 
 
