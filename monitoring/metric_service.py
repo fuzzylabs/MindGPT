@@ -4,6 +4,7 @@ from typing import Dict
 
 import textstat
 from flask import Flask, request
+from utils import getconn
 
 app = Flask(__name__)
 logging.basicConfig(
@@ -13,9 +14,14 @@ logging.basicConfig(
 )
 
 
-def query_database() -> None:
+def query_database(table: str) -> None:
     """Place holder."""
-    ...
+    conn = getconn()
+
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT * FROM {table}")
+
+    print(cursor.fetchall())
 
 
 def send_metric_to_database() -> None:
