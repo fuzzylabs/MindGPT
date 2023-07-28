@@ -5,6 +5,10 @@ import textstat
 def compute_readability(llm_response: str) -> float:
     """This function compute a readability score using the Flesch–Kincaid readability tests.
 
+    Note:
+        The maximum score possible is 121.22 but that's only the case if every sentence consists of only one one-syllable word.
+        The score does not have a theoretical lower bound.
+
         Meaning of scores:
         90-100  Very Easy
         80-89   Easy
