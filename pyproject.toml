@@ -78,7 +78,8 @@ ignore = [
     "E501",  # Line too long
     "UP006", # See https://github.com/bokeh/bokeh/issues/13143
     "UP007", # See https://github.com/bokeh/bokeh/pull/13144
-    "PLR0913" # max-args = 5
+    "PLR0913", # max-args = 5
+    "PLR2004" # Readability score test value comparison
 ]
 
 ignore-init-module-imports = true

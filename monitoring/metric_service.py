@@ -10,13 +10,13 @@ def compute_readability(llm_response: str) -> float:
         The score does not have a theoretical lower bound.
 
         Meaning of scores:
-        90-100  Very Easy
-        80-89   Easy
-        70-79   Fairly Easy
-        60-69   Standard
-        50-59   Fairly Difficult
-        30-49   Difficult
-        0-29    Very Confusing
+            90-100  Very Easy
+            80-89   Easy
+            70-79   Fairly Easy
+            60-69   Standard
+            50-59   Fairly Difficult
+            30-49   Difficult
+            0-29    Very Confusing
 
     Args:
         llm_response (str): the model's response post by Streamlit
