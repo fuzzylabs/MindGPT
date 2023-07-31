@@ -407,14 +407,14 @@ test = ["astroid", "pytest"]
 
 [[package]]
 name = "async-lru"
-version = "2.0.3"
+version = "2.0.4"
 description = "Simple LRU cache for asyncio"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "async-lru-2.0.3.tar.gz", hash = "sha256:b714c9d1415fca4e264da72a9e2abc66880ce7430e03a973341f88ea4c0d4869"},
-    {file = "async_lru-2.0.3-py3-none-any.whl", hash = "sha256:00c0a8899c20b9c88663a47732689ff98189c9fa08ad9f734d7722f934d250b1"},
+    {file = "async-lru-2.0.4.tar.gz", hash = "sha256:b8a59a5df60805ff63220b2a0c5b5393da5521b113cd5465a44eb037d81a5627"},
+    {file = "async_lru-2.0.4-py3-none-any.whl", hash = "sha256:ff02944ce3c288c5be660c42dbcca0742b32c3b279d6dceda655190240b99224"},
 ]
 
 [package.dependencies]
@@ -1581,14 +1581,14 @@ pgp = ["gpg"]
 
 [[package]]
 name = "dvc"
-version = "3.8.1"
+version = "3.10.1"
 description = "Git for data scientists - manage your code and data together"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "dvc-3.8.1-py3-none-any.whl", hash = "sha256:7c6454d9a0ffc0ba7758a50dfbe4af6dcbbd8af5e50164dcf363462097916096"},
-    {file = "dvc-3.8.1.tar.gz", hash = "sha256:1185c7fac30076b1f183bfcc60d9865c4203b78d8ab687d51165e2539c642ecb"},
+    {file = "dvc-3.10.1-py3-none-any.whl", hash = "sha256:c3609f1f12be1779c990306c037dcf8edc8344bf1f34c5d3b11752e803fed84c"},
+    {file = "dvc-3.10.1.tar.gz", hash = "sha256:5897942aabe371fe1c826b302238936d827b354494ff1cbea0bce55ffe426a5d"},
 ]
 
 [package.dependencies]
@@ -1597,7 +1597,7 @@ configobj = ">=5.0.6"
 distro = ">=1.3"
 dpath = ">=2.1.0,<3"
 dvc-azure = {version = ">=2.21.2", optional = true, markers = "extra == \"azure\""}
-dvc-data = ">=2.6.0,<2.7.0"
+dvc-data = ">=2.8.1,<2.9.0"
 dvc-http = ">=2.29.0"
 dvc-render = ">=0.3.1,<1"
 dvc-studio-client = ">=0.9.2,<1"
@@ -1670,21 +1670,21 @@ tests = ["Pygments (==2.10.0)", "collective.checkdocs (==0.2)", "crc32c (==2.3.p
 
 [[package]]
 name = "dvc-data"
-version = "2.6.0"
+version = "2.8.1"
 description = "dvc data"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "dvc-data-2.6.0.tar.gz", hash = "sha256:d0c731a5ddbac576b13c91423dae84877680dd28a94aa0ab06c569b74dd17387"},
-    {file = "dvc_data-2.6.0-py3-none-any.whl", hash = "sha256:e32d1dc25437dc54a80e68dba5f6cb1102b3c9bd5671940ebc8c17510e9e735d"},
+    {file = "dvc-data-2.8.1.tar.gz", hash = "sha256:eb5026754f7b6d6a0051e49975c9116571933d3349a6db49f211f1237882b830"},
+    {file = "dvc_data-2.8.1-py3-none-any.whl", hash = "sha256:abe745d462c417ce4e2d6f8e366781bec09248932a111afc4cb1f3ea2bd3aab3"},
 ]
 
 [package.dependencies]
 attrs = ">=21.3.0"
 dictdiffer = ">=0.8.1"
 diskcache = ">=5.2.1"
-dvc-objects = ">=0.23.0,<1"
+dvc-objects = ">=0.24.1,<1"
 funcy = ">=1.14"
 nanotime = ">=0.5.2"
 pygtrie = ">=2.3.2"
@@ -1718,14 +1718,14 @@ tests = ["dvc[testing]", "flaky (==3.7.0)", "mypy (==0.910)", "pylint (==2.15.9)
 
 [[package]]
 name = "dvc-objects"
-version = "0.24.0"
+version = "0.24.1"
 description = "dvc objects"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "dvc-objects-0.24.0.tar.gz", hash = "sha256:4c58153162b71d2290e13c47de4f4f009c6ed43f1b3e37cfe8a9a76065101e37"},
-    {file = "dvc_objects-0.24.0-py3-none-any.whl", hash = "sha256:8fda8bb68643f3c429c1600e6f218c263a5b020f60d1ff1a56017cfaac5e7be6"},
+    {file = "dvc-objects-0.24.1.tar.gz", hash = "sha256:174168b826ad2699e3de5e203d6b65c5893b5d1f668c2db20516631f65288d7f"},
+    {file = "dvc_objects-0.24.1-py3-none-any.whl", hash = "sha256:e17bdf27a034075ae4b2ee20a584c687ee9a5079812d6629614790aa643dda9c"},
 ]
 
 [package.dependencies]
@@ -2535,23 +2535,23 @@ files = [
 
 [[package]]
 name = "ipywidgets"
-version = "7.7.5"
+version = "7.8.0"
 description = "IPython HTML widgets for Jupyter"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "ipywidgets-7.7.5-py2.py3-none-any.whl", hash = "sha256:d9644e473282ca28a6bc0327372bcad7a41877d0092fea1ed70bd15f28be9270"},
-    {file = "ipywidgets-7.7.5.tar.gz", hash = "sha256:2392943ed30253c84ac36f23f707fa1c9d34461ae5356944481a84d5b08d69b2"},
+    {file = "ipywidgets-7.8.0-py2.py3-none-any.whl", hash = "sha256:47e5d57c2f73f6464ea422978106a119ab2721d88e2d4982282ebb54eb59a88e"},
+    {file = "ipywidgets-7.8.0.tar.gz", hash = "sha256:6412eb61d1ccde049f731084266b3c946117b3e8c2769923fc20ea35633ef77c"},
 ]
 
 [package.dependencies]
-ipykernel = ">=4.5.1"
+comm = ">=0.1.3"
 ipython = {version = ">=4.0.0", markers = "python_version >= \"3.3\""}
 ipython-genutils = ">=0.2.0,<0.3.0"
 jupyterlab-widgets = {version = ">=1.0.0,<3", markers = "python_version >= \"3.6\""}
 traitlets = ">=4.3.1"
-widgetsnbextension = ">=3.6.4,<3.7.0"
+widgetsnbextension = ">=3.6.5,<3.7.0"
 
 [package.extras]
 test = ["ipykernel", "mock", "pytest (>=3.6.0)", "pytest-cov"]
@@ -2622,22 +2622,22 @@ files = [
 
 [[package]]
 name = "jedi"
-version = "0.18.2"
+version = "0.19.0"
 description = "An autocompletion tool for Python that can be used for text editors."
 category = "main"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "jedi-0.18.2-py2.py3-none-any.whl", hash = "sha256:203c1fd9d969ab8f2119ec0a3342e0b49910045abe6af0a3ae83a5764d54639e"},
-    {file = "jedi-0.18.2.tar.gz", hash = "sha256:bae794c30d07f6d910d32a7048af09b5a39ed740918da923c6b780790ebac612"},
+    {file = "jedi-0.19.0-py2.py3-none-any.whl", hash = "sha256:cb8ce23fbccff0025e9386b5cf85e892f94c9b822378f8da49970471335ac64e"},
+    {file = "jedi-0.19.0.tar.gz", hash = "sha256:bcf9894f1753969cbac8022a8c2eaee06bfa3724e4192470aaffe7eb6272b0c4"},
 ]
 
 [package.dependencies]
-parso = ">=0.8.0,<0.9.0"
+parso = ">=0.8.3,<0.9.0"
 
 [package.extras]
 docs = ["Jinja2 (==2.11.3)", "MarkupSafe (==1.1.1)", "Pygments (==2.8.1)", "alabaster (==0.7.12)", "babel (==2.9.1)", "chardet (==4.0.0)", "commonmark (==0.8.1)", "docutils (==0.17.1)", "future (==0.18.2)", "idna (==2.10)", "imagesize (==1.2.0)", "mock (==1.0.1)", "packaging (==20.9)", "pyparsing (==2.4.7)", "pytz (==2021.1)", "readthedocs-sphinx-ext (==2.1.4)", "recommonmark (==0.5.0)", "requests (==2.25.1)", "six (==1.15.0)", "snowballstemmer (==2.1.0)", "sphinx (==1.8.5)", "sphinx-rtd-theme (==0.4.3)", "sphinxcontrib-serializinghtml (==1.1.4)", "sphinxcontrib-websupport (==1.2.4)", "urllib3 (==1.26.4)"]
-qa = ["flake8 (==3.8.3)", "mypy (==0.782)"]
+qa = ["flake8 (==5.0.4)", "mypy (==0.971)", "types-setuptools (==67.2.0.1)"]
 testing = ["Django (<3.1)", "attrs", "colorama", "docopt", "pytest (<7.0.0)"]
 
 [[package]]
@@ -2799,20 +2799,21 @@ test = ["ipykernel", "pre-commit", "pytest", "pytest-cov", "pytest-timeout"]
 
 [[package]]
 name = "jupyter-events"
-version = "0.6.3"
+version = "0.7.0"
 description = "Jupyter Event System library"
 category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "jupyter_events-0.6.3-py3-none-any.whl", hash = "sha256:57a2749f87ba387cd1bfd9b22a0875b889237dbf2edc2121ebb22bde47036c17"},
-    {file = "jupyter_events-0.6.3.tar.gz", hash = "sha256:9a6e9995f75d1b7146b436ea24d696ce3a35bfa8bfe45e0c33c334c79464d0b3"},
+    {file = "jupyter_events-0.7.0-py3-none-any.whl", hash = "sha256:4753da434c13a37c3f3c89b500afa0c0a6241633441421f6adafe2fb2e2b924e"},
+    {file = "jupyter_events-0.7.0.tar.gz", hash = "sha256:7be27f54b8388c03eefea123a4f79247c5b9381c49fb1cd48615ee191eb12615"},
 ]
 
 [package.dependencies]
-jsonschema = {version = ">=3.2.0", extras = ["format-nongpl"]}
+jsonschema = {version = ">=4.18.0", extras = ["format-nongpl"]}
 python-json-logger = ">=2.0.4"
 pyyaml = ">=5.3"
+referencing = "*"
 rfc3339-validator = "*"
 rfc3986-validator = ">=0.1.1"
 traitlets = ">=5.3"
@@ -2820,7 +2821,7 @@ traitlets = ">=5.3"
 [package.extras]
 cli = ["click", "rich"]
 docs = ["jupyterlite-sphinx", "myst-parser", "pydata-sphinx-theme", "sphinxcontrib-spelling"]
-test = ["click", "coverage", "pre-commit", "pytest (>=7.0)", "pytest-asyncio (>=0.19.0)", "pytest-console-scripts", "pytest-cov", "rich"]
+test = ["click", "pre-commit", "pytest (>=7.0)", "pytest-asyncio (>=0.19.0)", "pytest-console-scripts", "rich"]
 
 [[package]]
 name = "jupyter-lsp"
@@ -2966,14 +2967,14 @@ test = ["hatch", "ipykernel", "jupyterlab-server[openapi]", "openapi-spec-valida
 
 [[package]]
 name = "jupyterlab-widgets"
-version = "1.1.4"
+version = "1.1.5"
 description = "A JupyterLab extension."
 category = "main"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "jupyterlab_widgets-1.1.4-py3-none-any.whl", hash = "sha256:769eb7bfef7e8ab70a7737104555531b09bcfba982f89465d2ae67b99b3f3e81"},
-    {file = "jupyterlab_widgets-1.1.4.tar.gz", hash = "sha256:ea6e7612725e94d0966d64c6344910686f4bf8610533cd40daeba6980659b14d"},
+    {file = "jupyterlab_widgets-1.1.5-py3-none-any.whl", hash = "sha256:7bc9a5642f6741945e873183695c28b02665a7f075aa36f7cca8b52ab984e581"},
+    {file = "jupyterlab_widgets-1.1.5.tar.gz", hash = "sha256:18565a93d88ade31cc69307ebd47edf6be774bc4772c1bf1a688d807f464e2a1"},
 ]
 
 [[package]]
@@ -3530,14 +3531,14 @@ webpdf = ["playwright"]
 
 [[package]]
 name = "nbformat"
-version = "5.9.1"
+version = "5.9.2"
 description = "The Jupyter Notebook format"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "nbformat-5.9.1-py3-none-any.whl", hash = "sha256:b7968ebf4811178a4108ee837eae1442e3f054132100f0359219e9ed1ce3ca45"},
-    {file = "nbformat-5.9.1.tar.gz", hash = "sha256:3a7f52d040639cbd8a3890218c8b0ffb93211588c57446c90095e32ba5881b5d"},
+    {file = "nbformat-5.9.2-py3-none-any.whl", hash = "sha256:1c5172d786a41b82bcfd0c23f9e6b6f072e8fb49c39250219e4acfff1efe89e9"},
+    {file = "nbformat-5.9.2.tar.gz", hash = "sha256:5f98b5ba1997dff175e77e0c17d5c10a96eaed2cbd1de3533d1fc35d5e111192"},
 ]
 
 [package.dependencies]
@@ -3552,14 +3553,14 @@ test = ["pep440", "pre-commit", "pytest", "testpath"]
 
 [[package]]
 name = "nest-asyncio"
-version = "1.5.6"
+version = "1.5.7"
 description = "Patch asyncio to allow nested event loops"
 category = "main"
 optional = false
 python-versions = ">=3.5"
 files = [
-    {file = "nest_asyncio-1.5.6-py3-none-any.whl", hash = "sha256:b9a953fb40dceaa587d109609098db21900182b16440652454a146cffb06e8b8"},
-    {file = "nest_asyncio-1.5.6.tar.gz", hash = "sha256:d267cc1ff794403f7df692964d1d2a3fa9418ffea2a3f6859a439ff482fef290"},
+    {file = "nest_asyncio-1.5.7-py3-none-any.whl", hash = "sha256:5301c82941b550b3123a1ea772ba9a1c80bad3a182be8c1a5ae6ad3be57a9657"},
+    {file = "nest_asyncio-1.5.7.tar.gz", hash = "sha256:6a80f7b98f24d9083ed24608977c09dd608d83f91cccc24c9d2cba6d10e01c10"},
 ]
 
 [[package]]
@@ -3624,14 +3625,14 @@ setuptools = "*"
 
 [[package]]
 name = "notebook"
-version = "7.0.0"
+version = "7.0.1"
 description = "Jupyter Notebook - A web-based notebook environment for interactive computing"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "notebook-7.0.0-py3-none-any.whl", hash = "sha256:71b4e695e658763a2766613176491854708fb46fbe7664bf5e494deeeab92d60"},
-    {file = "notebook-7.0.0.tar.gz", hash = "sha256:38b55e6939df0ba73b53212c3b234e41102f1789e0158606cedaebf00abef6c8"},
+    {file = "notebook-7.0.1-py3-none-any.whl", hash = "sha256:35327476042140e8739ff8fcfecdc915658ae72b4db72d6e3b537badcdbf9e35"},
+    {file = "notebook-7.0.1.tar.gz", hash = "sha256:2e16ad4e63ea89f7efbe212ee7c1693fcfa5ab55ffef75047530f74af4bd926c"},
 ]
 
 [package.dependencies]
@@ -3961,14 +3962,14 @@ totp = ["cryptography"]
 
 [[package]]
 name = "pathspec"
-version = "0.11.1"
+version = "0.11.2"
 description = "Utility library for gitignore style pattern matching of file paths."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pathspec-0.11.1-py3-none-any.whl", hash = "sha256:d8af70af76652554bd134c22b3e8a1cc46ed7d91edcdd721ef1a0c51a84a5293"},
-    {file = "pathspec-0.11.1.tar.gz", hash = "sha256:2798de800fa92780e33acca925945e9a19a133b715067cf165b8866c15a31687"},
+    {file = "pathspec-0.11.2-py3-none-any.whl", hash = "sha256:1d6ed233af05e679efb96b1851550ea95bbb64b7c490b0f5aa52996c11e92a20"},
+    {file = "pathspec-0.11.2.tar.gz", hash = "sha256:e0d8d0ac2f12da61956eb2306b69f9469b42f4deb0f3cb6ed47b9cce9996ced3"},
 ]
 
 [[package]]
@@ -4080,19 +4081,19 @@ tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "pa
 
 [[package]]
 name = "platformdirs"
-version = "3.9.1"
+version = "3.10.0"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "platformdirs-3.9.1-py3-none-any.whl", hash = "sha256:ad8291ae0ae5072f66c16945166cb11c63394c7a3ad1b1bc9828ca3162da8c2f"},
-    {file = "platformdirs-3.9.1.tar.gz", hash = "sha256:1b42b450ad933e981d56e59f1b97495428c9bd60698baab9f3eb3d00d5822421"},
+    {file = "platformdirs-3.10.0-py3-none-any.whl", hash = "sha256:d7c24979f292f916dc9cbf8648319032f551ea8c49a4c9bf2fb556a02070ec1d"},
+    {file = "platformdirs-3.10.0.tar.gz", hash = "sha256:b45696dab2d7cc691a3226759c0d3b00c47c8b6e293d96f6436f733303f77f6d"},
 ]
 
 [package.extras]
-docs = ["furo (>=2023.5.20)", "proselint (>=0.13)", "sphinx (>=7.0.1)", "sphinx-autodoc-typehints (>=1.23,!=1.23.4)"]
-test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.3.1)", "pytest-cov (>=4.1)", "pytest-mock (>=3.10)"]
+docs = ["furo (>=2023.7.26)", "proselint (>=0.13)", "sphinx (>=7.1.1)", "sphinx-autodoc-typehints (>=1.24)"]
+test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4)", "pytest-cov (>=4.1)", "pytest-mock (>=3.11.1)"]
 
 [[package]]
 name = "pluggy"
@@ -5684,14 +5685,14 @@ files = [
 
 [[package]]
 name = "shtab"
-version = "1.6.3"
+version = "1.6.4"
 description = "Automagic shell tab completion for Python CLI applications"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "shtab-1.6.3-py3-none-any.whl", hash = "sha256:4d8ee72e57e072533e89b0f47eca76dc6cea6a8db9f1a1efa92df2d31d200db6"},
-    {file = "shtab-1.6.3.tar.gz", hash = "sha256:00bfb8c2b02f503298a6774fb40503c0dbf9621205f721725f8ef40bd4f32027"},
+    {file = "shtab-1.6.4-py3-none-any.whl", hash = "sha256:4be38887a912091a1640e06f5ccbcbd24e176cf2fcb9ef0c2e011ee22d63834f"},
+    {file = "shtab-1.6.4.tar.gz", hash = "sha256:aba9e049bed54ffdb650cb2e02657282d8c0148024b0f500277052df124d47de"},
 ]
 
 [package.extras]
@@ -6174,14 +6175,14 @@ files = [
 
 [[package]]
 name = "tomlkit"
-version = "0.12.0"
+version = "0.12.1"
 description = "Style preserving TOML library"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "tomlkit-0.12.0-py3-none-any.whl", hash = "sha256:926f1f37a1587c7a4f6c7484dae538f1345d96d793d9adab5d3675957b1d0766"},
-    {file = "tomlkit-0.12.0.tar.gz", hash = "sha256:01f0477981119c7d8ee0f67ebe0297a7c95b14cf9f4b102b45486deb77018716"},
+    {file = "tomlkit-0.12.1-py3-none-any.whl", hash = "sha256:712cbd236609acc6a3e2e97253dfc52d4c2082982a88f61b640ecf0817eab899"},
+    {file = "tomlkit-0.12.1.tar.gz", hash = "sha256:38e1ff8edb991273ec9f6181244a6a391ac30e9f5098e7535640ea6be97a7c86"},
 ]
 
 [[package]]
@@ -6578,14 +6579,14 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "uvicorn"
-version = "0.23.1"
+version = "0.23.2"
 description = "The lightning-fast ASGI server."
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "uvicorn-0.23.1-py3-none-any.whl", hash = "sha256:1d55d46b83ee4ce82b4e82f621f2050adb3eb7b5481c13f9af1744951cae2f1f"},
-    {file = "uvicorn-0.23.1.tar.gz", hash = "sha256:da9b0c8443b2d7ee9db00a345f1eee6db7317432c9d4400f5049cc8d358383be"},
+    {file = "uvicorn-0.23.2-py3-none-any.whl", hash = "sha256:1f9be6558f01239d4fdf22ef8126c39cb1ad0addf76c40e760549d2c2f43ab53"},
+    {file = "uvicorn-0.23.2.tar.gz", hash = "sha256:4d3cc12d7727ba72b64d12d3cc7743124074c0a69f7b201512fc50c3e3f1569a"},
 ]
 
 [package.dependencies]
@@ -6955,14 +6956,14 @@ watchdog = ["watchdog (>=2.3)"]
 
 [[package]]
 name = "widgetsnbextension"
-version = "3.6.4"
+version = "3.6.5"
 description = "IPython HTML widgets for Jupyter"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "widgetsnbextension-3.6.4-py2.py3-none-any.whl", hash = "sha256:3d2d4994aea8681eb438493e439f59f82ba81d91f388a12e55147ae137f4120e"},
-    {file = "widgetsnbextension-3.6.4.tar.gz", hash = "sha256:ad1356c575d5add908afe886255deafb3f9b1589146a99279d1dcba5a05d16a5"},
+    {file = "widgetsnbextension-3.6.5-py2.py3-none-any.whl", hash = "sha256:a5ae5e8ac0a85b9c527bee8ecb60b3e4b9ce499ed2900c9335b4d94e59f2e086"},
+    {file = "widgetsnbextension-3.6.5.tar.gz", hash = "sha256:601352aa4df7b15717fc57ab59fd9f2795003e53c477dca0d53171c4ee933b35"},
 ]
 
 [package.dependencies]

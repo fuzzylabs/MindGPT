@@ -1,32 +1,7 @@
-"""The metric service interface for computing readability and handling post and get requests."""
-import logging
+"""Functions for the metric service for computing readability and validate llm response."""
 from typing import Dict
 
 import textstat
-from flask import Flask, request
-from utils import getconn
-
-app = Flask(__name__)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.StreamHandler()],
-)
-
-
-def query_database(table: str) -> None:
-    """Place holder."""
-    conn = getconn()
-
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT * FROM {table}")
-
-    print(cursor.fetchall())
-
-
-def send_metric_to_database() -> None:
-    """Place holder."""
-    ...
 
 
 def compute_readability(llm_response: str) -> float:
@@ -88,29 +63,3 @@ def validate_llm_response(llm_response_dict: Dict[str, str]) -> str:
         raise ValueError("The model response must not be an empty string.")
 
     return response
-
-
-@app.route("/readability", methods=["POST"])
-def readability() -> str:
-    """The function is triggered by a post request to the "/"compute_readability" route of the Flask sever which will validate the post request payload and compute a readability score.
-
-    Returns:
-        str: the readability score of the response with type string
-    """
-    llm_response_dict = request.get_json()
-
-    validated_response = validate_llm_response(llm_response_dict)
-
-    return str(
-        compute_readability(validated_response)
-    )  # Flask response cannot return float
-
-
-@app.route("/")
-def home() -> str:
-    """The message for default route.
-
-    Returns:
-        str: the message to return
-    """
-    return "Hello world from the metric service."
