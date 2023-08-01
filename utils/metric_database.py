@@ -21,11 +21,13 @@ class DatabaseCredentials:
         ValueError: if any of the environment variables is not set or empty, then we can connect to the database
     """
 
-    db_name = os.getenv("DB_NAME")
-    db_host = os.getenv("DB_HOST")
-    db_user = os.getenv("DB_USER")
-    db_password = os.getenv("DB_PASSWORD")
-    db_port = os.getenv("DB_PORT")
+    def __init__(self) -> None:
+        """Constructor for DatabaseCredentials to get the required environment variables."""
+        self.db_name = os.getenv("DB_NAME")
+        self.db_host = os.getenv("DB_HOST")
+        self.db_user = os.getenv("DB_USER")
+        self.db_password = os.getenv("DB_PASSWORD")
+        self.db_port = os.getenv("DB_PORT")
 
     def validate_env(self) -> None:
         """Checks whether the 5 environment variables required to connect to database is empty.
