@@ -24,6 +24,7 @@ instructorembedding = "^1.0.1"
 sentence-transformers = "^2.2.2"
 zenml = "0.40.3"
 chromadb-client = "0.3.30.dev0"
+langchain = "^0.0.249"
 
 
 [tool.poetry.group.dev.dependencies]
