@@ -1,4 +1,4 @@
-"""Functions for the metric service for computing readability and validate llm response."""
+"""Functions for the metric service for computing readability and validate llm response and embedding drift data."""
 from typing import Dict, Union
 
 import textstat
