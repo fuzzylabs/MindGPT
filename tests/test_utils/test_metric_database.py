@@ -3,30 +3,12 @@ import os
 from contextlib import nullcontext as does_not_raise
 from typing import Dict, Union
 from unittest import mock
+from unittest.mock import patch
 
 import pytest
-import pytest_pgsql
-from utils import DatabaseCredentials, SQLQueries
+from utils import DatabaseCredentials, DatabaseInterface, SQLQueries
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-
-@pytest.fixture
-def mock_db(
-    transacted_postgresql_db: pytest_pgsql.database.TransactedPostgreSQLTestDB,
-) -> pytest_pgsql.database.TransactedPostgreSQLTestDB:
-    """A fixture which creates a mock database for use by the individual tests.
-
-    Args:
-        transacted_postgresql_db (pytest_pgsql.database.TransactedPostgreSQLTestDB): Temporary PostgreSQL database.
-
-    Returns:
-        pytest_pgsql.database.TransactedPostgreSQLTestDB: a mock database
-    """
-    # create tables from the actual database using the .sql file and populate them with mock data
-    transacted_postgresql_db.run_sql_file(os.path.join("mock_db.sql"))
-
-    return transacted_postgresql_db
 
 
 @pytest.fixture(autouse=True)
@@ -119,3 +101,49 @@ def test_query_is_correct_with_relation_name() -> None:
     generated_query = SQLQueries.relation_existence_query(mock_relation_name).strip()
 
     assert generated_query == expected_query
+
+
+def test_database_interface():
+    """Test that methods in the database interface are called with the expected queries."""
+    with patch("psycopg2.pool.SimpleConnectionPool", return_value=None), patch.object(
+        DatabaseInterface, "check_relation_existence", return_value=True
+    ) as mock_check_relation_existence, patch.object(
+        DatabaseInterface, "execute_query", return_value=None
+    ) as mock_execute_query:
+        db_interface = DatabaseInterface()
+
+        mock_check_relation_existence.assert_called()
+
+        db_interface.create_relation("Readability")
+        mock_execute_query.assert_called_with(
+            SQLQueries.create_readability_relation_query()
+        )
+
+        db_interface.create_relation("EmbeddingDrift")
+        mock_execute_query.assert_called_with(
+            SQLQueries.create_embedding_drift_relation_query()
+        )
+
+        db_interface.insert_readability_data(1)
+        mock_execute_query.assert_called_with(SQLQueries.insert_readability_data(1))
+
+        mock_embedding_drift_data = {
+            "ReferenceDataset": 1.1,
+            "CurrentDataset": 1.2,
+            "Distance": 0.1,
+            "Drifted": True,
+        }
+        db_interface.insert_embedding_drift_data(mock_embedding_drift_data)
+        mock_execute_query.assert_called_with(
+            SQLQueries.insert_embedding_drift_data(mock_embedding_drift_data)
+        )
+
+        db_interface.query_relation("Readability")
+        mock_execute_query.assert_called_with(
+            SQLQueries.get_data_from_relation("Readability"), fetch=True
+        )
+
+        db_interface.query_relation("EmbeddingDrift")
+        mock_execute_query.assert_called_with(
+            SQLQueries.get_data_from_relation("EmbeddingDrift"), fetch=True
+        )
