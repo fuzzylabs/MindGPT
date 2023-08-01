@@ -2,10 +2,9 @@
 import logging
 import os
 from dataclasses import dataclass
-from typing import Any, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
-import psycopg2
-from psycopg2 import Error
+from psycopg2 import Error, extensions, pool
 
 logging.basicConfig(
     level=logging.INFO,
@@ -70,30 +69,12 @@ class SQLQueries:
             str: SQL query for creating the readability relation
         """
         sql_query = """
-            CREATE TABLE Readability (
-                ID SERIAL PRIMARY KEY,
-                TimeStamp TIMESTAMP,
-                ReadabilityScore FLOAT(2)
+            CREATE TABLE "Readability" (
+                "ID" SERIAL PRIMARY KEY,
+                "TimeStamp" TIMESTAMP,
+                "ReadabilityScore" FLOAT(2)
             );
             """
-
-        return sql_query
-
-    @staticmethod
-    def readability_relation_existence_query() -> str:
-        """SQL query for checking whether the readability score relation exists or not.
-
-        Returns:
-            str: SQL query for checking the readability relation existence
-        """
-        sql_query = """
-            SELECT EXISTS (
-                SELECT FROM pg_tables
-                WHERE  schemaname = 'public'
-                AND    tablename  = 'readability'
-            );
-            """
-        # This query would return a tuple such as (True,) if the relation exists, otherwise false
 
         return sql_query
 
@@ -101,25 +82,97 @@ class SQLQueries:
     def insert_readability_data(score: float) -> str:
         """SQL query for inserting a row of data into the readability relation.
 
+        Args:
+            score (float): the readability score computed.
+
         Returns:
-            str: SQL query for cinserting a row of data into the readability relation.
+            str: SQL query for inserting a row of data into the readability relation.
         """
         sql_query = f"""
-            INSERT INTO readability (TimeStamp, ReadabilityScore)
+            INSERT INTO "Readability" ("TimeStamp", "ReadabilityScore")
             VALUES (NOW(), {score});
             """
 
         return sql_query
 
     @staticmethod
-    def get_readability_data() -> str:
+    def create_embedding_drift_relation_query() -> str:
+        """SQL query for creating the EmbeddingDrift relation with 6 columns.
+
+        Columns:
+            - ID (Primary Key)
+            - TimeStamp
+            - Reference Dataset (Version Number)
+            - Dataset (Version Number)
+            - Distance
+            - Drifted (Bool) - Optional
+
+        Returns:
+            str: SQL query for creating the EmbeddingDrift relation
+        """
+        sql_query = """
+            CREATE TABLE "EmbeddingDrift" (
+                "ID" SERIAL PRIMARY KEY,
+                "TimeStamp" TIMESTAMP,
+                "ReferenceDataset" FLOAT(3),
+                "CurrentDataset" FLOAT(3),
+                "Distance" FLOAT(3),
+                "Drifted" BOOLEAN
+            );
+            """
+
+        return sql_query
+
+    @staticmethod
+    def insert_embedding_drift_data(data: Dict[str, Union[float, bool]]) -> str:
+        """SQL query for inserting a row of data into the EmbeddingDrift relation.
+
+        Args:
+            data (Dict[str, Union[float, bool]]): the dictionary containing the embedding drift data
+
+        Returns:
+            str: SQL query for inserting a row of data into the EmbeddingDrift relation.
+        """
+        sql_query = f"""
+            INSERT INTO "EmbeddingDrift" ("TimeStamp", "ReferenceDataset", "CurrentDataset", "Distance", "Drifted")
+            VALUES (NOW(), {data["ReferenceDataset"]}, {data["CurrentDataset"]}, {data["Distance"]}, {data["Drifted"]});
+            """
+
+        return sql_query
+
+    @staticmethod
+    def relation_existence_query(relation_name: str) -> str:
+        """SQL query for checking whether the relation specified exists or not.
+
+        Args:
+            relation_name (str): name of the relation to check for.
+
+        Returns:
+            str: SQL query for checking a relation existence
+        """
+        sql_query = f"""
+            SELECT EXISTS (
+                SELECT FROM pg_tables
+                WHERE  schemaname = 'public'
+                AND    tablename  = '{relation_name}'
+            );
+            """
+        # This query would return a tuple such as (True,) if the relation exists, otherwise false
+
+        return sql_query
+
+    @staticmethod
+    def get_data_from_relation(relation_name: str) -> str:
         """SQL query for getting data from the readability relation.
+
+        Args:
+            relation_name (str): name of the relation to get data from.
 
         Returns:
             str: SQL query for getting data from the readability relation.
         """
-        sql_query = """
-            SELECT * FROM readability
+        sql_query = f"""
+            SELECT * FROM "{relation_name}"
             """
 
         return sql_query
@@ -128,12 +181,18 @@ class SQLQueries:
 class DatabaseInterface:
     """Class containing methods for interacting with the postgres database."""
 
+    relation_names = {"Readability", "EmbeddingDrift"}
+
     def __init__(self) -> None:
         """Constructor which will initialise a database connection."""
         self.db_credentials = DatabaseCredentials()
+        self.db_credentials.validate_env()
+        self.conn_pool = None
 
         try:
-            self.conn = psycopg2.connect(
+            self.conn_pool = pool.SimpleConnectionPool(
+                minconn=1,
+                maxconn=10,
                 database=self.db_credentials.db_name,
                 host=self.db_credentials.db_host,
                 user=self.db_credentials.db_user,
@@ -143,71 +202,110 @@ class DatabaseInterface:
         except Error as e:
             logging.error(f"{e} error: Unable to connect to the data base")
 
-        if not self.check_relation_existence():
-            self.create_relation()
+        for name in self.relation_names:
+            if not self.check_relation_existence(name):
+                self.create_relation(name)
 
-    def check_relation_existence(self) -> bool:
+    def get_conn(self) -> extensions.connection:
+        """Retrieve a connection from the connection pool.
+
+        Raises:
+            Exception: raise if the connection pool is not initialised.
+
+        Returns:
+            extensions.connection: an instance of a connection to the database from the connection pool.
+        """
+        if not self.conn_pool:
+            raise Exception("The connection pool is not initialised.")
+
+        return cast(
+            extensions.connection, self.conn_pool.getconn()
+        )  # cast type for mypy
+
+    def execute_query(
+        self, query: str, fetch: bool = False
+    ) -> Optional[List[Tuple[Any, ...]]]:
+        """Executes a SQL query on the database.
+
+        Args:
+            query (str): the SQL query to be executed.
+            fetch (bool): if set to True, the method will fetch and return the results of the query. Defaults to False.
+
+        Returns:
+            Optional[List[Tuple[Any, ...]]]: a list of tuples representing the query results if 'fetch' is True, None otherwise.
+        """
+        result = None
+
+        try:
+            conn = self.get_conn()
+
+            with conn.cursor() as cursor:
+                cursor.execute(query)
+                if fetch:
+                    result = cursor.fetchall()
+
+            conn.commit()
+        except Exception as e:
+            logging.error(f"{e} error: Unable to execute the query.")
+            conn.rollback()  # roll back transaction on error
+        finally:
+            if self.conn_pool:
+                self.conn_pool.putconn(conn)  # return connection back to pool
+
+        return result
+
+    def check_relation_existence(self, relation_name: str) -> bool:
         """This function checks whether the readability relation exists.
+
+        Args:
+            relation_name (str): name of the relation to check for.
 
         Returns:
             bool: returns True if exists, False otherwise
         """
-        result: Optional[Any] = None
+        result = self.execute_query(
+            SQLQueries.relation_existence_query(relation_name), fetch=True
+        )
+        if result:  # mypy
+            return bool(result[0][0])
 
-        try:
-            with self.conn.cursor() as cursor:
-                cursor.execute(SQLQueries.readability_relation_existence_query())
-                result = cursor.fetchone()
-        except Error as e:
-            logging.error(f"{e} error: Unable to check relation existence.")
-            return False
+        return False
 
-        if result is None or len(result) == 0:
-            return False
-
-        return bool(result[0])
-
-    def create_relation(self) -> None:
+    def create_relation(self, relation_name: str) -> None:
         """This function creates a relation."""
-        try:
-            with self.conn.cursor() as cursor:
-                cursor.execute(SQLQueries.create_readability_relation_query())
-                self.conn.commit()
-        except Error as e:
-            logging.error(f"{e} error: Unable to create the readability relation.")
+        query_map = {
+            "Readability": SQLQueries.create_readability_relation_query(),
+            "EmbeddingDrift": SQLQueries.create_embedding_drift_relation_query(),
+        }
+        self.execute_query(str(query_map.get(relation_name)))
 
-    def insert_data(self, score: float) -> None:
+    def insert_readability_data(self, score: float) -> None:
         """This function insert a row of data into to readability relation.
 
         Args:
             score (float): the readability score computed.
         """
-        try:
-            with self.conn.cursor() as cursor:
-                cursor.execute(SQLQueries.insert_readability_data(score))
-                self.conn.commit()
-        except Error as e:
-            logging.error(
-                f"{e} error: Unable to insert data into the readability relation."
-            )
+        self.execute_query(SQLQueries.insert_readability_data(score))
 
-    def query_relation(self, relation: str) -> List[Tuple[Any, ...]]:
+    def insert_embedding_drift_data(self, data: Dict[str, Union[float, bool]]) -> None:
+        """This function insert a row of data into to EmbeddingDrift relation.
+
+        Args:
+            data (Dict[str, Union[float, bool]]): a dictionary containing the embedding drift data to be inserted to the relation.
+        """
+        self.execute_query(SQLQueries.insert_embedding_drift_data(data))
+
+    def query_relation(self, relation_name: str) -> List[Tuple[Any, ...]]:
         """This function queries a specific relation in the database, based on the provided relation name.
 
         Args:
-            relation (str): the name of the relation in database
+            relation_name (str): the name of the relation in database
 
         Returns:
             List[Tuple[Any, ...]]: a list of tuples representing the data rows from the queried relation.
         """
-        result: List[Tuple[Any, ...]] = []
+        result = self.execute_query(
+            SQLQueries.get_data_from_relation(relation_name), fetch=True
+        )
 
-        if relation == "readability":
-            try:
-                with self.conn.cursor() as cursor:
-                    cursor.execute(SQLQueries.get_readability_data())
-                    result = cursor.fetchall()
-            except Error as e:
-                logging.error(f"{e} error: Unable to query the {relation} relation.")
-
-        return result
+        return result if result else []  # mypy will complain if just return result

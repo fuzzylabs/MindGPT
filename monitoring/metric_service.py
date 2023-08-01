@@ -1,5 +1,5 @@
 """Functions for the metric service for computing readability and validate llm response."""
-from typing import Dict
+from typing import Dict, Union
 
 import textstat
 
@@ -63,3 +63,36 @@ def validate_llm_response(llm_response_dict: Dict[str, str]) -> str:
         raise ValueError("The model response must not be an empty string.")
 
     return response
+
+
+def validate_embedding_drift_data(
+    data: Dict[str, Union[float, bool]]
+) -> Dict[str, Union[float, bool]]:
+    """Validate that the given embedding data dictionary has required keys and values of correct types.
+
+    Args:
+        data (Dict[str, Union[float, bool]]): a dictionary containing the embedding drift data to be validated.
+
+    Raises:
+        KeyError: raise if any of the required keys is not found in the dictionary.
+        TypeError: raise if the value associated with any of the keys is of incorrect type.
+
+    Returns:
+        Dict[str, Union[float, bool]]: the validated embedding drift data dictionary.
+    """
+    required_keys_types = {
+        "ReferenceDataset": float,
+        "CurrentDataset": float,
+        "Distance": float,
+        "Drifted": bool,
+    }
+
+    for key, expected_type in required_keys_types.items():
+        if key not in data:
+            raise KeyError(f"{key} is not found in the data dictionary.")
+        if not isinstance(data[key], expected_type):
+            raise TypeError(
+                f"'{key}' has incorrect type, expected {expected_type.__name__}."
+            )
+
+    return data
