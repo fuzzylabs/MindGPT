@@ -23,8 +23,8 @@ def mock_database_env() -> None:
             "DB_PORT": "mock_port",
             "DB_PASSWORD": "mock_password",
         },
-    ):
-        yield
+    ) as mock_environ:
+        yield mock_environ
 
 
 def test_validate_env() -> None:
