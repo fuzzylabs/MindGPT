@@ -193,7 +193,7 @@ If you visit that URL in browser, you should be able to interact with the deploy
 
 ## Monitoring
 
-Running the metric services requires a local host postgres sql database and the database config. See [here](https://www.postgresql.org/download/) to download and install PostgreSQL.
+Running the metric services requires a Postgres SQL database to be hosted locally and the corresponding database config. See [here](https://www.postgresql.org/download/) to download and install PostgreSQL.
 
 Once you have Postgres installed, you will need to host a local database and export the following database config as environment variables:
 
