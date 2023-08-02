@@ -35,29 +35,9 @@ class DatabaseCredentials:
         Raises:
             ValueError: if any one of the 5 environment variables is empty or not set
         """
-        # Check if the required environment variables are set
-        if self.db_name is None:
-            raise ValueError("No DB_NAME environment variable found.")
-        if self.db_host is None:
-            raise ValueError("No DB_HOST environment variable found.")
-        if self.db_user is None:
-            raise ValueError("No DB_USER environment variable found.")
-        if self.db_password is None:
-            raise ValueError("No DB_PASSWORD environment variable found.")
-        if self.db_port is None:
-            raise ValueError("No DB_PORT environment variable found.")
-
-        # Check if any of the 5 environment variables set is empty
-        if len(self.db_name) == 0:
-            raise ValueError("DB_NAME is empty")
-        if len(self.db_host) == 0:
-            raise ValueError("DB_HOST is empty")
-        if len(self.db_user) == 0:
-            raise ValueError("DB_USER is empty")
-        if len(self.db_password) == 0:
-            raise ValueError("DB_PASSWORD is empty")
-        if len(self.db_port) == 0:
-            raise ValueError("DB_PORT is empty")
+        for var, value in vars(self).items():
+            if value is None or len(value) == 0:
+                raise ValueError(f"{var.upper()} is not set")
 
 
 class SQLQueries:
