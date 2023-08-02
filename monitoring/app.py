@@ -21,7 +21,7 @@ logging.basicConfig(
 
 
 @app.route("/readability", methods=["POST"])
-def readability() -> Tuple[Response, int]:
+def readability() -> Response:
     """The function is triggered by a post request to the "/"compute_readability" route of the Flask sever which will validate the post request payload and compute a readability score.
 
     After a readability is computed, the score will be stored in the readability relation.
@@ -35,22 +35,21 @@ def readability() -> Tuple[Response, int]:
         validated_response = validate_llm_response(llm_response_dict)
         score = compute_readability(validated_response)
     except Exception as e:  # catch any exception from response validation
-        return jsonify({"message": str(e)}), 400
+        return jsonify({"status_code": 400, "message": f"Validation error: {str(e)}"})
 
     db_interface.insert_readability_data(float(score))
 
-    return (
-        jsonify(
-            {
-                "message": f"The readability score is {score}. Readability data has been successfully inserted."
-            }
-        ),
-        200,
+    return jsonify(
+        {
+            "status_code": 200,
+            "score": score,
+            "message": "Readability data has been successfully inserted.",
+        }
     )
 
 
 @app.route("/embedding_drift", methods=["POST"])
-def embedding_drift() -> Tuple[Response, int]:
+def embedding_drift() -> Response:
     """Receives and validates the embedding drift data from a POST request, and then inserts it into the database if it's valid.
 
     Returns:
@@ -62,11 +61,14 @@ def embedding_drift() -> Tuple[Response, int]:
         validated_data = validate_embedding_drift_data(embedding_drift_data_dict)
         db_interface.insert_embedding_drift_data(validated_data)
     except Exception as e:  # catch any exception from data validation
-        return jsonify({"message": "Validation error: " + str(e)}), 400
+        return jsonify({"status_code": 400, "message": f"Validation error: {str(e)}"})
 
-    return (
-        jsonify({"message": "Embedding drift data has been successfully inserted."}),
-        200,
+    return jsonify(
+        {
+            "status_code": 200,
+            "data": validated_data,
+            "message": "Embedding drift data has been successfully inserted.",
+        }
     )
 
 
