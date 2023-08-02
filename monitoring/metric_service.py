@@ -28,7 +28,7 @@ def compute_readability(llm_response: str) -> float:
         ValueError: raise if the model response received is a empty string
 
     Returns:
-        str: the readability score of the response with type string
+        float: the readability score of the response
     """
     return float(textstat.flesch_reading_ease(llm_response))
 

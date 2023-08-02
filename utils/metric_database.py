@@ -279,17 +279,20 @@ class DatabaseInterface:
         """
         self.execute_query(SQLQueries.insert_embedding_drift_data(data))
 
-    def query_relation(self, relation_name: str) -> Optional[List[Tuple[Any, ...]]]:
+    def query_relation(self, relation_name: str) -> List[Tuple[Any, ...]]:
         """This function queries a specific relation in the database, based on the provided relation name.
 
         Args:
             relation_name (str): the name of the relation in database
 
         Returns:
-            Optional[List[Tuple[Any, ...]]]: a list of tuples representing the data rows from the queried relation.
+            List[Tuple[Any, ...]]: a list of tuples representing the data rows from the queried relation.
         """
-        result = self.execute_query(
-            SQLQueries.get_data_from_relation(relation_name), fetch=True
+        result = (
+            self.execute_query(
+                SQLQueries.get_data_from_relation(relation_name), fetch=True
+            )
+            or []  # It has to return a empty list, otherwise mypy will complain
         )
 
         return result

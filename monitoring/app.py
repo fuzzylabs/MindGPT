@@ -27,7 +27,7 @@ def readability() -> Response:
     After a readability is computed, the score will be stored in the readability relation.
 
     Returns:
-        Tuple[Response, int]: a tuple containing a success message and the HTTP status code.
+        Response: a tuple containing a success message and the HTTP status code.
     """
     llm_response_dict = request.get_json()
 
@@ -53,7 +53,7 @@ def embedding_drift() -> Response:
     """Receives and validates the embedding drift data from a POST request, and then inserts it into the database if it's valid.
 
     Returns:
-        Tuple[Response, int]: a tuple containing a success message and the HTTP status code.
+        Response: a tuple containing a success message and the HTTP status code.
     """
     embedding_drift_data_dict = request.get_json()
 
