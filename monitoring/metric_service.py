@@ -54,7 +54,7 @@ def validate_llm_response(llm_response_dict: Dict[str, str]) -> str:
     response = llm_response_dict.get("response")
     if response is None:
         raise ValueError(
-            "Response dictionary does not contain the right key value pair."
+            "The response dictionary does not contain the right key value pair."
         )
 
     if not isinstance(response, str):
@@ -81,10 +81,10 @@ def validate_embedding_drift_data(
         Dict[str, Union[str, float, bool]]: the validated embedding drift data dictionary.
     """
     required_keys_types = {
-        "ReferenceDataset": str,
-        "CurrentDataset": str,
-        "Distance": float,
-        "Drifted": bool,
+        "reference_dataset": str,
+        "current_dataset": str,
+        "distance": float,
+        "drifted": bool,
     }
 
     for key, expected_type in required_keys_types.items():

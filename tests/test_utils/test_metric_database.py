@@ -58,7 +58,7 @@ def test_query_is_correct_with_readability_data() -> None:
     mock_score: float = 88
 
     expected_query = """
-            INSERT INTO "Readability" ("TimeStamp", "ReadabilityScore")
+            INSERT INTO "readability" ("time_stamp", "readability_score")
             VALUES (NOW(), 88);
         """.strip()
 
@@ -70,14 +70,14 @@ def test_query_is_correct_with_readability_data() -> None:
 def test_query_is_correct_with_embedding_data_dict() -> None:
     """Test that the insert_embedding_drift_data query is built as expected based on the argument passed."""
     mock_data_dict: Dict[str, Union[str, float, bool]] = {
-        "ReferenceDataset": "1.1",
-        "CurrentDataset": "1.2",
-        "Distance": 0.1,
-        "Drifted": True,
+        "reference_dataset": "1.1",
+        "current_dataset": "1.2",
+        "distance": 0.1,
+        "drifted": True,
     }
 
     expected_query = """
-            INSERT INTO "EmbeddingDrift" ("TimeStamp", "ReferenceDataset", "CurrentDataset", "Distance", "Drifted")
+            INSERT INTO "embedding_drift" ("time_stamp", "reference_dataset", "current_dataset", "distance", "drifted")
             VALUES (NOW(), 1.1, 1.2, 0.1, True);
         """.strip()
 
@@ -114,12 +114,12 @@ def test_database_interface():
 
         mock_check_relation_existence.assert_called()
 
-        db_interface.create_relation("Readability")
+        db_interface.create_relation("readability")
         mock_execute_query.assert_called_with(
             SQLQueries.create_readability_relation_query()
         )
 
-        db_interface.create_relation("EmbeddingDrift")
+        db_interface.create_relation("embedding_drift")
         mock_execute_query.assert_called_with(
             SQLQueries.create_embedding_drift_relation_query()
         )
@@ -128,22 +128,22 @@ def test_database_interface():
         mock_execute_query.assert_called_with(SQLQueries.insert_readability_data(1))
 
         mock_embedding_drift_data = {
-            "ReferenceDataset": "1.1",
-            "CurrentDataset": "1.2",
-            "Distance": 0.1,
-            "Drifted": True,
+            "reference_dataset": "1.1",
+            "current_dataset": "1.2",
+            "distance": 0.1,
+            "drifted": True,
         }
         db_interface.insert_embedding_drift_data(mock_embedding_drift_data)
         mock_execute_query.assert_called_with(
             SQLQueries.insert_embedding_drift_data(mock_embedding_drift_data)
         )
 
-        db_interface.query_relation("Readability")
+        db_interface.query_relation("readability")
         mock_execute_query.assert_called_with(
-            SQLQueries.get_data_from_relation("Readability"), fetch=True
+            SQLQueries.get_data_from_relation("readability"), fetch=True
         )
 
-        db_interface.query_relation("EmbeddingDrift")
+        db_interface.query_relation("embedding_drift")
         mock_execute_query.assert_called_with(
-            SQLQueries.get_data_from_relation("EmbeddingDrift"), fetch=True
+            SQLQueries.get_data_from_relation("embedding_drift"), fetch=True
         )

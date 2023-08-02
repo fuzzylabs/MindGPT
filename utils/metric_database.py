@@ -71,10 +71,10 @@ class SQLQueries:
             str: SQL query for creating the readability relation
         """
         sql_query = """
-            CREATE TABLE "Readability" (
-                "ID" SERIAL PRIMARY KEY,
-                "TimeStamp" TIMESTAMP,
-                "ReadabilityScore" FLOAT(2)
+            CREATE TABLE "readability" (
+                "id" SERIAL PRIMARY KEY,
+                "time_stamp" TIMESTAMP,
+                "readability_score" FLOAT(2)
             );
             """
 
@@ -91,7 +91,7 @@ class SQLQueries:
             str: SQL query for inserting a row of data into the readability relation.
         """
         sql_query = f"""
-            INSERT INTO "Readability" ("TimeStamp", "ReadabilityScore")
+            INSERT INTO "readability" ("time_stamp", "readability_score")
             VALUES (NOW(), {score});
             """
 
@@ -102,24 +102,24 @@ class SQLQueries:
         """SQL query for creating the EmbeddingDrift relation with 6 columns.
 
         Columns:
-            - ID (Primary Key)
-            - TimeStamp
-            - Reference Dataset (Version Number)
-            - Dataset (Version Number)
-            - Distance
-            - Drifted (Bool) - Optional
+            - id (Primary Key)
+            - time_stamp
+            - reference_dataset (Version Number)
+            - current_dataset (Version Number)
+            - distance
+            - drifted (Bool) - Optional
 
         Returns:
             str: SQL query for creating the EmbeddingDrift relation
         """
         sql_query = """
-            CREATE TABLE "EmbeddingDrift" (
-                "ID" SERIAL PRIMARY KEY,
-                "TimeStamp" TIMESTAMP,
-                "ReferenceDataset" VARCHAR(50),
-                "CurrentDataset" VARCHAR(50),
-                "Distance" FLOAT(3),
-                "Drifted" BOOLEAN
+            CREATE TABLE "embedding_drift" (
+                "id" SERIAL PRIMARY KEY,
+                "time_stamp" TIMESTAMP,
+                "reference_dataset" VARCHAR(50),
+                "current_dataset" VARCHAR(50),
+                "distance" FLOAT(3),
+                "drifted" BOOLEAN
             );
             """
 
@@ -136,8 +136,8 @@ class SQLQueries:
             str: SQL query for inserting a row of data into the EmbeddingDrift relation.
         """
         sql_query = f"""
-            INSERT INTO "EmbeddingDrift" ("TimeStamp", "ReferenceDataset", "CurrentDataset", "Distance", "Drifted")
-            VALUES (NOW(), {data["ReferenceDataset"]}, {data["CurrentDataset"]}, {data["Distance"]}, {data["Drifted"]});
+            INSERT INTO "embedding_drift" ("time_stamp", "reference_dataset", "current_dataset", "distance", "drifted")
+            VALUES (NOW(), {data["reference_dataset"]}, {data["current_dataset"]}, {data["distance"]}, {data["drifted"]});
             """
 
         return sql_query
@@ -183,7 +183,7 @@ class SQLQueries:
 class DatabaseInterface:
     """Class containing methods for interacting with the postgres database."""
 
-    relation_names = {"Readability", "EmbeddingDrift"}
+    relation_names = {"readability", "embedding_drift"}
 
     def __init__(self) -> None:
         """Constructor which will initialise a database connection."""
@@ -276,8 +276,8 @@ class DatabaseInterface:
     def create_relation(self, relation_name: str) -> None:
         """This function creates a relation."""
         query_map = {
-            "Readability": SQLQueries.create_readability_relation_query(),
-            "EmbeddingDrift": SQLQueries.create_embedding_drift_relation_query(),
+            "readability": SQLQueries.create_readability_relation_query(),
+            "embedding_drift": SQLQueries.create_embedding_drift_relation_query(),
         }
         self.execute_query(str(query_map.get(relation_name)))
 
