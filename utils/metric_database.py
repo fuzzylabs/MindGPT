@@ -116,8 +116,8 @@ class SQLQueries:
             CREATE TABLE "EmbeddingDrift" (
                 "ID" SERIAL PRIMARY KEY,
                 "TimeStamp" TIMESTAMP,
-                "ReferenceDataset" FLOAT(3),
-                "CurrentDataset" FLOAT(3),
+                "ReferenceDataset" VARCHAR(50),
+                "CurrentDataset" VARCHAR(50),
                 "Distance" FLOAT(3),
                 "Drifted" BOOLEAN
             );

@@ -72,7 +72,7 @@ def test_readability_score_for_good_sentences() -> None:
         (
             {
                 "ReferenceDataset": "1.1",
-                "CurrentDataset": 1.2,
+                "CurrentDataset": "1.2",
                 "Distance": False,
                 "Drifted": True,
             },
@@ -81,32 +81,32 @@ def test_readability_score_for_good_sentences() -> None:
         (
             {
                 "ReferenceDataset": "1.1",
-                "CurrentDataset": 1.2,
+                "CurrentDataset": "1.2",
                 "Distance": 0.1,
                 "Drifted": "True",
             },
             pytest.raises(TypeError),
         ),
         (
-            {"CurrentDataset": 1.2, "Distance": 0.1, "Drifted": "True"},
+            {"CurrentDataset": "1.2", "Distance": 0.1, "Drifted": "True"},
             pytest.raises(KeyError),
         ),
         (
-            {"ReferenceDataset": 1.1, "Distance": 0.1, "Drifted": "True"},
+            {"ReferenceDataset": "1.1", "Distance": 0.1, "Drifted": "True"},
             pytest.raises(KeyError),
         ),
         (
-            {"ReferenceDataset": 1.1, "CurrentDataset": 1.2, "Drifted": "True"},
+            {"ReferenceDataset": "1.1", "CurrentDataset": "1.2", "Drifted": "True"},
             pytest.raises(KeyError),
         ),
         (
-            {"ReferenceDataset": 1.1, "CurrentDataset": 1.2, "Distance": 0.1},
+            {"ReferenceDataset": "1.1", "CurrentDataset": "1.2", "Distance": 0.1},
             pytest.raises(KeyError),
         ),
         (
             {
-                "ReferenceDataset": 1.1,
-                "CurrentDataset": 1.2,
+                "ReferenceDataset": "1.1",
+                "CurrentDataset": "1.2",
                 "Distance": 0.1,
                 "Drifted": True,
             },

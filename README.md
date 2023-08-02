@@ -218,7 +218,7 @@ curl http://127.0.0.1:5000/
 curl -X POST http://127.0.0.1:5000/readability -H "Content-Type: application/json" -d '{"response": "test_response"}'
 # This should compute a readability score and insert the score into the "Readability" relation. We should also expect the following response message: "{"message":"Embedding drift data has been successfully inserted"}"
 
-curl -X POST http://127.0.0.1:5000/embedding_drift -H "Content-Type: application/json" -d '{"ReferenceDataset": 1.1, "CurrentDataset": 1.2, "Distance": 0.1, "Drifted": true}'
+curl -X POST http://127.0.0.1:5000/embedding_drift -H "Content-Type: application/json" -d '{"ReferenceDataset": "1.1", "CurrentDataset": "1.2", "Distance": 0.1, "Drifted": true}'
 # This should insert the embedding drift data to our "EmbeddingDrift" relation. If success, we should see the following response message: "{"message":"Embedding drift data has been successfully inserted"}"
 
 

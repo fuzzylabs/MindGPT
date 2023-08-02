@@ -66,23 +66,23 @@ def validate_llm_response(llm_response_dict: Dict[str, str]) -> str:
 
 
 def validate_embedding_drift_data(
-    data: Dict[str, Union[float, bool]]
-) -> Dict[str, Union[float, bool]]:
+    data: Dict[str, Union[str, float, bool]]
+) -> Dict[str, Union[str, float, bool]]:
     """Validate that the given embedding data dictionary has required keys and values of correct types.
 
     Args:
-        data (Dict[str, Union[float, bool]]): a dictionary containing the embedding drift data to be validated.
+        data (Dict[str, Union[str, float, bool]]): a dictionary containing the embedding drift data to be validated.
 
     Raises:
         KeyError: raise if any of the required keys is not found in the dictionary.
         TypeError: raise if the value associated with any of the keys is of incorrect type.
 
     Returns:
-        Dict[str, Union[float, bool]]: the validated embedding drift data dictionary.
+        Dict[str, Union[str, float, bool]]: the validated embedding drift data dictionary.
     """
     required_keys_types = {
-        "ReferenceDataset": float,
-        "CurrentDataset": float,
+        "ReferenceDataset": str,
+        "CurrentDataset": str,
         "Distance": float,
         "Drifted": bool,
     }

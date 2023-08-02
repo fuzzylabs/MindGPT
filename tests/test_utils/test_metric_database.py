@@ -69,9 +69,9 @@ def test_query_is_correct_with_readability_data() -> None:
 
 def test_query_is_correct_with_embedding_data_dict() -> None:
     """Test that the insert_embedding_drift_data query is built as expected based on the argument passed."""
-    mock_data_dict: Dict[str, Union[float, bool]] = {
-        "ReferenceDataset": 1.1,
-        "CurrentDataset": 1.2,
+    mock_data_dict: Dict[str, Union[str, float, bool]] = {
+        "ReferenceDataset": "1.1",
+        "CurrentDataset": "1.2",
         "Distance": 0.1,
         "Drifted": True,
     }
@@ -128,8 +128,8 @@ def test_database_interface():
         mock_execute_query.assert_called_with(SQLQueries.insert_readability_data(1))
 
         mock_embedding_drift_data = {
-            "ReferenceDataset": 1.1,
-            "CurrentDataset": 1.2,
+            "ReferenceDataset": "1.1",
+            "CurrentDataset": "1.2",
             "Distance": 0.1,
             "Drifted": True,
         }
