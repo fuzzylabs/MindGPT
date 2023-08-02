@@ -126,11 +126,11 @@ class SQLQueries:
         return sql_query
 
     @staticmethod
-    def insert_embedding_drift_data(data: Dict[str, Union[float, bool]]) -> str:
+    def insert_embedding_drift_data(data: Dict[str, Union[str, float, bool]]) -> str:
         """SQL query for inserting a row of data into the EmbeddingDrift relation.
 
         Args:
-            data (Dict[str, Union[float, bool]]): the dictionary containing the embedding drift data
+            data (Dict[str, Union[str, float, bool]]): the dictionary containing the embedding drift data
 
         Returns:
             str: SQL query for inserting a row of data into the EmbeddingDrift relation.
@@ -289,11 +289,13 @@ class DatabaseInterface:
         """
         self.execute_query(SQLQueries.insert_readability_data(score))
 
-    def insert_embedding_drift_data(self, data: Dict[str, Union[float, bool]]) -> None:
+    def insert_embedding_drift_data(
+        self, data: Dict[str, Union[str, float, bool]]
+    ) -> None:
         """This function insert a row of data into to EmbeddingDrift relation.
 
         Args:
-            data (Dict[str, Union[float, bool]]): a dictionary containing the embedding drift data to be inserted to the relation.
+            data (Dict[str, Union[str, float, bool]]): a dictionary containing the embedding drift data to be inserted to the relation.
         """
         self.execute_query(SQLQueries.insert_embedding_drift_data(data))
 

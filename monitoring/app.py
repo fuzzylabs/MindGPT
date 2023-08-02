@@ -39,7 +39,14 @@ def readability() -> Tuple[Response, int]:
 
     db_interface.insert_readability_data(float(score))
 
-    return jsonify({"message": "Readability data has been successfully inserted"}), 200
+    return (
+        jsonify(
+            {
+                "message": f"The readability score is {score}. Readability data has been successfully inserted."
+            }
+        ),
+        200,
+    )
 
 
 @app.route("/embedding_drift", methods=["POST"])
@@ -58,7 +65,7 @@ def embedding_drift() -> Tuple[Response, int]:
         return jsonify({"message": "Validation error: " + str(e)}), 400
 
     return (
-        jsonify({"message": "Embedding drift data has been successfully inserted"}),
+        jsonify({"message": "Embedding drift data has been successfully inserted."}),
         200,
     )
 
