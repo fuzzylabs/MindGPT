@@ -55,7 +55,7 @@ class TextSplitter:
         self.chunk_overlap = chunk_overlap
 
     def merge_splits(self, splits: Iterable[str], separator: str) -> List[str]:
-        """Merge splits into chunks using given separator.
+        """Merge splits into larger chunks using given separator.
 
         Args:
             splits (Iterable[str]): Splits to merge.
