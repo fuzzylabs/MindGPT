@@ -85,6 +85,6 @@ def embed_data(
         collection_name=collection_name,
         texts=chunks,
         ids=uuids,
-        embedding_function=ef,
         metadatas=metadatas,
+        embedding_function=ef,
     )
