@@ -2,7 +2,7 @@
 from contextlib import nullcontext as does_not_raise
 
 import pytest
-from monitoring.metric_service import (
+from monitoring.metric_service.metric_service import (
     compute_readability,
     validate_embedding_drift_data,
     validate_llm_response,
