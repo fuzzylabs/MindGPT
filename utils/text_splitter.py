@@ -1,6 +1,6 @@
 # Modified from : https://github.com/langchain-ai/langchain/blob/37aade19da2f4c974e95d0758a796467cdccf1b1/libs/langchain/langchain/text_splitter.py
 import re
-from typing import List, Optional, Iterable
+from typing import Iterable, List, Optional
 
 
 def join_docs(docs: List[str], separator: str) -> Optional[str]:
