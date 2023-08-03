@@ -99,7 +99,7 @@ class TextSplitter:
                         current_doc = current_doc[1:]
 
             current_doc.append(split)
-            total += _len + separator_length
+            total += _len + (separator_len if len(current_doc) > 1 else 0)
 
         doc = join_docs(current_doc, separator)
 
