@@ -154,8 +154,10 @@ class TextSplitter:
                     merged_text = self.merge_splits(_good_splits, _separator)
                     final_chunks.extend(merged_text)
                     _good_splits = []
+
                 if not new_separators:
                     final_chunks.append(split)
+
                 else:
                     other_info = self.split_text(split, new_separators)
                     final_chunks.extend(other_info)
