@@ -96,12 +96,20 @@ class NHSMentalHealthScraper:
             [
                 {
                     "uuid": str(uuid.uuid4()),
-                    "text_scraped": target.get_text(" "),
+                    "text_scraped": str(target),
                     "timestamp": timestamp,
                     "url": self._url,
                 }
             ]
         )
+
+    def discard_non_content(self):
+        def discard_decision(text_scraped: str) -> bool:
+            bs = BeautifulSoup(text_scraped)
+            return bs.find(class_="nhsuk-lede-text") is not None
+
+        df_index = self.df.text_scraped.apply(discard_decision)
+        print(self.df[df_index].url.values)
 
     def scrape_recursively(self) -> None:
         """A method for recursively scraping all nested links found within a target website or Tag subject to conditions.
@@ -151,6 +159,7 @@ def scrape_nhs_data() -> Annotated[pd.DataFrame, "output_nhs_data"]:
         attributes={"class": "nhsuk-main-wrapper"},
     )
     nhs_scraper.scrape_recursively()
+    nhs_scraper.discard_non_content()
 
     nhs_scraper.df.to_csv(os.path.join(DATA_DIR, "nhs_data_raw.csv"))
 
