@@ -2,26 +2,32 @@
 from contextlib import nullcontext as does_not_raise
 
 import pytest
-from monitoring import compute_readability
+from monitoring.metric_service import (
+    compute_readability,
+    validate_embedding_drift_data,
+    validate_llm_response,
+)
 
 
 @pytest.mark.parametrize(
     "response, expectation",
     [
         (int(123), pytest.raises(TypeError)),
-        ("", pytest.raises(ValueError)),
-        ("Valid response", does_not_raise()),
+        ({"incorrect key": "mock response"}, pytest.raises(ValueError)),
+        ({"response": int(123)}, pytest.raises(TypeError)),
+        ({"response": ""}, pytest.raises(ValueError)),
+        ({"response": "mock response"}, does_not_raise()),
     ],
 )
-def test_compute_readability(response: str, expectation: pytest.raises) -> None:
-    """Test whether the compute_readability function would raise an error when the input response is incorrect.
+def test_validate_llm_response(response: dict, expectation: pytest.raises) -> None:
+    """Test whether the validate_llm_response function would raise an error when the response payload is incorrect.
 
     Args:
-        response (str): mock responses
+        response (dict): mock responses
         expectation (pytest.raises): exception to raise
     """
     with expectation:
-        compute_readability(response)
+        validate_llm_response(response)
 
 
 def test_readability_score_for_bad_sentences() -> None:
@@ -40,3 +46,82 @@ def test_readability_score_for_good_sentences() -> None:
 
     assert compute_readability(good_sentence) == pytest.approx(80, 5)
     assert compute_readability(very_easy_to_read_sentence) >= 100
+
+
+@pytest.mark.parametrize(
+    "embedding_drift_data, expectation",
+    [
+        (
+            {
+                "reference_dataset": "1.1",
+                "current_dataset": 1.2,
+                "distance": 0.1,
+                "drifted": True,
+            },
+            pytest.raises(TypeError),
+        ),
+        (
+            {
+                "reference_dataset": 1.1,
+                "current_dataset": "str",
+                "distance": 0.1,
+                "drifted": True,
+            },
+            pytest.raises(TypeError),
+        ),
+        (
+            {
+                "reference_dataset": "1.1",
+                "current_dataset": "1.2",
+                "distance": False,
+                "drifted": True,
+            },
+            pytest.raises(TypeError),
+        ),
+        (
+            {
+                "reference_dataset": "1.1",
+                "current_dataset": "1.2",
+                "distance": 0.1,
+                "drifted": "True",
+            },
+            pytest.raises(TypeError),
+        ),
+        (
+            {"current_dataset": "1.2", "distance": 0.1, "drifted": "True"},
+            pytest.raises(KeyError),
+        ),
+        (
+            {"reference_dataset": "1.1", "distance": 0.1, "drifted": "True"},
+            pytest.raises(KeyError),
+        ),
+        (
+            {"reference_dataset": "1.1", "current_dataset": "1.2", "drifted": "True"},
+            pytest.raises(KeyError),
+        ),
+        (
+            {"reference_dataset": "1.1", "current_dataset": "1.2", "distance": 0.1},
+            pytest.raises(KeyError),
+        ),
+        (
+            {
+                "reference_dataset": "1.1",
+                "current_dataset": "1.2",
+                "distance": 0.1,
+                "drifted": True,
+            },
+            does_not_raise(),
+        ),
+    ],
+)
+def test_validate_embedding_drift_data(
+    embedding_drift_data: dict, expectation: pytest.raises
+) -> None:
+    """Test whether the validate_embedding_drift_data function would raise the expected error when the embedding data contains incorrect data.
+
+    Args:
+        embedding_drift_data (dict): mock embedding drift data dictionary
+        expectation (pytest.raises): exception to raise
+    """
+    with expectation:
+        validate_embedding_drift_data(embedding_drift_data)
