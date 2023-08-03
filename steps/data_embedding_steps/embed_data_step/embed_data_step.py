@@ -42,14 +42,24 @@ def embed_data(
         ValueError: if `embed_model_type` is not supported or invalid
     """
     texts = df["text_scraped"].values.tolist()
+    src_urls = df["url"].values.tolist()
 
     logger.info(f"Using chunk_size={chunk_size} and chunk_overlap={chunk_overlap}")
     text_splitter = TextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
 
+    # Create metadata and UUID based on the number of chunks
     # Split text into chunks
-    chunks = []
-    for text in texts:
-        chunks.extend(text_splitter.split_text(text))
+    chunks, metadatas = [], []
+    for text, url in zip(texts, src_urls):
+        split_chunks = text_splitter.split_text(text)
+        chunks.extend(split_chunks)
+        metadatas.extend(
+            [
+                {"source": url, "data_version": data_version}
+                for _ in range(len(split_chunks))
+            ]
+        )
+
     uuids = [str(uuid.uuid4()) for _ in range(len(chunks))]
 
     logger.info(f"Split {len(texts)} texts into {len(chunks)} chunks")
@@ -76,4 +86,5 @@ def embed_data(
         texts=chunks,
         ids=uuids,
         embedding_function=ef,
+        metadatas=metadatas,
     )
