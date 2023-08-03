@@ -1,0 +1,3 @@
+flask==2.3.2
+psycopg2==2.9.6
+textstat==0.7.3

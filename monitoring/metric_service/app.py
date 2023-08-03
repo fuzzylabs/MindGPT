@@ -3,13 +3,12 @@ import logging
 from typing import Any, List, Tuple
 
 from flask import Flask, Response, jsonify, request
-from utils import DatabaseInterface
-
-from .metric_service import (
+from metric_service import (
     compute_readability,
     validate_embedding_drift_data,
     validate_llm_response,
 )
+from utils.metric_database import DatabaseInterface
 
 app = Flask(__name__)
 db_interface = DatabaseInterface()

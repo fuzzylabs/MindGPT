@@ -1,0 +1,33 @@
+version: '3.8'
+
+networks:
+  back-tier:
+
+services:
+  metric-db:
+    image: postgres:15.3-alpine3.18
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    networks:
+      - back-tier
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  metric-service:
+    build:
+      context: ../
+      dockerfile: monitoring/metric_service/Dockerfile
+    depends_on:
+      - 'metric-db'
+    ports:
+      - '5000:5000'
+    networks:
+      - back-tier
+
+volumes:
+  db:
+    driver: local

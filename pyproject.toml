@@ -118,6 +118,7 @@ module = [
     "python_terraform.*",
     "transformers.*",
     "chromadb.*",
-    "textstat.*"
+    "textstat.*",
+    "metric_service.*"
 ]
 ignore_missing_imports = true

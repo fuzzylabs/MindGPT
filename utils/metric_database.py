@@ -229,7 +229,7 @@ class DatabaseInterface:
             conn.commit()
         except Exception as e:
             logging.error(f"{e} error: Unable to execute the query.")
-            conn.rollback()  # roll back transaction on error
+            # conn.rollback()  # roll back transaction on error
         finally:
             if self.conn_pool:
                 self.conn_pool.putconn(conn)  # return connection back to pool
