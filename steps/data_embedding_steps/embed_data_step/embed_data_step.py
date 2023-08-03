@@ -42,7 +42,6 @@ def embed_data(
         ValueError: if `embed_model_type` is not supported or invalid
     """
     texts = df["text_scraped"].values.tolist()
-    src_urls = df["url"].values.tolist()
 
     logger.info(f"Using chunk_size={chunk_size} and chunk_overlap={chunk_overlap}")
     text_splitter = TextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
@@ -76,6 +75,5 @@ def embed_data(
         collection_name=collection_name,
         texts=chunks,
         ids=uuids,
-        metadatas=[{"source": url, "data_version": data_version} for url in src_urls],
         embedding_function=ef,
     )
