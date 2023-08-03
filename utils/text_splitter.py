@@ -90,11 +90,13 @@ class TextSplitter:
                     # Keep on popping if:
                     # - we have a larger chunk than in the chunk overlap
                     # - or if we still have any chunks and the length is long
-                    separator_length = separator_len if len(current_doc) > 1 else 0
 
                     while total > self.chunk_overlap or (
-                        total_length > self.chunk_size and total > 0
+                        total + _len + (separator_len if len(current_doc) > 0 else 0)
+                        > self.chunk_size
+                        and total > 0
                     ):
+                        separator_length = separator_len if len(current_doc) > 1 else 0
                         total -= len(current_doc[0]) + separator_length
                         current_doc = current_doc[1:]
 
