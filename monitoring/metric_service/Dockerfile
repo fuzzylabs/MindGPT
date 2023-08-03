@@ -7,7 +7,7 @@ RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 ENV DB_NAME=postgres
-ENV DB_HOST=metric-db
+ENV DB_HOST=localhost
 ENV DB_USER=postgres
 ENV DB_PORT=5432
 ENV DB_PASSWORD=postgres
