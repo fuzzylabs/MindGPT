@@ -97,7 +97,6 @@ def test_merge_splits_no_overlap(
         expected_list (List[str]): Expected list of texts after merging the input texts
     """
     text_splitter = TextSplitter(chunk_size=chunk_size, chunk_overlap=0)
-    print(text_splitter.merge_splits(docs, separator))
     assert text_splitter.merge_splits(docs, separator) == expected_list
 
 
