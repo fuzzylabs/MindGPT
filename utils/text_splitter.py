@@ -127,12 +127,12 @@ class TextSplitter:
         separator = separators[-1]
         new_separators = []
 
-        for i, _s in enumerate(separators):
-            if not _s:
-                separator = _s
+        for i, sep in enumerate(separators):
+            if not sep:
+                separator = sep
                 break
-            if re.search(_s, text):
-                separator = _s
+            if re.search(sep, text):
+                separator = sep
                 new_separators = separators[i + 1 :]
                 break
 
