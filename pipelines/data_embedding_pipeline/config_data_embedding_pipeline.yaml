@@ -9,3 +9,5 @@ steps:
     parameters:
       data_version: "data/first_version"
       embed_model_type: "base"
+      chunk_size: 700
+      chunk_overlap: 100
