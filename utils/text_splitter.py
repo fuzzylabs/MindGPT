@@ -110,41 +110,21 @@ class TextSplitter:
 
         return docs
 
-    def split_text(
-        self, text: str, separators: List[str] = ["\n\n", "\n", " ", ""]
-    ) -> List[str]:
-        r"""Split incoming text and return chunks.
+    def recursively_merge_and_split(self, splits, new_separators) -> List[str]:
+        """Recursively merge and split splits from longer texts to medium chunks keeping separator.
 
         Args:
-            text (str): Input text to split
-            separators (List[str], optional): List of separator to use for splitting.
-                Defaults to ["\n\n", "\n", " ", ""].
+            splits (List[str]): List of splits to merge and split.
+            new_separators (List[str]): List of separators
 
         Returns:
-            List[str]: List of chunks
+            List[str]: Final merged and split chunks.
         """
         final_chunks = []
-
-        # Get appropriate separator to use
-        separator = separators[-1]
-        new_separators = []
-
-        for i, sep in enumerate(separators):
-            if not sep:
-                separator = sep
-                break
-            if re.search(sep, text):
-                separator = sep
-                new_separators = separators[i + 1 :]
-                break
-
-        # Split using selected separator
-        splits = split_text_with_regex(text, separator)
-
-        # Now go merging things, recursively splitting longer texts.
         _good_splits = []
         _separator = ""
 
+        # Now go merging things, recursively splitting longer texts.
         for split in splits:
             if len(split) < self.chunk_size:
                 _good_splits.append(split)
@@ -165,5 +145,37 @@ class TextSplitter:
         if _good_splits:
             merged_text = self.merge_splits(_good_splits, _separator)
             final_chunks.extend(merged_text)
-
         return final_chunks
+
+    def split_text(
+        self, text: str, separators: List[str] = ["\n\n", "\n", " ", ""]
+    ) -> List[str]:
+        r"""Split incoming text and return chunks.
+
+        Args:
+            text (str): Input text to split
+            separators (List[str], optional): List of separator to use for splitting.
+                Defaults to ["\n\n", "\n", " ", ""].
+
+        Returns:
+            List[str]: List of chunks
+        """
+
+        # Get appropriate separator to use
+        separator = separators[-1]
+        new_separators = []
+
+        for i, sep in enumerate(separators):
+            if not sep:
+                separator = sep
+                break
+            if re.search(sep, text):
+                separator = sep
+                new_separators = separators[i + 1 :]
+                break
+
+        # Split using selected separator
+        splits = split_text_with_regex(text, separator)
+
+        # Merge longer text into medium chunks
+        return self.recursively_merge_and_split(splits, new_separators)
