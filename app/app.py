@@ -44,8 +44,8 @@ Always say "thanks for asking!" at the end of the answer.
 Question: {question}
 Helpful Answer:"""
 
-ADVANCED_TEMPLATE = """You are a highly skilled AI trained in language comprehension and summarization.
-I would like you to read the following text and summarize it into a concise abstract paragraph. Use the following pieces of context to answer the question at the end.
+ADVANCED_TEMPLATE = """You are a highly skilled AI trained in language comprehension and summarisation.
+I would like you to read the following text and summarise it into a concise abstract paragraph. Use the following pieces of context to answer the question at the end.
 Aim to retain the most important points, providing a coherent and readable summary that could help a person understand the main points of the discussion without needing to read the entire text.
 Please avoid unnecessary details or tangential points.
 {context}
