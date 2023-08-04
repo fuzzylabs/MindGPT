@@ -187,12 +187,13 @@ class DatabaseInterface:
                     port=self.db_credentials.db_port,
                 )
                 self.connected = True
+                logging.info("Successfully connected to metric database")
             except Error as e:
                 logging.error(
                     f"{e} error: Unable to connect to the data base, trying again in 5 seconds."
                 )
 
-            time.sleep(5)
+                time.sleep(5)
 
         for name in self.relation_names:
             if not self.check_relation_existence(name):

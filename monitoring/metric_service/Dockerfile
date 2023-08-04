@@ -24,4 +24,4 @@ RUN pip install \
 COPY monitoring/metric_service/ .
 COPY utils/metric_database.py utils/metric_database.py
 
-CMD ["python", "-m", "flask", "--app", "monitoring/app.py", "run", "--host=0.0.0.0"]
+CMD ["/bin/bash", "entrypoint.sh"]
