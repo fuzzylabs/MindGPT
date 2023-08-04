@@ -28,4 +28,6 @@ def data_embedding_pipeline() -> None:
         embed_model_type="base",
         data_version="data/first_version",
         collection_name="nhs_data",
+        chunk_size=1000,
+        chunk_overlap=200,
     )

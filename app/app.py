@@ -31,6 +31,10 @@ SELDON_PORT = 9000
 DEFAULT_CONTEXT = """Most people experience feelings of stress, anxiety or low mood during difficult times.
 A low mood may improve after a short period of time, rather than being a sign of depression."""
 
+DEFAULT_QUERY_INSTRUCTION = (
+    "Represent the question for retrieving supporting documents: "
+)
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -73,7 +77,9 @@ def _get_embedding_function(embed_model_type: str) -> Union[EmbeddingFunction, N
     model_name = EMBED_MODEL_MAP.get(embed_model_type, None)
     if model_name is None:
         return None
-    return embedding_functions.InstructorEmbeddingFunction(model_name=model_name)
+    return embedding_functions.InstructorEmbeddingFunction(
+        model_name=model_name, instruction=DEFAULT_QUERY_INSTRUCTION
+    )
 
 
 def connect_vector_store(chroma_server_host: str, chroma_server_port: int) -> API:
