@@ -234,6 +234,42 @@ or
 curl localhost:5000//query_embedding_drift
 ```
 
+### Running on k8s cluster
+To run the monitoring service on k8s, `matcha provision` must be run before hand. We will need to build and push the metric service application to ACR. This image will be used by Kubernetes deployment. Before that, we need to set two bash variables, one for ACR registry URI and another for ACR registry name. We will use matcha get command to do this.
+
+```bash
+acr_registry_uri=$(matcha get container-registry registry-url --output json | sed -n 's/.*"registry-url": "\(.*\)".*/\1/p')
+acr_registry_name=$(matcha get container-registry registry-name --output json | sed -n 's/.*"registry-name": "\(.*\)".*/\1/p')
+```
+
+Now we're ready to login into ACR, build and push the image to the ACR.
+
+```bash
+az acr login --name $acr_registry_name
+docker build -t $acr_registry_uri/monitoring:latest -f monitoring/metric_service/Dockerfile .
+docker push $acr_registry_uri/monitoring:latest
+```
+
+Next, we apply the Kubernetes manifest to deploy the metric service and the metric database on AKS.
+
+```bash
+kubectl apply -f infrastructure/monitoring
+```
+
+Finally, once the pod is running, we verify that our monitoring service is working. The command below should provide an IP address for the metric service interface.
+```bash
+kubectl get pods # Checking whether the monitoring pod is running
+
+kubectl get svc monitoring-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}
+```
+
+We should be able to curl the external IP returned running the above command at port 5000.
+```bash
+curl {external-ip:5000}
+
+# The response should be:
+Hello world from the metric service.%
+```
 
 # &#129309; Acknowledgements
 
