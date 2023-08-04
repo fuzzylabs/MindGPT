@@ -33,6 +33,24 @@ A low mood may improve after a short period of time, rather than being a sign of
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Prompt Templates
+SIMPLE_TEMPLATE = "Context: {context}\n\nQuestion: {question}\n\n"
+
+COMPLEX_TEMPLATE = """Use the following pieces of context to answer the question at the end.
+If you don't know the answer, just say that you don't know, don't try to make up an answer.
+Use three sentences maximum and keep the answer as concise as possible.
+Always say "thanks for asking!" at the end of the answer.
+{context}
+Question: {question}
+Helpful Answer:"""
+
+ADVANCED_TEMPLATE = """You are a highly skilled AI trained in language comprehension and summarization.
+I would like you to read the following text and summarize it into a concise abstract paragraph. Use the following pieces of context to answer the question at the end.
+Aim to retain the most important points, providing a coherent and readable summary that could help a person understand the main points of the discussion without needing to read the entire text.
+Please avoid unnecessary details or tangential points.
+{context}
+Question: {question}
+Helpful Answer:"""
 
 st.set_page_config(
     page_title="MindGPT",
@@ -135,9 +153,10 @@ def _create_payload(messages: Dict[str, str]) -> Dict[str, List[Dict[str, Any]]]
     Returns:
         Dict[str, List[Dict[str, Any]]]: the payload to send in the correct format.
     """
-    template = "Context: {context}\n\nQuestion: {question}\n\n"
     context = messages.get("context", DEFAULT_CONTEXT)
-    input_text = template.format(question=messages["prompt_query"], context=context)
+    input_text = COMPLEX_TEMPLATE.format(
+        question=messages["prompt_query"], context=context
+    )
 
     return {
         "inputs": [
