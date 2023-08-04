@@ -193,42 +193,47 @@ If you visit that URL in browser, you should be able to interact with the deploy
 
 ## Monitoring
 
-Running the metric services requires a Postgres SQL database to be hosted locally and the corresponding database config. See [here](https://www.postgresql.org/download/) to download and install PostgreSQL.
+### Running locally
 
-Once you have Postgres installed, you will need to host a local database and export the following database config as environment variables:
+To run the monitoring service on your local machine, we'll utilise docker-compose. This will initialise two services - the metric service interface, which listens for POST and GET requests, and the metric database service.
+
+First, we need to modify line 11 in our [Dockerfile](monitoring/metric_service/Dockerfile)
 
 ```
-export DB_NAME=<The database name>
-export DB_HOST=<The database host>
-export DB_USER=<The database user>
-export DB_PASSWORD=<The database password, export DB_PASSWORD=None otherwise.>
-export DB_PORT=<The database port>
-```
+ENV DB_HOST=localhost
 
-Next, we can host our flask server locally by running:
-```
-python -m flask --app monitoring/app.py run
+# should be changed to
+
+ENV DB_HOST=metric-db
 ```
 
-One the server is running on localhost, we can try to curl our service.
+With this modification in place, we're prepared to run docker-compose.
 ```
-curl http://127.0.0.1:5000/
+docker-compose -f monitoring/docker-compose.yml up
+```
+
+One the two containers has started, we can curl our metric service from the outside.
+```
+curl localhost:5000/
 # This should return a default message saying "Hello world from the metric service."
 
-curl -X POST http://127.0.0.1:5000/readability -H "Content-Type: application/json" -d '{"response": "test_response"}'
-# This should compute a readability score and insert the score into the "Readability" relation. We should also expect the following response message: "{"message":"Embedding drift data has been successfully inserted"}"
+curl -X POST localhost:5000/readability -H "Content-Type: application/json" -d '{"response": "test_response"}'
+# This should compute a readability score and insert the score into the "Readability" relation. We should also expect the following response message:
+"{"message":"Readability data has been successfully inserted.","score":36.62,"status_code":200}
 
-curl -X POST http://127.0.0.1:5000/embedding_drift -H "Content-Type: application/json" -d '{"ReferenceDataset": "1.1", "CurrentDataset": "1.2", "Distance": 0.1, "Drifted": true}'
-# This should insert the embedding drift data to our "EmbeddingDrift" relation. If success, we should see the following response message: "{"message":"Embedding drift data has been successfully inserted"}"
+curl -X POST localhost:5000/embedding_drift -H "Content-Type: application/json" -d '{"reference_dataset": "1.1", "current_dataset": "1.2", "distance": 0.1, "drifted": true}'
+# This should insert the embedding drift data to our "EmbeddingDrift" relation. If success, we should see the following response message:
+"{"message":"Validation error: 'reference_dataset is not found in the data dictionary.'","status_code":400}"
 
 
 # We can also query our database with:
-curl http://127.0.0.1:5000/query_readability
+curl localhost:5000/query_readability
 
 or
 
-curl http://127.0.0.1:5000//query_embedding_drift
+curl localhost:5000//query_embedding_drift
 ```
+
 
 # &#129309; Acknowledgements
 
