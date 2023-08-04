@@ -97,11 +97,7 @@ class TextSplitter:
                         separator_length = separator_len if len(current_doc) > 1 else 0
                         total -= len(current_doc[0]) + separator_length
                         current_doc = current_doc[1:]
-                        total_length = (
-                            total
-                            + _len
-                            + (separator_len if len(current_doc) > 0 else 0)
-                        )
+                        total_length = total + _len + (separator_len if len(current_doc) > 0 else 0)  # fmt: skip
 
             current_doc.append(split)
             total += _len + (separator_len if len(current_doc) > 1 else 0)
