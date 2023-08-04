@@ -72,8 +72,8 @@ class TextSplitter:
 
         for split in splits:
             _len = len(split)
-
-            total_length = total + _len + (separator_len if len(current_doc) > 0 else 0)
+            separator_length = separator_len if len(current_doc) > 0 else 0
+            total_length = total + _len + separator_length
 
             if total_length > self.chunk_size:
                 if total > self.chunk_size:
