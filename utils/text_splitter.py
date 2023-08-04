@@ -164,7 +164,7 @@ class TextSplitter:
         new_separators = []
 
         for i, sep in enumerate(separators):
-            if not sep:
+            if sep == "":  # noqa : PLC1901
                 separator = sep
                 break
             if re.search(sep, text):
