@@ -1,8 +1,8 @@
 """Text splitter class."""
 # Modified from : https://github.com/langchain-ai/langchain/blob/37aade19da2f4c974e95d0758a796467cdccf1b1/libs/langchain/langchain/text_splitter.py
+import logging
 import re
 from typing import Iterable, List, Optional
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -92,13 +92,16 @@ class TextSplitter:
                     # - or if we still have any chunks and the length is long
 
                     while total > self.chunk_overlap or (
-                        total + _len + (separator_len if len(current_doc) > 0 else 0)
-                        > self.chunk_size
-                        and total > 0
+                        total_length > self.chunk_size and total > 0
                     ):
                         separator_length = separator_len if len(current_doc) > 1 else 0
                         total -= len(current_doc[0]) + separator_length
                         current_doc = current_doc[1:]
+                        total_length = (
+                            total
+                            + _len
+                            + (separator_len if len(current_doc) > 0 else 0)
+                        )
 
             current_doc.append(split)
             total += _len + (separator_len if len(current_doc) > 1 else 0)
@@ -160,7 +163,6 @@ class TextSplitter:
         Returns:
             List[str]: List of chunks
         """
-
         # Get appropriate separator to use
         separator = separators[-1]
         new_separators = []
