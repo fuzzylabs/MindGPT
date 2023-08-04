@@ -17,22 +17,26 @@ spec:
           image: postgres:15.3-alpine3.18
           ports:
             - containerPort: 5432
-          envFrom:
-            - configMapRef:
-                name: metric-db-secret-credentials
+          env:
+            - name: POSTGRES_DB
+              value: postgres
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
           volumeMounts:
           - mountPath: /var/lib/postgres/data
             name: metric-db-data
           resources:
             limits:
               cpu: 2
-              memory: 2Gi
+              memory: 256Mi
             requests:
               cpu: 100m
               memory: 256Mi
 
         - name: metric-service
-          image: croscartest.azurecr.io/monitoring
+          image: crmindgpt.azurecr.io/monitoring
           ports:
             - containerPort: 5000
           resources:
@@ -47,5 +51,4 @@ spec:
       volumes:
         - name: metric-db-data
           persistentVolumeClaim:
-            # reference the PersistentVolumeClaim
             claimName: metric-db-persistent-volume-claim

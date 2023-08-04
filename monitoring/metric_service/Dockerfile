@@ -15,8 +15,9 @@ ENV DB_PASSWORD=postgres
 COPY monitoring/metric_service/requirements.txt .
 
 RUN apt-get update \
-    && apt-get -y install libpq-dev gcc \
-    && pip install \
+    && apt-get -y install libpq-dev gcc
+
+RUN pip install \
     --upgrade pip \
     -r requirements.txt
 

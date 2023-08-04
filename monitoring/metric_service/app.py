@@ -10,8 +10,8 @@ from metric_service import (
 )
 from utils.metric_database import DatabaseInterface
 
-app = Flask(__name__)
 db_interface = DatabaseInterface()
+app = Flask(__name__)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -78,7 +78,7 @@ def query_readability() -> List[Tuple[Any, ...]]:
     Returns:
         List[Tuple[Any, ...]]: the query result
     """
-    return db_interface.query_relation(relation_name="Readability")
+    return db_interface.query_relation(relation_name="readability")
 
 
 @app.route("/query_embedding_drift", methods=["GET"])
@@ -88,7 +88,7 @@ def query_embedding_drift() -> List[Tuple[Any, ...]]:
     Returns:
         List[Tuple[Any, ...]]: the query result
     """
-    return db_interface.query_relation(relation_name="EmbeddingDrift")
+    return db_interface.query_relation(relation_name="embedding_drift")
 
 
 @app.route("/")

@@ -1,6 +1,7 @@
 """Postgres metric database utilities."""
 import logging
 import os
+import time
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
@@ -170,19 +171,28 @@ class DatabaseInterface:
         self.db_credentials = DatabaseCredentials()
         self.db_credentials.validate_env()
         self.conn_pool = None
+        self.connected = False
 
-        try:
-            self.conn_pool = pool.SimpleConnectionPool(
-                minconn=1,
-                maxconn=10,
-                database=self.db_credentials.db_name,
-                host=self.db_credentials.db_host,
-                user=self.db_credentials.db_user,
-                password=self.db_credentials.db_password,
-                port=self.db_credentials.db_port,
-            )
-        except Error as e:
-            logging.error(f"{e} error: Unable to connect to the data base")
+        while not self.connected:
+            logging.info("Connecting to metric database")
+
+            try:
+                self.conn_pool = pool.SimpleConnectionPool(
+                    minconn=1,
+                    maxconn=10,
+                    database=self.db_credentials.db_name,
+                    host=self.db_credentials.db_host,
+                    user=self.db_credentials.db_user,
+                    password=self.db_credentials.db_password,
+                    port=self.db_credentials.db_port,
+                )
+                self.connected = True
+            except Error as e:
+                logging.error(
+                    f"{e} error: Unable to connect to the data base, trying again in 5 seconds."
+                )
+
+            time.sleep(5)
 
         for name in self.relation_names:
             if not self.check_relation_existence(name):
@@ -288,11 +298,8 @@ class DatabaseInterface:
         Returns:
             List[Tuple[Any, ...]]: a list of tuples representing the data rows from the queried relation.
         """
-        result = (
-            self.execute_query(
-                SQLQueries.get_data_from_relation(relation_name), fetch=True
-            )
-            or []  # It has to return a empty list, otherwise mypy will complain
+        result = self.execute_query(
+            SQLQueries.get_data_from_relation(relation_name), fetch=True
         )
 
-        return result
+        return result  # type: ignore

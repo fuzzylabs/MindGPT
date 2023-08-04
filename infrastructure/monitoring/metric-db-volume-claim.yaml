@@ -3,9 +3,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: metric-db-persistent-volume-claim
 spec:
-  storageClassName: manual
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
-      storage: 8Gi
+      storage: 50Mi
