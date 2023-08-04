@@ -109,7 +109,9 @@ class TextSplitter:
 
         return docs
 
-    def recursively_merge_and_split(self, splits, new_separators) -> List[str]:
+    def recursively_merge_and_split(
+        self, splits: List[str], new_separators: List[str]
+    ) -> List[str]:
         """Recursively merge and split splits from longer texts to medium chunks keeping separator.
 
         Args:
