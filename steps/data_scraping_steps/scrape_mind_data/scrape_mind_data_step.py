@@ -30,6 +30,15 @@ URLS = {
     ],
 }
 
+URLS_TO_DISCARD = [
+    "https://www.mind.org.uk/information-support/types-of-mental-health-problems/depression/",
+    "https://www.mind.org.uk/information-support/drugs-and-treatments/antidepressants-a-z/overview/",
+    "https://www.mind.org.uk/information-support/types-of-mental-health-problems/recreational-drugs-alcohol-and-addiction/",
+    "https://www.mind.org.uk/information-support/drugs-and-treatments/complementary-and-alternative-therapies/",
+    "https://www.mind.org.uk/information-support/drugs-and-treatments/sleeping-pills-and-minor-tranquillisers-a-z/overview/",
+    "https://www.mind.org.uk/information-support/drugs-and-treatments/antipsychotics-a-z/overview/",
+]
+
 
 class Scraper:
     """This class aims to scrape data from the "Types of mental health problems", "Drugs and treatments" and the sub-sections from the "Helping someone else" as they all share the same HTML structure."""
@@ -72,7 +81,7 @@ class Scraper:
         """
         return str(MIND_URL + sub_page_url)
 
-    def create_dataframe(self, data: Dict[str, str]) -> pd.DataFrame:
+    def create_dataframe(self, data: Dict[str, Dict[str, str]]) -> pd.DataFrame:
         """Create a pandas DataFrame from the given data.
 
         Args:
@@ -84,17 +93,18 @@ class Scraper:
                     RangeIndex
                 Columns:
                     Name: uuid, dtype: object
+                    Name: html_scraped, dtype: object
                     Name: text_scraped, dtype: object
                     Name: timestamp, dtype: datetime64[ns]
                     Name: url, dtype: object
         """
-        df = pd.DataFrame(data.items(), columns=["url", "text_scraped"])
+        df = pd.DataFrame(data.values())
 
         df["timestamp"] = datetime.now()
 
         df["uuid"] = df.apply(lambda row: str(uuid.uuid4()), axis=1)
 
-        df = df[["uuid", "text_scraped", "timestamp", "url"]]  # Rearrange Columns
+        df = df[["uuid", "html_scraped", "text_scraped", "timestamp", "url"]]  # Rearrange Columns
 
         return df
 
@@ -146,7 +156,7 @@ class Scraper:
         soup = self.create_soup(self.build_subpage_url(url))
 
         side_bar_list = soup.find(
-            "ul", attrs={"class": "sidebar-menu", "id": "sidebar_menu"}
+            "ul", class_="sidebar-menu"
         )
 
         if side_bar_list:
@@ -164,7 +174,7 @@ class Scraper:
 
         return side_bar_urls
 
-    def scrape_sub_page_data(self, sub_page_url: str, content_class: str) -> List[str]:
+    def scrape_sub_page_data(self, sub_page_url: str, content_class: str) -> Dict[str, str]:
         """This function scrapes data given a page URL and the class name of where contents are.
 
         Args:
@@ -172,7 +182,7 @@ class Scraper:
             content_class (str): The class name of the elements containing the desired content.
 
         Returns:
-            List[str]: A list of strings containing the scraped data.
+            Dict[str, str]: A dictionary that contains the url, raw HTML and scraped texts.
         """
         sub_page_data = []
 
@@ -191,12 +201,42 @@ class Scraper:
             for sub_page_text in sub_page_texts:
                 sub_page_data.append(sub_page_text.text)
 
-        return sub_page_data
+        return {
+            "url": self.build_subpage_url(sub_page_url),
+            "html_scraped": str(soup),
+            "text_scraped": "\n".join(sub_page_data)
+        }
 
+    def discard_decision(self, url: str) -> bool:
+        """Decide whether a page should be discarded.
+
+        Args:
+            url (str): page url
+
+        Returns:
+            bool: discard decision
+        """
+        if url in URLS_TO_DISCARD:
+            print("Discarded", url)
+        return url in URLS_TO_DISCARD
+
+
+def discard_non_content(scraper: Scraper, data: Dict[str, Dict[str, str]]):
+    """Discard pages that do not contain content.
+
+    Args:
+        scraper (Scraper): a scraper object.
+        data (Dict[str, str]): empty or existing dataset.
+
+    Returns:
+        Dict[str, Dict[str, str]]: scraped data.
+    """
+    cleaned_data = {url: item for url, item in data.items() if not scraper.discard_decision(url)}
+    return cleaned_data
 
 def scrape_conditions_and_drugs_sections(
-    scraper: Scraper, data: Dict[str, str]
-) -> Dict[str, str]:
+    scraper: Scraper, data: Dict[str, Dict[str, str]]
+) -> Dict[str, Dict[str, str]]:
     """Scrapes data for the 'Types of mental health problems' and 'Drugs and treatments' sections.
 
     Args:
@@ -204,7 +244,7 @@ def scrape_conditions_and_drugs_sections(
         data (Dict[str, str]): empty or existing dataset.
 
     Returns:
-        Dict[str, str]: scraped data.
+        Dict[str, Dict[str, str]]: scraped data.
     """
     logger.info(
         "Scraping data from the 'Types of mental health problems' and 'Drugs and treatments' section"
@@ -226,14 +266,12 @@ def scrape_conditions_and_drugs_sections(
                     sub_page_data = scraper.scrape_sub_page_data(
                         sub_page_url, column_class
                     )
-                    sub_page_data_string = "\n".join(sub_page_data)
                     full_url = scraper.build_subpage_url(sub_page_url)
-                    data[full_url] = sub_page_data_string
+                    data[full_url] = sub_page_data
             else:
                 single_page_data = scraper.scrape_sub_page_data(obj_url, column_class)
-                single_page_data_string = "\n".join(single_page_data)
                 full_url = scraper.build_subpage_url(obj_url)
-                data[full_url] = single_page_data_string
+                data[full_url] = single_page_data
 
         logger.info("\nSleeping for 30 seconds to prevent bot detection.")
         time.sleep(30)
@@ -246,16 +284,16 @@ def scrape_conditions_and_drugs_sections(
 
 
 def scrape_helping_someone_section(
-    scraper: Scraper, data: Dict[str, str]
-) -> Dict[str, str]:
+    scraper: Scraper, data: Dict[str, Dict[str, str]]
+) -> Dict[str, Dict[str, str]]:
     """Scrapes data for the 'Helping someone else' sections.
 
     Args:
         scraper (Scraper): a scraper object.
-        data (Dict[str, str]): empty or existing dataset.
+        data (Dict[str, Dict[str, str]]): empty or existing dataset.
 
     Returns:
-        Dict[str, str]: scraped data.
+        Dict[str, Dict[str, str]]: scraped data.
     """
     logger.info("Scraping data from the 'Helping someone else' section\n")
 
@@ -268,14 +306,12 @@ def scrape_helping_someone_section(
         if sub_page_urls:
             for sub_page_url in sub_page_urls:
                 sub_page_data = scraper.scrape_sub_page_data(sub_page_url, column_class)
-                sub_page_data_string = "\n".join(sub_page_data)
                 full_url = scraper.build_subpage_url(sub_page_url)
-                data[full_url] = sub_page_data_string
+                data[full_url] = sub_page_data
         else:
             single_page_data = scraper.scrape_sub_page_data(url, column_class)
-            single_page_data_string = "\n".join(single_page_data)
             full_url = scraper.build_subpage_url(url)
-            data[full_url] = single_page_data_string
+            data[full_url] = single_page_data
 
     logger.info("\nFinished scraping data from the 'Helping someone else' section\n")
 
@@ -292,15 +328,17 @@ def scrape_mind_data() -> Annotated[pd.DataFrame, "output_mind_data"]:
                 RangeIndex
             Columns:
                 Name: uuid, dtype: object
+                Name: html_scraped, dtype: object
                 Name: text_scraped, dtype: object
                 Name: timestamp, dtype: datetime64[ns]
                 Name: url, dtype: object
     """
     scraper = Scraper()
-    data: Dict[str, str] = {}
+    data: Dict[str, Dict[str, str]] = {}
 
     data = scrape_conditions_and_drugs_sections(scraper, data)
     data = scrape_helping_someone_section(scraper, data)
+    data = discard_non_content(scraper, data)
 
     logger.info("Finished scraping data for all sections\n")
 

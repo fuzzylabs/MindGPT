@@ -86,6 +86,7 @@ class NHSMentalHealthScraper:
                     RangeIndex
                 Columns:
                     Name: uuid, dtype: object
+                    Name: html_scraped, dtype: object
                     Name: text_scraped, dtype: object
                     Name: timestamp, dtype: datetime64[ns]
                     Name: url, dtype: object
@@ -96,7 +97,8 @@ class NHSMentalHealthScraper:
             [
                 {
                     "uuid": str(uuid.uuid4()),
-                    "text_scraped": str(target),
+                    "html_scraped": str(target),
+                    "text_scraped": target.get_text(" "),
                     "timestamp": timestamp,
                     "url": self._url,
                 }
@@ -104,12 +106,13 @@ class NHSMentalHealthScraper:
         )
 
     def discard_non_content(self):
-        def discard_decision(text_scraped: str) -> bool:
-            bs = BeautifulSoup(text_scraped)
+        def discard_decision(html_scraped: str) -> bool:
+            bs = BeautifulSoup(html_scraped, parser="lxml")
             return bs.find(class_="nhsuk-lede-text") is not None
 
-        df_index = self.df.text_scraped.apply(discard_decision)
-        print(self.df[df_index].url.values)
+        df_index = self.df.html_scraped.apply(discard_decision)
+        print(f"Discarded pages: {df_index.sum()}")
+        self.df = self.df[~df_index]
 
     def scrape_recursively(self) -> None:
         """A method for recursively scraping all nested links found within a target website or Tag subject to conditions.
@@ -150,6 +153,7 @@ def scrape_nhs_data() -> Annotated[pd.DataFrame, "output_nhs_data"]:
                 RangeIndex
             Columns:
                 Name: uuid, dtype: object
+                Name: html_scraped, dtype: object
                 Name: text_scraped, dtype: object
                 Name: timestamp, dtype: datetime64[ns]
                 Name: url, dtype: object
