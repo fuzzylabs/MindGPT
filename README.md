@@ -212,7 +212,7 @@ With this modification in place, we're prepared to run docker-compose.
 docker-compose -f monitoring/docker-compose.yml up
 ```
 
-One the two containers has started, we can curl our metric service from the outside.
+Once the two containers has started, we can curl our metric service from the outside.
 ```
 curl localhost:5000/
 # This should return a default message saying "Hello world from the metric service."
