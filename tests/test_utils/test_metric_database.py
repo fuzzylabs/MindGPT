@@ -6,7 +6,7 @@ from unittest import mock
 from unittest.mock import patch
 
 import pytest
-from utils import DatabaseCredentials, DatabaseInterface, SQLQueries
+from utils.metric_database import DatabaseCredentials, DatabaseInterface, SQLQueries
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
