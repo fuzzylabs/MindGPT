@@ -9,6 +9,7 @@ import streamlit as st
 from chromadb.api import API
 from chromadb.api.types import EmbeddingFunction
 from chromadb.utils import embedding_functions
+from requests.models import Response
 from utils.chroma_store import ChromaStore
 
 logging.basicConfig(
@@ -236,7 +237,9 @@ def query_llm(prediction_endpoint: str, messages: Dict[str, str]) -> str:
     return summary_txt
 
 
-def post_response_to_metric_service(metric_service_endpoint: str, response: str) -> str:
+def post_response_to_metric_service(
+    metric_service_endpoint: str, response: str
+) -> Response:
     """Send the LLM's response to the metric service for readability computation using a POST request.
 
     Args:
@@ -244,12 +247,12 @@ def post_response_to_metric_service(metric_service_endpoint: str, response: str)
         response (str): the response produced by the LLM
 
     Returns:
-        str: the message received in response to the POST request
+        Response: the post request response
     """
     response_dict = {"response": response}
     result = requests.post(url=metric_service_endpoint, json=response_dict)
 
-    return result.text
+    return result
 
 
 def show_disclaimer() -> bool:
@@ -309,7 +312,7 @@ def main() -> None:
             embed_function = _get_embedding_function(DEFAULT_EMBED_MODEL)
 
             if metric_service_endpoint is None:
-                logging.info("Metric service endpoint is None, monitoring is disabled.")
+                logging.warn("Metric service endpoint is None, monitoring is disabled.")
 
             if prediction_endpoint is None or chroma_client is None:
                 st.session_state.error_placeholder.error(
@@ -345,7 +348,7 @@ def main() -> None:
                             result = post_response_to_metric_service(
                                 metric_service_endpoint, assistant_response
                             )
-                            logging.info(result)
+                            logging.info(result.text)
 
                     message_placeholder.markdown(full_response)
 
