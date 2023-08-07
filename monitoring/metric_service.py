@@ -1,4 +1,6 @@
-"""The metric service interface for computing readability and handling post and get requests."""
+"""Functions for the metric service for computing readability and validate llm response and embedding drift data."""
+from typing import Dict, Union
+
 import textstat
 
 
@@ -28,9 +30,69 @@ def compute_readability(llm_response: str) -> float:
     Returns:
         float: the readability score of the response
     """
-    if not isinstance(llm_response, str):
+    return float(textstat.flesch_reading_ease(llm_response))
+
+
+def validate_llm_response(llm_response_dict: Dict[str, str]) -> str:
+    """This function validate the payload which should be a dictionary containing the response text.
+
+    Args:
+        llm_response_dict (Dict[str, str]): the post request payload
+
+    Raises:
+        TypeError: raise if the json payload is not a dictionary.
+        ValueError: raise if the dictionary payload does not have the response item.
+        TypeError: raise if the model response received is not a string
+        ValueError: raise if the model response received is a empty string
+
+    Returns:
+        str: the validated response text
+    """
+    if not isinstance(llm_response_dict, dict):
+        raise TypeError("The model response is not a dictionary.")
+
+    response = llm_response_dict.get("response")
+    if response is None:
+        raise ValueError(
+            "The response dictionary does not contain the right key value pair."
+        )
+
+    if not isinstance(response, str):
         raise TypeError("The model response is not a string.")
-    elif len(llm_response) <= 0:
+    elif len(response) == 0:
         raise ValueError("The model response must not be an empty string.")
-    else:
-        return float(textstat.flesch_reading_ease(llm_response))
+
+    return response
+
+
+def validate_embedding_drift_data(
+    data: Dict[str, Union[str, float, bool]]
+) -> Dict[str, Union[str, float, bool]]:
+    """Validate that the given embedding data dictionary has required keys and values of correct types.
+
+    Args:
+        data (Dict[str, Union[str, float, bool]]): a dictionary containing the embedding drift data to be validated.
+
+    Raises:
+        KeyError: raise if any of the required keys is not found in the dictionary.
+        TypeError: raise if the value associated with any of the keys is of incorrect type.
+
+    Returns:
+        Dict[str, Union[str, float, bool]]: the validated embedding drift data dictionary.
+    """
+    required_keys_types = {
+        "reference_dataset": str,
+        "current_dataset": str,
+        "distance": float,
+        "drifted": bool,
+    }
+
+    for key, expected_type in required_keys_types.items():
+        if key not in data:
+            raise KeyError(f"{key} is not found in the data dictionary.")
+        if not isinstance(data[key], expected_type):
+            raise TypeError(
+                f"'{key}' has incorrect type, expected {expected_type.__name__}."
+            )
+
+    return data
