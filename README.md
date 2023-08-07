@@ -200,6 +200,7 @@ kubectl apply -f infrastructure/monitoring
 ```
 
 Finally, once the pod is running, we verify that our monitoring service is working. The command below should provide an IP address for the metric service interface.
+
 ```bash
 kubectl get pods # Checking whether the monitoring pod is running
 
@@ -207,6 +208,7 @@ kubectl get svc monitoring-service -o jsonpath='{.status.loadBalancer.ingress[0]
 ```
 
 We should be able to curl the external IP returned running the above command at port 5000.
+
 ```bash
 curl {external-ip:5000}
 
