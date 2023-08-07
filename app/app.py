@@ -1,5 +1,6 @@
 """MindGPT Streamlit app."""
 import json
+import logging
 import os
 from typing import Any, Dict, List, Optional, Union
 
@@ -9,6 +10,13 @@ from chromadb.api import API
 from chromadb.api.types import EmbeddingFunction
 from chromadb.utils import embedding_functions
 from utils.chroma_store import ChromaStore
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[logging.StreamHandler()],
+)
+
 
 # Setup for chroma vector store
 CHROMA_SERVER_HOST_NAME = "chroma-service.default"
@@ -26,6 +34,11 @@ COLLECTION_NAME_MAP = {"mind_data": "Mind", "nhs_data": "NHS"}
 SELDON_SERVICE_NAME = "llm-default-transformer"
 SELDON_NAMESPACE = "matcha-seldon-workloads"
 SELDON_PORT = 9000
+
+# Metric service configuration
+METRIC_SERVICE_NAME = "monitoring-service"
+METRIC_SERVICE_NAMESPACE = "default"
+METRIC_SERVICE_PORT = "5000"
 
 # Paragraph from https://www.nhs.uk/mental-health/conditions/depression-in-adults/overview/
 DEFAULT_CONTEXT = """Most people experience feelings of stress, anxiety or low mood during difficult times.
@@ -79,6 +92,16 @@ def _get_prediction_endpoint() -> Optional[str]:
         Optional[str]: the url endpoint if it exists and is valid, None otherwise.
     """
     return f"http://{SELDON_SERVICE_NAME}.{SELDON_NAMESPACE}:{SELDON_PORT}/v2/models/transformer/infer"
+
+
+@st.cache_data(show_spinner=False)
+def _get_metric_service_endpoint() -> Optional[str]:
+    """Get the endpoint for the currently deployed metric service.
+
+    Returns:
+        Optional[str]: the url endpoint if it exists and is valid, None otherwise.
+    """
+    return f"http://{METRIC_SERVICE_NAME}.{METRIC_SERVICE_NAMESPACE}:{METRIC_SERVICE_PORT}/readability"
 
 
 @st.cache_data(show_spinner=False)
@@ -213,6 +236,22 @@ def query_llm(prediction_endpoint: str, messages: Dict[str, str]) -> str:
     return summary_txt
 
 
+def post_response_to_metric_service(metric_service_endpoint: str, response: str) -> str:
+    """Send the LLM's response to the metric service for readability computation using a POST request.
+
+    Args:
+        metric_service_endpoint (str): the metric service endpoint where the readability is computed
+        response (str): the response produced by the LLM
+
+    Returns:
+        str: the message received in response to the POST request
+    """
+    response_dict = {"response": response}
+    result = requests.post(url=metric_service_endpoint, json=response_dict)
+
+    return result.text
+
+
 def show_disclaimer() -> bool:
     """Show disclaimer on sidebar with streamlit.
 
@@ -259,6 +298,8 @@ def main() -> None:
 
             # Get seldon endpoint
             prediction_endpoint = _get_prediction_endpoint()
+            # Get the metric service endpoint
+            metric_service_endpoint = _get_metric_service_endpoint()
 
             # Get vector store client
             chroma_client = connect_vector_store(
@@ -266,6 +307,9 @@ def main() -> None:
                 chroma_server_port=CHROMA_SERVER_PORT,
             )
             embed_function = _get_embedding_function(DEFAULT_EMBED_MODEL)
+
+            if metric_service_endpoint is None:
+                logging.info("Metric service endpoint is None, monitoring is disabled.")
 
             if prediction_endpoint is None or chroma_client is None:
                 st.session_state.error_placeholder.error(
@@ -296,6 +340,12 @@ def main() -> None:
                         assistant_response = query_llm(prediction_endpoint, message)
 
                         full_response += f"{source}: {assistant_response}  \n"
+
+                        if metric_service_endpoint:
+                            result = post_response_to_metric_service(
+                                metric_service_endpoint, assistant_response
+                            )
+                            logging.info(result)
 
                     message_placeholder.markdown(full_response)
 
