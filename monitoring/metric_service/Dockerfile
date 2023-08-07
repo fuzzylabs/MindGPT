@@ -7,7 +7,6 @@ RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 ENV DB_NAME=postgres
-# For the below ENV DB_HOST, change value to "metric-db" if running locally using docker-compose
 ENV DB_HOST=localhost 
 ENV DB_USER=postgres
 ENV DB_PORT=5432

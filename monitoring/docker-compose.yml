@@ -23,6 +23,8 @@ services:
       dockerfile: monitoring/metric_service/Dockerfile
     depends_on:
       - 'metric-db'
+    environment:
+      - DB_HOST=metric-db
     ports:
       - '5000:5000'
     networks:
