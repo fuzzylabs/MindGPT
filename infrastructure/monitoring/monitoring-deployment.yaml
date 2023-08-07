@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitoring-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: monitoring-service
+  template:
+    metadata:
+      labels:
+        app: monitoring-service
+    spec:
+      containers:
+        - name: metric-db
+          image: postgres:15.3-alpine3.18
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: postgres
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+          volumeMounts:
+          - mountPath: /var/lib/postgres/data
+            name: metric-db-data
+          resources:
+            limits:
+              cpu: 2
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+
+        - name: metric-service
+          image: crmindgpt.azurecr.io/monitoring
+          ports:
+            - containerPort: 5000
+          resources:
+            limits:
+              cpu: 2
+              memory: 2Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+
+        # Volumes attached to the pod
+      volumes:
+        - name: metric-db-data
+          persistentVolumeClaim:
+            claimName: metric-db-persistent-volume-claim

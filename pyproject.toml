@@ -28,6 +28,7 @@ textstat = "0.7.3"
 flask = "2.3.2"
 psycopg2 = "2.9.6"
 types-psycopg2 = "2.9.21.11"
+gunicorn = "^21.2.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -120,6 +121,7 @@ module = [
     "python_terraform.*",
     "transformers.*",
     "chromadb.*",
-    "textstat.*"
+    "textstat.*",
+    "metric_service.*"
 ]
 ignore_missing_imports = true

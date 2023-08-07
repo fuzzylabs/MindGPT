@@ -1,0 +1,4 @@
+flask==2.3.2
+gunicorn==21.2.0
+psycopg2==2.9.6
+textstat==0.7.3
