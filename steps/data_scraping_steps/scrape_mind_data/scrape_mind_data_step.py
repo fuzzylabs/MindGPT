@@ -45,6 +45,18 @@ class Scraper:
 
     session = HTMLSession()
 
+    def __init__(self, urls_to_discard=None) -> None:
+        """Initialise Mind data scraper.
+
+        Args:
+            urls_to_discard (List[str]): list of URLs to discard from the results
+
+        """
+        if urls_to_discard is None:
+            self.urls_to_discard = URLS_TO_DISCARD
+        else:
+            self.urls_to_discard = urls_to_discard
+
     def get_html_text(self, url: str) -> str:
         """Retrieve the HTML text content of a webpage.
 
@@ -216,9 +228,7 @@ class Scraper:
         Returns:
             bool: discard decision
         """
-        if url in URLS_TO_DISCARD:
-            print("Discarded", url)
-        return url in URLS_TO_DISCARD
+        return url in self.urls_to_discard
 
 
 def discard_non_content(scraper: Scraper, data: Dict[str, Dict[str, str]]):

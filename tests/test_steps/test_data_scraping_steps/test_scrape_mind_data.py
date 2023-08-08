@@ -10,7 +10,7 @@ from steps.data_scraping_steps.scrape_mind_data.scrape_mind_data_step import (
     Scraper,
     scrape_conditions_and_drugs_sections,
     scrape_helping_someone_section,
-    scrape_mind_data,
+    scrape_mind_data, discard_non_content,
 )
 
 
@@ -48,7 +48,7 @@ def scraper() -> Scraper:
     Returns:
         BaseScraper: a Scraper instance for testing.
     """
-    return Scraper()
+    return Scraper(urls_to_discard=["https://www.mind.org.uk/discard/"])
 
 
 @pytest.fixture
@@ -338,3 +338,32 @@ def test_scrape_mind_data():
     assert_frame_equal(
         result_df[["text_scraped", "url"]], expected_df[["text_scraped", "url"]]
     )
+
+
+def test_discard_pages(scraper: Scraper, mocked_html_text: str):
+    """Test pages are discarded correctly by the Scraper.
+
+    Args:
+        scraper (Scraper): a Scraper instance.
+        mocked_html_text (str): mock page to scrape.
+    """
+    expected_left = {
+        "url": "https://www.mind.org.uk/content/",
+        "html_scraped": "expected_left_html",
+        "text_scraped": "expected_left"
+    }
+    expected_discarded = {
+        "url": "https://www.mind.org.uk/discard/",
+        "html_scraped": "expected_discarded_html",
+        "text_scraped": "expected_discarded"
+    }
+
+    data = discard_non_content(
+        scraper,
+        {
+            "https://www.mind.org.uk/content/": expected_left,
+            "https://www.mind.org.uk/discard/": expected_discarded,
+        }
+    )
+
+    assert data == {"https://www.mind.org.uk/content/": expected_left}
