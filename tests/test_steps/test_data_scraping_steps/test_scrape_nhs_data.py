@@ -18,7 +18,7 @@ def expected_columns() -> set:
     Returns:
         set: a set containing the expected columns
     """
-    return {"uuid", "text_scraped", "timestamp", "url"}
+    return {"uuid", "html_scraped", "text_scraped", "timestamp", "url"}
 
 
 @pytest.fixture
