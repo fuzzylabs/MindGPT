@@ -36,18 +36,28 @@ def nhs_mental_health_scraper_arguments() -> set:
 
 
 @pytest.fixture
-def nhs_mental_health_scraper(
-    nhs_mental_health_scraper_arguments: set,
-) -> NHSMentalHealthScraper:
-    """A fixture representing the NHSMentalHealthScraper class.
+def nhs_mental_health_to_discard_arguments() -> set:
+    """A fixture representing the arguments required to test the NHSMentalHealthScraper class for discarding.
+
+    Returns:
+    A set containing the arguments used to construct the mocked NHSMentalHealthScraper instance
+    """
+    return (
+        "./tests/test_steps/test_data_scraping_steps/test_html/discarded_test.html",
+        "div",
+        {"class": "target_div"},
+    )
+
+def get_mock_nhs_mental_health_scraper(arguments: set) -> NHSMentalHealthScraper:
+    """Construct mock NHSMentalHealthScraper.
 
     Args:
-        nhs_mental_health_scraper_arguments (set): a list of arguments used to construct the nhs_mental_health_scraper instance
+        arguments (set): a list of arguments used to construct the nhs_mental_health_scraper instance
 
     Returns:
         (NHSMentalHealthScraper): A mocked NHSMentalHealthScraper instance
     """
-    url, tag, attributes = nhs_mental_health_scraper_arguments
+    url, tag, attributes = arguments
 
     class MockResponse:
         """A mock response object for the HTML.get method."""
@@ -67,6 +77,35 @@ def nhs_mental_health_scraper(
 
     with patch.object(HTMLSession, "get", side_effect=mock_get):
         return NHSMentalHealthScraper(url=url, tag=tag, attributes=attributes)
+
+@pytest.fixture
+def nhs_mental_health_scraper(
+    nhs_mental_health_scraper_arguments: set,
+) -> NHSMentalHealthScraper:
+    """A fixture representing the NHSMentalHealthScraper class.
+
+    Args:
+        nhs_mental_health_scraper_arguments (set): a list of arguments used to construct the NHSMentalHealthScraper instance
+
+    Returns:
+        (NHSMentalHealthScraper): A mocked NHSMentalHealthScraper instance
+    """
+    return get_mock_nhs_mental_health_scraper(nhs_mental_health_scraper_arguments)
+
+
+@pytest.fixture
+def nhs_mental_health_scraper_discarded(
+    nhs_mental_health_to_discard_arguments: set
+) -> NHSMentalHealthScraper:
+    """A fixture representing the NHSMentalHealthScraper class with discarded pages.
+
+    Args:
+        nhs_mental_health_to_discard_arguments (set): a list of arguments used to construct the NHSMentalHealthScraper instance
+
+    Returns:
+        (NHSMentalHealthScraper): A mocked NHSMentalHealthScraper instance
+    """
+    return get_mock_nhs_mental_health_scraper(nhs_mental_health_to_discard_arguments)
 
 
 def test_init(
@@ -166,3 +205,20 @@ def test_scrape(
         test_df = pd.DataFrame([{"text_scraped": test_text, "url": url}])
         assert expected_columns == set(scraper_df.columns.tolist())
         assert_frame_equal(scraper_df[["text_scraped", "url"]], test_df)
+
+
+def test_discard(
+    nhs_mental_health_scraper_discarded: NHSMentalHealthScraper,
+    expected_columns: set,
+):
+    """Tests the discard method of the NHSMentalHealthScraper class.
+
+    Args:;
+        nhs_mental_health_scraper_discarded (NHSMentalHealthScraper): a patched NHSMentalHealthScraper instance
+        expected_columns (set): a set of columns that we would expect to be returned by the scraping process
+    """
+    nhs_mental_health_scraper_discarded.scrape_recursively()
+    nhs_mental_health_scraper_discarded.discard_non_content()
+    test_df = pd.DataFrame([], columns=["text_scraped", "url"], index=pd.Int64Index([]))
+    assert expected_columns == set(nhs_mental_health_scraper_discarded.df.columns.tolist())
+    assert_frame_equal(nhs_mental_health_scraper_discarded.df[["text_scraped", "url"]], test_df)
