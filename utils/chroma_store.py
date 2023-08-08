@@ -1,7 +1,7 @@
 """ChromaDB vector store class."""
 import ipaddress
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import chromadb
 from chromadb.api.models.Collection import Collection
@@ -204,3 +204,33 @@ class ChromaStore:
         if collection_name not in self.list_collection_names():
             raise ValueError(f"Collection name {collection_name} not found")
         self._client.delete_collection(collection_name)
+
+    def fetch_reference_and_current_embeddings(
+        self,
+        collection_name: str,
+        reference_data_version: str,
+        current_data_version: str,
+    ) -> Tuple[List[List[float]], List[List[float]]]:
+        """Fetches the embeddings for the reference dataset and the current dataset.
+
+        Args:
+            collection_name (str): the name of the collection to fetch for
+            reference_data_version (str): the name reference data version.
+            current_data_version (str): the name current data version.
+
+        Returns:
+            Tuple[list, list]: the reference embeddings and the current embeddings
+        """
+        collection = self._client.get_collection(collection_name)
+
+        reference_dataset = collection.get(
+            where={"data_version": reference_data_version}, include=["embeddings"]
+        )
+        reference_embeddings = reference_dataset["embeddings"]
+
+        current_dataset = collection.get(
+            where={"data_version": current_data_version}, include=["embeddings"]
+        )
+        current_embeddings = current_dataset["embeddings"]
+
+        return reference_embeddings, current_embeddings  # type: ignore
