@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 import pytest
 from steps.data_embedding_steps.compute_embedding_drift_step.compute_embedding_drift_step import (
+    build_embedding_drift_payload,
     calculate_euclidean_distance,
     calculate_means,
     compute_embedding_drift,
@@ -85,6 +86,18 @@ def test_calculate_euclidean_distance():
     assert result == 0
 
 
+def test_build_embedding_drift_payload():
+    """Test that the build_embedding_drift_payload function returns the expected dictionary payload."""
+    result = build_embedding_drift_payload("test_version", "test_version", 1.1)
+
+    assert result == {
+        "reference_dataset": "'test_version'",
+        "current_dataset": "'test_version'",
+        "distance": 1.1,
+        "drifted": True,
+    }
+
+
 def test_compute_embedding_drift_step():
     """Test that the compute_embedding_drift step return the expected output."""
     mock_reference_embedding = [[1.1, 2.2, 3.3], [3.1, 4.1, 5.1]]
@@ -92,12 +105,17 @@ def test_compute_embedding_drift_step():
 
     with patch(
         "steps.data_embedding_steps.compute_embedding_drift_step.compute_embedding_drift_step.ChromaStore"
-    ) as mock_chroma:
-        instance = mock_chroma.return_value
-        instance.fetch_reference_and_current_embeddings.return_value = (
+    ) as mock_chroma, patch(
+        "steps.data_embedding_steps.compute_embedding_drift_step.compute_embedding_drift_step.requests.post"
+    ) as mock_post_requests:
+        mock_chroma_instance = mock_chroma.return_value
+        mock_chroma_instance.fetch_reference_and_current_embeddings.return_value = (
             mock_reference_embedding,
             mock_current_embedding,
         )
+
+        mock_post_requests.return_value.text = "OK"
+
         distance = compute_embedding_drift(
             "mock_collection_name", "mock_version", "mock_version"
         )

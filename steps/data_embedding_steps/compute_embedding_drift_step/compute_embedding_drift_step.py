@@ -1,7 +1,8 @@
 """Compute embedding drift step."""
 from statistics import mean
-from typing import List
+from typing import Dict, List, Union
 
+import requests
 from scipy.spatial import distance
 from utils.chroma_store import ChromaStore
 from zenml import step
@@ -82,6 +83,32 @@ def calculate_euclidean_distance(
     return float(distance.euclidean(reference_embeddings_mean, current_embeddings_mean))
 
 
+def build_embedding_drift_payload(
+    reference_data_version: str, current_data_version: str, distance: float
+) -> Dict[str, Union[str, float, bool]]:
+    """Construct a payload for send the embedding drift data to the metric service via post request.
+
+    Args:
+        reference_data_version (str): the version identifier for the reference data.
+        current_data_version (str): the version identifier for the current data.
+        distance (float): the computed Euclidean distance between the embeddings of the reference and current data.
+
+    Returns:
+        Dict[str, Union[str, float, bool]]: a dictionary containing the 4 items required by the metric service embedding drift relation.
+    """
+    drifted = distance > 0
+
+    formatted_reference_data_version = f"'{reference_data_version}'"
+    formatted_current_data_version = f"'{current_data_version}'"
+
+    return {
+        "reference_dataset": f"{formatted_reference_data_version}",
+        "current_dataset": f"{formatted_current_data_version}",
+        "distance": distance,
+        "drifted": drifted,
+    }
+
+
 @step
 def compute_embedding_drift(
     collection_name: str, reference_data_version: str, current_data_version: str
@@ -116,5 +143,12 @@ def compute_embedding_drift(
     logger.info(
         f"The Euclidean distance between the mean of reference embeddings and the mean of current embeddings is: {distance}"
     )
+
+    payload = build_embedding_drift_payload(
+        reference_data_version, current_data_version, distance
+    )
+    response = requests.post("http://localhost:5000/embedding_drift", json=payload)
+
+    logger.info(response.text)
 
     return float(distance)
