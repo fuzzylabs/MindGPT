@@ -19,11 +19,19 @@ def data_embedding_pipeline() -> None:
 
     embed_data(
         df=mind_df,
-        collection_name="mind_data",
-        data_version=current_data_version,
         embed_model_type="base",
-        chunk_size=1000,
-        chunk_overlap=200,
+        data_version="data/first_version",
+        collection_name="mind_data",
+        chunk_size=780,
+        chunk_overlap=50,
+    )
+    embed_data(
+        nhs_df,
+        embed_model_type="base",
+        data_version="data/first_version",
+        collection_name="nhs_data",
+        chunk_size=2000,
+        chunk_overlap=50,
     )
     embed_data(
         df=nhs_df,
