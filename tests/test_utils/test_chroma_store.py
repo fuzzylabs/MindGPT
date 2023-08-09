@@ -214,3 +214,40 @@ def test_query_collection(local_persist_api: API):
     assert len(results["ids"][0]) == 1
     assert results["documents"][0] == ["foo"]
     assert results["ids"][0] == ["bdd440fb-0667-4ad1-9c80-317fa3b1799d"]
+
+
+def test_fetch_reference_and_current_embeddings(local_persist_api: API):
+    """Test that the fetch_reference_and_current_embeddings returns the expected embeddings.
+
+    Args:
+        local_persist_api (API): Local chroma server for testing
+    """
+    uuids = [
+        "bdd440fb-0667-4ad1-9c80-317fa3b1799d",
+        "bdd540fb-0667-4ad1-9c80-317fa3b1799d",
+    ]
+    input_texts = ["foo", "dummy"]
+    store = ChromaStore()
+    store._client = local_persist_api
+
+    metadatas = [{"data_version": "test_version"}, {"data_version": "test_version"}]
+
+    # Add example documents to the test collection
+    store.add_texts(
+        collection_name="test",
+        texts=input_texts,
+        embedding_function=MockEmbeddingFunction(),
+        ids=uuids,
+        metadatas=metadatas,
+    )
+
+    (
+        reference_embeddings,
+        current_embeddings,
+    ) = store.fetch_reference_and_current_embeddings(
+        collection_name="test",
+        reference_data_version="test_version",
+        current_data_version="test_version",
+    )
+
+    assert isinstance(reference_embeddings, list)
