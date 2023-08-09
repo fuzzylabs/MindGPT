@@ -1,7 +1,0 @@
-{
-    "remote_state_bucket": {
-        "account_name": "mindgptstatestacc",
-        "container_name": "mindgptstatestore",
-        "resource_group_name": "mindgpt-resources"
-    }
-}
