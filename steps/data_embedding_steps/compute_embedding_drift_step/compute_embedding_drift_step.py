@@ -10,7 +10,7 @@ from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
-MONITORING_METRICS_HOST_NAME = "localhost"
+MONITORING_METRICS_HOST_NAME = "localhost"  # if pipeline runs on k8s, "localhost" should be replaced with "monitoring-service.default"
 MONITORING_METRICS_PORT = "5000"
 
 
