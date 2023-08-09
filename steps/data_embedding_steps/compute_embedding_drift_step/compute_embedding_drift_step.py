@@ -10,6 +10,9 @@ from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
+MONITORING_METRICS_HOST_NAME = "localhost"
+MONITORING_METRICS_PORT = "5000"
+
 
 def validate_embeddings(
     reference_embeddings: List[List[float]], current_embeddings: List[List[float]]
@@ -112,6 +115,7 @@ def compute_embedding_drift(
 
     This function calculates the Euclidean distance between the mean values of the reference and current embeddings
     This distance signifies the 'drift' or variation in the data distribution between the reference and current datasets, which will be visualised over time using a plot of the distance
+    This function will also prepare and send the embedding drift data to our monitoring service via post request
 
     Args:
         collection_name (str): the name of the collection to compute
@@ -142,7 +146,10 @@ def compute_embedding_drift(
     payload = build_embedding_drift_payload(
         reference_data_version, current_data_version, distance
     )
-    response = requests.post("http://localhost:5000/embedding_drift", json=payload)
+    response = requests.post(
+        f"http://{MONITORING_METRICS_HOST_NAME}:{MONITORING_METRICS_PORT}/embedding_drift",
+        json=payload,
+    )
 
     logger.info(response.text)
 
