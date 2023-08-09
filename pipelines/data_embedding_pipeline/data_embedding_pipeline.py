@@ -18,7 +18,7 @@ def data_embedding_pipeline() -> None:
     current_data_version, reference_data_version, mind_df, nhs_df = load_data()
 
     embed_data(
-        df=mind_df,
+        mind_df,
         embed_model_type="base",
         data_version="data/first_version",
         collection_name="mind_data",
@@ -32,14 +32,6 @@ def data_embedding_pipeline() -> None:
         collection_name="nhs_data",
         chunk_size=2000,
         chunk_overlap=50,
-    )
-    embed_data(
-        df=nhs_df,
-        collection_name="nhs_data",
-        data_version=current_data_version,
-        embed_model_type="base",
-        chunk_size=1000,
-        chunk_overlap=200,
     )
 
     _ = compute_embedding_drift(
