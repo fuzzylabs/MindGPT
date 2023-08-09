@@ -2,7 +2,49 @@
 import re
 
 import pandas as pd
+from bs4 import BeautifulSoup
 from zenml import step
+
+
+def add_punctuation(text: str) -> str:
+    """Add a full stop if the text does not end with a punctuation mark.
+
+    Args:
+        text (str): text to update
+
+    Returns:
+        str: updated text
+    """
+    if len(text) == 0:
+        return text
+    elif text[-1] not in [".", "!", "?"]:
+        return text + "."
+    else:
+        return text
+
+
+def clean_html(html: str) -> str:
+    """Clean html.
+
+    Args:
+        html (str): HTML string to clean
+
+    Return:
+        str: cleaned text, with html tags removed
+    """
+    bs = BeautifulSoup(html, "lxml")
+
+    # Remove <aside>
+    aside = bs.find_all("aside")
+    for tag in aside:
+        tag.decompose()
+
+    # Punctuate headings
+    headings = bs.find_all(["h1", "h2", "h3", "li"])
+    for heading in headings:
+        heading.replace_with(add_punctuation(heading.text.strip()))
+
+    return bs.get_text(" ")
 
 
 def remove_new_line(s: str) -> str:
@@ -91,6 +133,8 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
     """
     data = data.dropna().copy()
 
+    data["text_scraped"] = data["html_scraped"].map(clean_html)
+
     data["text_scraped"] = data["text_scraped"].map(remove_new_line)
     data["text_scraped"] = data["text_scraped"].map(strip_string)
     data["text_scraped"] = data["text_scraped"].map(remove_nbsp)
@@ -101,5 +145,6 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
 
     data = data.drop(data[data.text_scraped == ""].index)
     data = data.drop_duplicates()
+    data = data.drop(columns=["html_scraped"])
 
     return data.reset_index(drop=True)
