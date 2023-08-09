@@ -301,6 +301,7 @@ def main() -> None:
 
             # Get seldon endpoint
             prediction_endpoint = _get_prediction_endpoint()
+
             # Get the metric service endpoint
             metric_service_endpoint = _get_metric_service_endpoint()
 
