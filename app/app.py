@@ -1,4 +1,11 @@
 """MindGPT Streamlit app."""
+# Fix for streamlit + chroma sqllite3 issue: https://discuss.streamlit.io/t/issues-with-chroma-and-sqlite/47950/5
+# flake8: noqa
+__import__("pysqlite3")
+import sys
+
+sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+
 import json
 import logging
 import os
@@ -184,10 +191,10 @@ def _create_payload(messages: Dict[str, str]) -> Dict[str, List[Dict[str, Any]]]
         Dict[str, List[Dict[str, Any]]]: the payload to send in the correct format.
     """
     context = messages.get("context", DEFAULT_CONTEXT)
-    input_text = COMPLEX_TEMPLATE.format(
+    input_text = SIMPLE_TEMPLATE.format(
         question=messages["prompt_query"], context=context
     )
-
+    logging.info(f"Prompt to LLM : {input_text}")
     return {
         "inputs": [
             {

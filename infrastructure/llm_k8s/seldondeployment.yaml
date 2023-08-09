@@ -6,15 +6,15 @@ metadata:
 spec:
   protocol: v2
   predictors:
-  - graph:
-      name: transformer
-      implementation: HUGGINGFACE_SERVER
-      parameters:
-      - name: task
-        type: STRING
-        value: text2text-generation
-      - name: pretrained_model
-        type: STRING
-        value: google/flan-t5-small
-    name: default
-    replicas: 1
+    - graph:
+        name: transformer
+        implementation: HUGGINGFACE_SERVER
+        parameters:
+          - name: task
+            type: STRING
+            value: text2text-generation
+          - name: pretrained_model
+            type: STRING
+            value: google/flan-t5-base
+      name: default
+      replicas: 1

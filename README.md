@@ -76,8 +76,7 @@ After the provisioning completes, we will have on hand these resources:
 Next, we apply Kubernetes manifests to deploy Chroma server on AKS using following commands
 
 ```bash
-cd infrastructure/chroma_server_k8s
-kubectl apply -f .
+kubectl apply -f infrastructure/chroma_server_k8s
 ```
 
 Port-forward the chroma server service to localhost using the following command. This will ensure we can access the server from localhost.
@@ -107,7 +106,7 @@ To deploy a pre-trained LLM model, we first need a Kubernetes cluster with [Seld
 Apply the prepared kubernetes manifest to deploy the model:
 
 ```bash
-kubectl apply -f infrastructure/llm/seldondeployment.yaml
+kubectl apply -f infrastructure/llm_k8s/seldondeployment.yaml
 ```
 
 This will create a Seldon deployment, which consists of:
@@ -151,11 +150,13 @@ The expected payload structure is as follows:
 To run the monitoring service on your local machine, we'll utilise docker-compose. This will initialise two services - the metric service interface, which listens for POST and GET requests, and the metric database service.
 
 To run docker-compose:
+
 ```
 docker-compose -f monitoring/docker-compose.yml up
 ```
 
 Once the two containers has started, we can curl our metric service from the outside.
+
 ```
 curl localhost:5000/
 # This should return a default message saying "Hello world from the metric service."
@@ -178,6 +179,7 @@ curl localhost:5000//query_embedding_drift
 ```
 
 ### Running on k8s cluster
+
 To run the monitoring service on k8s, `matcha provision` must be run beforehand. We will need to build and push the metric service application to ACR. This image will be used by Kubernetes deployment. Before that, we need to set two bash variables, one for ACR registry URI and another for ACR registry name. We will use matcha get command to do this.
 
 ```bash
@@ -192,6 +194,8 @@ az acr login --name $acr_registry_name
 docker build -t $acr_registry_uri/monitoring:latest -f monitoring/metric_service/Dockerfile .
 docker push $acr_registry_uri/monitoring:latest
 ```
+
+Line number 39 in [monitoring-deployment.yaml](./infrastructure/monitoring/monitoring-deployment.yaml#L39) should be updated to match the Docker image name which we've just pushed to the ACR, and it will need to be in the following format: `<name-of-acr-registry>.azurecr.io/monitoring`.
 
 Next, we apply the Kubernetes manifest to deploy the metric service and the metric database on AKS.
 
@@ -250,8 +254,7 @@ Line number 19 in [streamlit-deployment.yaml](./infrastructure/streamlit_k8s/str
 Next, we apply the Kubernetes manifest to deploy the streamlit application on AKS.
 
 ```bash
-cd infrastructure/streamlit_app_k8s
-kubectl apply -f .
+kubectl apply -f infrastructure/streamlit_k8s
 ```
 
 Finally, we verify the streamlit application. The command below should provide an IP address for the streamlit application.
