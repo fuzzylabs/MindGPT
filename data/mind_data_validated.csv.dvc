@@ -1,5 +1,5 @@
 outs:
-- md5: 17f6d7df8a9e7d54490e974aaccc6e3d
-  size: 2050342
+- md5: fc7ff9ebbd1ef73985092b4ce4d1d352
+  size: 3618
   hash: md5
   path: mind_data_validated.csv
