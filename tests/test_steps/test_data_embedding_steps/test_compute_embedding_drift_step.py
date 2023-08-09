@@ -100,7 +100,7 @@ def test_build_embedding_drift_payload():
 
 
 def test_compute_embedding_drift_step():
-    """Test that the compute_embedding_drift step return the expected output."""
+    """Test that the compute_embedding_drift step returns the expected output."""
     mock_reference_embedding = [[1.1, 2.2, 3.3], [3.1, 4.1, 5.1]]
     mock_current_embedding = [[1.1, 2.2, 3.3], [3.1, 4.1, 5.1]]
 
