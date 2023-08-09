@@ -49,7 +49,7 @@ class Scraper:
         """Initialise Mind data scraper.
 
         Args:
-            urls_to_discard (List[str]): list of URLs to discard from the results
+            urls_to_discard (List[str]): list of URLs to discard, it overrides pre-defined URLs for Mind.
 
         """
         if urls_to_discard is None:

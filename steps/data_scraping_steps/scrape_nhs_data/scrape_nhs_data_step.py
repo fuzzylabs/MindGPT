@@ -106,12 +106,20 @@ class NHSMentalHealthScraper:
         )
 
     def discard_non_content(self):
+        """Discard pages that do not have content, using a heuristic."""
         def discard_decision(html_scraped: str) -> bool:
+            """Decide whether to discard the HTML based on its content.
+
+            Args:
+                html_scraped (str): HTML content
+
+            Returns:
+                bool: discard decision
+            """
             bs = BeautifulSoup(html_scraped, parser="lxml")
             return bs.find(class_="nhsuk-lede-text") is not None
 
         df_index = self.df.html_scraped.apply(discard_decision)
-        print(f"Discarded pages: {df_index.sum()}")
         self.df = self.df[~df_index]
 
     def scrape_recursively(self) -> None:

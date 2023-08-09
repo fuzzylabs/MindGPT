@@ -104,6 +104,63 @@ def mocked_html_text() -> str:
     return str(BeautifulSoup(html_text, "lxml"))  # mimic Beautiful Soup formatting
 
 
+@pytest.fixture
+def expected_test_content_html() -> str:
+    """A fixture of an expected scraped html based for test_content_class.
+
+    Returns:
+        str: the expected scraped HTML
+    """
+    return "\n".join([
+        '<div class="test_content_class">\n'
+        '<h2>Test h2 text</h2>\n'
+        '<p>Test p text</p>\n'
+        '<li>Text li text</li>\n'
+        '</div>\n'
+        '<div class="test_content_class">\n'
+        '<h2>Test h3 text</h2>\n'
+        '<p>Test p text</p>\n'
+        '<li>Text li text</li>\n'
+        '</div>'
+    ])
+
+
+@pytest.fixture
+def expected_col_8_html() -> str:
+    """A fixture of an expected scraped html based for col-md-8.
+
+    Returns:
+        str: the expected scraped HTML
+    """
+    return "\n".join([
+        '<div class="col-md-8 column">',
+        '<div class="test_content_class">',
+        '<h2>Test h2 text</h2>',
+        '<p>Test p text</p>',
+        '<li>Text li text</li>',
+        '</div>',
+        '</div>',
+    ])
+
+
+@pytest.fixture
+def expected_col_12_html() -> str:
+    """A fixture of an expected scraped html based for col-md-12.
+
+    Returns:
+        str: the expected scraped HTML
+    """
+    return "\n".join([
+        '<div class="col-md-12 column">',
+        '<div class="test_content_class">',
+        '<h2>Test h3 text</h2>',
+        '<p>Test p text</p>',
+        '<li>Text li text</li>',
+        '</div>',
+        '</div>',
+    ])
+
+
 def test_get_html_text(scraper: Scraper, mocked_html_text: str):
     """Test if whether get().text from the HTMLSession class returns the mocked HTML text.
 
@@ -209,12 +266,12 @@ def test_get_object_side_bar_urls(scraper: Scraper):
     assert side_bar_urls == expected_side_bar_urls
 
 
-def test_scrape_sub_page_data(scraper: Scraper, mocked_html_text: str):
+def test_scrape_sub_page_data(scraper: Scraper, expected_test_content_html: str):
     """Test that the scrape_sub_page_data function is able to scrape data from a webpage given a url and the class name that contents have.
 
     Args:
         scraper (Scraper): a Scraper instance.
-        mocked_html_text (str): mock page to scrape.
+        expected_test_content_html (str): expected scraped HTML.
     """
     sub_page_data = scraper.scrape_sub_page_data(
         "/test_sub_page_url", "test_content_class"
@@ -231,21 +288,22 @@ def test_scrape_sub_page_data(scraper: Scraper, mocked_html_text: str):
 
     expected_sub_page_data = {
         "url": "https://www.mind.org.uk/test_sub_page_url",
-        "html_scraped": mocked_html_text,
+        "html_scraped": expected_test_content_html,
         "text_scraped": expected_text_scraped,
     }
     assert isinstance(sub_page_data, dict)
     assert sub_page_data == expected_sub_page_data
 
 
-def test_scrape_conditions_and_drugs_sections(scraper: Scraper, mocked_html_text: str):
+def test_scrape_conditions_and_drugs_sections(scraper: Scraper, expected_col_8_html: str, expected_col_12_html: str):
     """Test that the scrape_conditions_and_drugs_sections function is able to scrape the expected data from the mocked html text.
 
     The way Mind structure their webpage is that if a pages contains side bar, content will be under the "col-md-8 column" class, otherwise, the "col-md-12 column" class.
 
     Args:
         scraper (Scraper): a Scraper instance.
-        mocked_html_text (str): mock page to scrape.
+        expected_col_8_html (str): expected scraped HTML for col-md-8.
+        expected_col_12_html (str): expected scraped HTML for col-md-12.
     """
     data_scraped = scrape_conditions_and_drugs_sections(scraper, {})
 
@@ -253,17 +311,17 @@ def test_scrape_conditions_and_drugs_sections(scraper: Scraper, mocked_html_text
     expected_data_scraped = {
         "https://www.mind.org.uk/test_side_bar_object_1_url/": {
             "url": "https://www.mind.org.uk/test_side_bar_object_1_url/",
-            "html_scraped": mocked_html_text,
+            "html_scraped": expected_col_8_html,
             "text_scraped": "Test h2 text\nTest p text\nText li text"
         },
         "https://www.mind.org.uk/test_side_bar_exclude_me/": {
             "url": "https://www.mind.org.uk/test_side_bar_exclude_me/",
-            "html_scraped": mocked_html_text,
+            "html_scraped": expected_col_8_html,
             "text_scraped": "Test h2 text\nTest p text\nText li text"
         },
         "https://www.mind.org.uk/test_side_bar_object_2_url/": {
             "url": "https://www.mind.org.uk/test_side_bar_object_2_url/",
-            "html_scraped": mocked_html_text,
+            "html_scraped": expected_col_8_html,
             "text_scraped": "Test h2 text\nTest p text\nText li text"
         },
     }
@@ -277,16 +335,16 @@ def test_scrape_conditions_and_drugs_sections(scraper: Scraper, mocked_html_text
     expected_data_scraped = {
         "https://www.mind.org.uk/test_href_1/": {
             "url": "https://www.mind.org.uk/test_href_1/",
-            "html_scraped": mocked_html_text,
+            "html_scraped": expected_col_12_html,
             "text_scraped": "Test h3 text\nTest p text\nText li text"
         },
         "https://www.mind.org.uk/test_href_2/": {
             "url": "https://www.mind.org.uk/test_href_2/",
-            "html_scraped": mocked_html_text,
+            "html_scraped": expected_col_12_html,
             "text_scraped": "Test h3 text\nTest p text\nText li text"
         },
     }
-    assert isinstance(expected_data_scraped, dict)
+    assert isinstance(data_scraped, dict)
     assert data_scraped == expected_data_scraped
 
 
