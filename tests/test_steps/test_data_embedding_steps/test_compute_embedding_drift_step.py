@@ -66,16 +66,17 @@ def test_calculate_means():
     assert result == expected_result
 
 
-def test_calculate_euclidean_distance():
-    """Test that the calculate_euclidean_distance function raises the expected error and compute the expected Euclidean distance."""
+def test_calculate_euclidean_distance_raise_value_error():
+    """Test that the calculate_euclidean_distance function raises the expected error when the embedding length does not equal between the reference and the current dataset."""
     mock_reference_embedding = [[1.1, 2.2, 3.3], [3.1, 4.1, 5.1]]
     mock_current_embedding = [[1.1, 2.2], [3.1, 4.1]]
 
     with pytest.raises(ValueError):
-        result = calculate_euclidean_distance(
-            mock_reference_embedding, mock_current_embedding
-        )
+        calculate_euclidean_distance(mock_reference_embedding, mock_current_embedding)
 
+
+def test_calculate_euclidean_distance_expected_result():
+    """Test that the calculate_euclidean_distance function is able to compute the correct Euclidean distance."""
     mock_reference_embedding = [[1.1, 2.2, 3.3], [3.1, 4.1, 5.1]]
     mock_current_embedding = [[1.1, 2.2, 3.3], [3.1, 4.1, 5.1]]
 
