@@ -106,7 +106,7 @@ To deploy a pre-trained LLM model, we first need a Kubernetes cluster with [Seld
 Apply the prepared kubernetes manifest to deploy the model:
 
 ```bash
-kubectl apply -f infrastructure/llm_k8s/seldondeployment.yaml
+kubectl apply -f infrastructure/llm_k8s/seldon-deployment.yaml
 ```
 
 This will create a Seldon deployment, which consists of:
