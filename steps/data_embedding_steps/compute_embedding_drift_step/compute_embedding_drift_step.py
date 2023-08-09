@@ -67,9 +67,6 @@ def calculate_euclidean_distance(
     Returns:
         float: the Euclidean distance between the mean of reference embeddings and the mean of current embeddings
     """
-    reference_embeddings_mean = calculate_means(reference_embeddings)
-    current_embeddings_mean = calculate_means(current_embeddings)
-
     reference_lengths = [len(embedding) for embedding in reference_embeddings]
     current_lengths = [len(embedding) for embedding in current_embeddings]
 
@@ -77,6 +74,8 @@ def calculate_euclidean_distance(
         raise ValueError(
             "The length of the reference embeddings mean list should equal to the length of the current embeddings mean list"
         )
+    reference_embeddings_mean = calculate_means(reference_embeddings)
+    current_embeddings_mean = calculate_means(current_embeddings)
 
     return float(distance.euclidean(reference_embeddings_mean, current_embeddings_mean))
 
