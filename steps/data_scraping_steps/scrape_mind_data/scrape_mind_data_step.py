@@ -215,7 +215,7 @@ class Scraper:
 
         return {
             "url": self.build_subpage_url(sub_page_url),
-            "html_scraped": str(soup),
+            "html_scraped": "\n".join([str(div) for div in content_divs]),
             "text_scraped": "\n".join(sub_page_data)
         }
 
