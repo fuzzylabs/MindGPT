@@ -96,11 +96,11 @@ def _get_prediction_endpoint() -> Optional[str]:
 
 
 @st.cache_data(show_spinner=False)
-def _get_metric_service_endpoint() -> Optional[str]:
+def _get_metric_service_endpoint() -> str:
     """Get the endpoint for the currently deployed metric service.
 
     Returns:
-        Optional[str]: the url endpoint if it exists and is valid, None otherwise.
+        str: the url endpoint if it exists and is valid, None otherwise.
     """
     return f"http://{METRIC_SERVICE_NAME}.{METRIC_SERVICE_NAMESPACE}:{METRIC_SERVICE_PORT}/readability"
 
