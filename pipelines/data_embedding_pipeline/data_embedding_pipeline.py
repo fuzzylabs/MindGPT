@@ -15,14 +15,12 @@ def data_embedding_pipeline() -> None:
         load_data: A ZenML step which loads the data from a specified DVC data version.
         embed_data: A ZenML step which embeds the text data into vectors and pushes to the vector database.
     """
-    data_version = "data/first_version"  # should manually update this each time when dataset is collected.
-
-    mind_df, nhs_df = load_data()
+    current_data_version, reference_data_version, mind_df, nhs_df = load_data()
 
     embed_data(
         df=mind_df,
         collection_name="mind_data",
-        data_version=data_version,
+        data_version=current_data_version,
         embed_model_type="base",
         chunk_size=1000,
         chunk_overlap=200,
@@ -30,7 +28,7 @@ def data_embedding_pipeline() -> None:
     embed_data(
         df=nhs_df,
         collection_name="nhs_data",
-        data_version=data_version,
+        data_version=current_data_version,
         embed_model_type="base",
         chunk_size=1000,
         chunk_overlap=200,
@@ -39,12 +37,12 @@ def data_embedding_pipeline() -> None:
     _ = compute_embedding_drift(
         after="embed_data",
         collection_name="mind_data",
-        reference_data_version="data/first_version",
-        current_data_version=data_version,
+        reference_data_version=reference_data_version,
+        current_data_version=current_data_version,
     )
     _ = compute_embedding_drift(
         after="embed_data",
         collection_name="nhs_data",
-        reference_data_version="data/first_version",
-        current_data_version=data_version,
+        reference_data_version=reference_data_version,
+        current_data_version=current_data_version,
     )

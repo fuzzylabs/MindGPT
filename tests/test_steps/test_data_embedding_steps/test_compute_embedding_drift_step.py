@@ -31,7 +31,7 @@ from steps.data_embedding_steps.compute_embedding_drift_step.compute_embedding_d
         (
             [[1.1, 2.2, 3.3], [3.1, 4.1, 5.1]],
             [[1.1, 2.2, 3.3], [3.1, 4.1, 5.1], [4.1, 5.1, 6.1]],
-            pytest.raises(ValueError),
+            does_not_raise(),
         ),
         (
             [[1.1, 2.2, 3.3], [3.1, 4.1, 5.1]],

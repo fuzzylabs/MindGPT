@@ -36,11 +36,6 @@ def validate_embeddings(
                 f"The {name} embeddings should be a list of lists of floats."
             )
 
-    if len(reference_embeddings) != len(current_embeddings):
-        raise ValueError(
-            "The length of the reference embeddings does not equal to the length of the current embeddings"
-        )
-
 
 def calculate_means(embeddings: List[List[float]]) -> List[float]:
     """Calculate the mean of each list of embeddings.
