@@ -15,14 +15,14 @@ logger = get_logger(__name__)
 def load_data(
     data_version: str,
     data_postfix: str,
-    reference_data_version: str = "data/first_version",
+    reference_data_version: str,
 ) -> Tuple[str, str, pd.DataFrame, pd.DataFrame]:
     """Load two CSVs from the "data/" directory. If no data exists, pull from the DVC storage bucket prior to loading.
 
     Args:
         data_version (str): Data version tag or commit hash for Git/DVC.
         data_postfix (str): Postfix to data 'raw' or 'validated'.
-        reference_data_version (str): The reference data version for computing embedding drift. Defaults to "data/first_version".
+        reference_data_version (str): The reference data version for computing embedding drift.
 
     Returns:
         mind_data (pd.DataFrame): Data from the Mind website.
