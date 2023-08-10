@@ -86,6 +86,7 @@ class NHSMentalHealthScraper:
                     RangeIndex
                 Columns:
                     Name: uuid, dtype: object
+                    Name: html_scraped, dtype: object
                     Name: text_scraped, dtype: object
                     Name: timestamp, dtype: datetime64[ns]
                     Name: url, dtype: object
@@ -96,12 +97,30 @@ class NHSMentalHealthScraper:
             [
                 {
                     "uuid": str(uuid.uuid4()),
+                    "html_scraped": str(target),
                     "text_scraped": target.get_text(" "),
                     "timestamp": timestamp,
                     "url": self._url,
                 }
             ]
         )
+
+    def discard_non_content(self):
+        """Discard pages that do not have content, using a heuristic."""
+        def discard_decision(html_scraped: str) -> bool:
+            """Decide whether to discard the HTML based on its content.
+
+            Args:
+                html_scraped (str): HTML content
+
+            Returns:
+                bool: discard decision
+            """
+            bs = BeautifulSoup(html_scraped, parser="lxml")
+            return bs.find(class_="nhsuk-lede-text") is not None
+
+        df_index = self.df.html_scraped.apply(discard_decision)
+        self.df = self.df[~df_index]
 
     def scrape_recursively(self) -> None:
         """A method for recursively scraping all nested links found within a target website or Tag subject to conditions.
@@ -142,6 +161,7 @@ def scrape_nhs_data() -> Annotated[pd.DataFrame, "output_nhs_data"]:
                 RangeIndex
             Columns:
                 Name: uuid, dtype: object
+                Name: html_scraped, dtype: object
                 Name: text_scraped, dtype: object
                 Name: timestamp, dtype: datetime64[ns]
                 Name: url, dtype: object
@@ -151,7 +171,8 @@ def scrape_nhs_data() -> Annotated[pd.DataFrame, "output_nhs_data"]:
         attributes={"class": "nhsuk-main-wrapper"},
     )
     nhs_scraper.scrape_recursively()
+    nhs_scraper.discard_non_content()
 
-    nhs_scraper.df.to_csv(os.path.join(DATA_DIR, "nhs_data_raw.csv"))
+    nhs_scraper.df.to_csv(os.path.join(DATA_DIR, "nhs_data_raw.csv"), index=False)
 
     return nhs_scraper.df
