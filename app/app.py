@@ -1,5 +1,13 @@
 """MindGPT Streamlit app."""
+# Fix for streamlit + chroma sqllite3 issue: https://discuss.streamlit.io/t/issues-with-chroma-and-sqlite/47950/5
+# flake8: noqa
+__import__("pysqlite3")
+import sys
+
+sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+
 import json
+import logging
 import os
 from typing import Any, Dict, List, Optional, Union
 
@@ -8,7 +16,15 @@ import streamlit as st
 from chromadb.api import API
 from chromadb.api.types import EmbeddingFunction
 from chromadb.utils import embedding_functions
+from requests.models import Response
 from utils.chroma_store import ChromaStore
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[logging.StreamHandler()],
+)
+
 
 # Setup for chroma vector store
 CHROMA_SERVER_HOST_NAME = "chroma-service.default"
@@ -27,12 +43,39 @@ SELDON_SERVICE_NAME = "llm-default-transformer"
 SELDON_NAMESPACE = "matcha-seldon-workloads"
 SELDON_PORT = 9000
 
+# Metric service configuration
+METRIC_SERVICE_NAME = "monitoring-service"
+METRIC_SERVICE_NAMESPACE = "default"
+METRIC_SERVICE_PORT = "5000"
+
 # Paragraph from https://www.nhs.uk/mental-health/conditions/depression-in-adults/overview/
 DEFAULT_CONTEXT = """Most people experience feelings of stress, anxiety or low mood during difficult times.
 A low mood may improve after a short period of time, rather than being a sign of depression."""
 
+DEFAULT_QUERY_INSTRUCTION = (
+    "Represent the question for retrieving supporting documents: "
+)
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Prompt Templates
+SIMPLE_TEMPLATE = "Context: {context}\n\nQuestion: {question}\n\n"
+
+COMPLEX_TEMPLATE = """Use the following pieces of context to answer the question at the end.
+If you don't know the answer, just say that you don't know, don't try to make up an answer.
+Use three sentences maximum and keep the answer as concise as possible.
+Always say "thanks for asking!" at the end of the answer.
+{context}
+Question: {question}
+Helpful Answer:"""
+
+ADVANCED_TEMPLATE = """You are a highly skilled AI trained in language comprehension and summarisation.
+I would like you to read the following text and summarise it into a concise abstract paragraph. Use the following pieces of context to answer the question at the end.
+Aim to retain the most important points, providing a coherent and readable summary that could help a person understand the main points of the discussion without needing to read the entire text.
+Please avoid unnecessary details or tangential points.
+{context}
+Question: {question}
+Helpful Answer:"""
 
 st.set_page_config(
     page_title="MindGPT",
@@ -60,6 +103,16 @@ def _get_prediction_endpoint() -> Optional[str]:
 
 
 @st.cache_data(show_spinner=False)
+def _get_metric_service_endpoint() -> str:
+    """Get the endpoint for the currently deployed metric service.
+
+    Returns:
+        str: the url endpoint if it exists and is valid, None otherwise.
+    """
+    return f"http://{METRIC_SERVICE_NAME}.{METRIC_SERVICE_NAMESPACE}:{METRIC_SERVICE_PORT}/readability"
+
+
+@st.cache_data(show_spinner=False)
 def _get_embedding_function(embed_model_type: str) -> Union[EmbeddingFunction, None]:
     """Load embedding function to be used by Chroma vector store.
 
@@ -73,7 +126,9 @@ def _get_embedding_function(embed_model_type: str) -> Union[EmbeddingFunction, N
     model_name = EMBED_MODEL_MAP.get(embed_model_type, None)
     if model_name is None:
         return None
-    return embedding_functions.InstructorEmbeddingFunction(model_name=model_name)
+    return embedding_functions.InstructorEmbeddingFunction(
+        model_name=model_name, instruction=DEFAULT_QUERY_INSTRUCTION
+    )
 
 
 def connect_vector_store(chroma_server_host: str, chroma_server_port: int) -> API:
@@ -135,10 +190,11 @@ def _create_payload(messages: Dict[str, str]) -> Dict[str, List[Dict[str, Any]]]
     Returns:
         Dict[str, List[Dict[str, Any]]]: the payload to send in the correct format.
     """
-    template = "Context: {context}\n\nQuestion: {question}\n\n"
     context = messages.get("context", DEFAULT_CONTEXT)
-    input_text = template.format(question=messages["prompt_query"], context=context)
-
+    input_text = SIMPLE_TEMPLATE.format(
+        question=messages["prompt_query"], context=context
+    )
+    logging.info(f"Prompt to LLM : {input_text}")
     return {
         "inputs": [
             {
@@ -188,6 +244,24 @@ def query_llm(prediction_endpoint: str, messages: Dict[str, str]) -> str:
     return summary_txt
 
 
+def post_response_to_metric_service(
+    metric_service_endpoint: str, response: str
+) -> Response:
+    """Send the LLM's response to the metric service for readability computation using a POST request.
+
+    Args:
+        metric_service_endpoint (str): the metric service endpoint where the readability is computed
+        response (str): the response produced by the LLM
+
+    Returns:
+        Response: the post request response
+    """
+    response_dict = {"response": response}
+    result = requests.post(url=metric_service_endpoint, json=response_dict)
+
+    return result
+
+
 def show_disclaimer() -> bool:
     """Show disclaimer on sidebar with streamlit.
 
@@ -235,12 +309,18 @@ def main() -> None:
             # Get seldon endpoint
             prediction_endpoint = _get_prediction_endpoint()
 
+            # Get the metric service endpoint
+            metric_service_endpoint = _get_metric_service_endpoint()
+
             # Get vector store client
             chroma_client = connect_vector_store(
                 chroma_server_host=CHROMA_SERVER_HOST_NAME,
                 chroma_server_port=CHROMA_SERVER_PORT,
             )
             embed_function = _get_embedding_function(DEFAULT_EMBED_MODEL)
+
+            if metric_service_endpoint is None:
+                logging.warn("Metric service endpoint is None, monitoring is disabled.")
 
             if prediction_endpoint is None or chroma_client is None:
                 st.session_state.error_placeholder.error(
@@ -271,6 +351,12 @@ def main() -> None:
                         assistant_response = query_llm(prediction_endpoint, message)
 
                         full_response += f"{source}: {assistant_response}  \n"
+
+                        if metric_service_endpoint:
+                            result = post_response_to_metric_service(
+                                metric_service_endpoint, assistant_response
+                            )
+                            logging.info(result.text)
 
                     message_placeholder.markdown(full_response)
 

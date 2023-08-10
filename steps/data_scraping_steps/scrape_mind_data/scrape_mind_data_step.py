@@ -91,7 +91,10 @@ class Scraper:
         Returns:
             str: The complete URL for the subpage.
         """
-        return str(MIND_URL + sub_page_url)
+        if sub_page_url.startswith(MIND_URL):  # Some links can be absolute
+            return sub_page_url
+        else:
+            return str(MIND_URL + sub_page_url)
 
     def create_dataframe(self, data: Dict[str, Dict[str, str]]) -> pd.DataFrame:
         """Create a pandas DataFrame from the given data.
@@ -183,6 +186,18 @@ class Scraper:
                     for url in side_bar_urls
                     if not url.endswith(side_bar_url_to_exclude)
                 ]
+        else:
+            # There's no sidebar, try an alternative layout
+            # These are special cases for some index pages:
+            # - Depression
+            # - Recreational drugs
+            # - Complementary and alternative therapies
+            navigation_list = soup.find_all("div", class_="content-area")[1].find_all(["h2", "h3"])
+            if navigation_list:
+                for heading in navigation_list:
+                    a_tag = heading.find("a")
+                    if a_tag and "href" in a_tag:
+                        side_bar_urls.append(a_tag["href"])
 
         return side_bar_urls
 
@@ -354,6 +369,6 @@ def scrape_mind_data() -> Annotated[pd.DataFrame, "output_mind_data"]:
 
     logger.info(f"Creating dataframe with {len(data)} rows of data")
     df = scraper.create_dataframe(data)
-    df.to_csv(os.path.join(DATA_DIR, "mind_data_raw.csv"))
+    df.to_csv(os.path.join(DATA_DIR, "mind_data_raw.csv"), index=False)
 
     return df

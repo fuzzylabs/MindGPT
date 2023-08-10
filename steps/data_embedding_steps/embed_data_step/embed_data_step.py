@@ -1,7 +1,10 @@
 """Embed data step."""
+import uuid
+
 import pandas as pd
 from chromadb.utils import embedding_functions
 from utils.chroma_store import ChromaStore
+from utils.text_splitter import TextSplitter
 from zenml import step
 from zenml.logger import get_logger
 
@@ -13,11 +16,17 @@ EMBED_MODEL_MAP = {
     "large": "hkunlp/instructor-large",
     "base": "hkunlp/instructor-base",
 }
+DEFAULT_EMBED_INSTRUCTION = "Represent the document for retrieval: "
 
 
 @step
 def embed_data(
-    df: pd.DataFrame, embed_model_type: str, data_version: str, collection_name: str
+    df: pd.DataFrame,
+    embed_model_type: str,
+    data_version: str,
+    collection_name: str,
+    chunk_size: int,
+    chunk_overlap: int,
 ) -> None:
     """Embeds each row of the given DataFrame and uploads to the vector database.
 
@@ -26,13 +35,34 @@ def embed_data(
         embed_model_type (str): Name of embedding model to use
         data_version (str): Data version of input dataset
         collection_name (str): Name of collection for input dataset
+        chunk_size (int): Size of chunks to split input text into
+        chunk_overlap (int): Number of characters to overlap between chunks
 
     Raises:
         ValueError: if `embed_model_type` is not supported or invalid
     """
-    uuids = df["uuid"].values.tolist()
     texts = df["text_scraped"].values.tolist()
     src_urls = df["url"].values.tolist()
+
+    logger.info(f"Using chunk_size={chunk_size} and chunk_overlap={chunk_overlap}")
+    text_splitter = TextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+
+    # Create metadata and UUID based on the number of chunks
+    # Split text into chunks
+    chunks, metadatas = [], []
+    for text, url in zip(texts, src_urls):
+        split_chunks = text_splitter.split_text(text)
+        chunks.extend(split_chunks)
+        metadatas.extend(
+            [
+                {"source": url, "data_version": data_version}
+                for _ in range(len(split_chunks))
+            ]
+        )
+
+    uuids = [str(uuid.uuid4()) for _ in range(len(chunks))]
+
+    logger.info(f"Split {len(texts)} texts into {len(chunks)} chunks")
 
     model_name = EMBED_MODEL_MAP.get(embed_model_type, None)
     if model_name is None:
@@ -41,7 +71,9 @@ def embed_data(
         )
 
     # Create a embedding function
-    ef = embedding_functions.InstructorEmbeddingFunction(model_name=model_name)
+    ef = embedding_functions.InstructorEmbeddingFunction(
+        model_name=model_name, instruction=DEFAULT_EMBED_INSTRUCTION
+    )
 
     # Create a chromadb client
     # Switch hostname to chroma-service.default if running the pipeline on k8s
@@ -51,8 +83,8 @@ def embed_data(
 
     chroma_client.add_texts(
         collection_name=collection_name,
-        texts=texts,
+        texts=chunks,
         ids=uuids,
-        metadatas=[{"source": url, "data_version": data_version} for url in src_urls],
+        metadatas=metadatas,
         embedding_function=ef,
     )

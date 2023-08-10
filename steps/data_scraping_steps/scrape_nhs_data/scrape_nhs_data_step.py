@@ -173,6 +173,6 @@ def scrape_nhs_data() -> Annotated[pd.DataFrame, "output_nhs_data"]:
     nhs_scraper.scrape_recursively()
     nhs_scraper.discard_non_content()
 
-    nhs_scraper.df.to_csv(os.path.join(DATA_DIR, "nhs_data_raw.csv"))
+    nhs_scraper.df.to_csv(os.path.join(DATA_DIR, "nhs_data_raw.csv"), index=False)
 
     return nhs_scraper.df
