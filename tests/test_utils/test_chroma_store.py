@@ -231,7 +231,11 @@ def test_fetch_reference_and_current_embeddings(local_persist_api: API):
     store = ChromaStore()
     store._client = local_persist_api
 
-    metadatas = [{"data_version": "test_version"}, {"data_version": "test_version"}]
+    metadatas = [
+        {"data_version": "test_version"},
+        {"data_version": "test_version"},
+        {"data_version": "test_version"},
+    ]
 
     # Add example documents to the test collection
     store.add_texts(

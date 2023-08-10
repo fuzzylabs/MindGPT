@@ -13,6 +13,9 @@ logger = get_logger(__name__)
 MONITORING_METRICS_HOST_NAME = "localhost"  # if pipeline runs on k8s, "localhost" should be replaced with "monitoring-service.default"
 MONITORING_METRICS_PORT = "5000"
 
+CHROMA_SERVER_HOSTNAME = "localhost"
+CHROMA_SERVER_PORT = 8000
+
 
 def validate_embeddings(
     reference_embeddings: List[List[float]], current_embeddings: List[List[float]]
@@ -127,7 +130,8 @@ def compute_embedding_drift(
     # Create a chromadb client
     # Switch hostname to chroma-service.default if running the pipeline on k8s
     chroma_client = ChromaStore(
-        chroma_server_hostname="localhost", chroma_server_port=8000
+        chroma_server_hostname=CHROMA_SERVER_HOSTNAME,
+        chroma_server_port=CHROMA_SERVER_PORT,
     )
     (
         reference_embeddings,
