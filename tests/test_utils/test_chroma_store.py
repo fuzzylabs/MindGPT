@@ -259,5 +259,5 @@ def test_fetch_reference_and_current_embeddings(local_persist_api: API):
     assert isinstance(current_embeddings, list)
     assert len(reference_embeddings) == 3
     assert len(current_embeddings) == 3
-    assert all(len(item) for item in reference_embeddings) == 3
-    assert all(len(item) for item in current_embeddings) == 3
+    assert all(len(item) == 3 for item in reference_embeddings)
+    assert all(len(item) == 3 for item in current_embeddings)
