@@ -39,10 +39,15 @@ def clean_html(html: str) -> str:
     for tag in aside:
         tag.decompose()
 
-    # Remove videos
+    # Remove videos for Mind dataset
     video_class = bs.find_all("div", {"class": "video-wrapper"})
     for video in video_class:
         video.parent.decompose()
+
+    # Remove videos for NHS dataset
+    video_class = bs.find_all("div", {"class": "app-brightcove-video"})
+    for video in video_class:
+        video.decompose()
 
     # Punctuate headings
     headings = bs.find_all(["h1", "h2", "h3", "li"])
