@@ -18,7 +18,7 @@ def data_preparation_pipeline() -> None:
         validate_data: A ZenML step which validates the cleaned data.
         version_data: A ZenML step which versions the cleaned data and pushes it to the storage bucket.
     """
-    mind_df, nhs_df = load_data()
+    _, _, mind_df, nhs_df = load_data()
 
     mind_df = clean_data(mind_df)
     nhs_df = clean_data(nhs_df)

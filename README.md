@@ -220,6 +220,12 @@ curl {external-ip:5000}
 Hello world from the metric service.
 ```
 
+To compute the embedding drift when running the embedding pipeline, we will port-forward the monitoring service to localhost using the following command. This will ensure we can access the server from localhost.
+
+```bash
+kubectl port-forward service/monitoring-service 5000:5000
+```
+
 ## Streamlit Application
 
 To deploy the Streamlit application on AKS, we first need to build a Docker image and then push it to ACR.

@@ -73,12 +73,21 @@ def test_load_data(
     mind.to_csv(f"{data_location}/mind_data_raw.csv", index=False)
     nhs.to_csv(f"{data_location}/nhs_data_raw.csv", index=False)
 
-    loaded_mind_df, loaded_nhs_df = load_data(data_version="test", data_postfix="raw")
+    (
+        current_data_version,
+        reference_data_version,
+        loaded_mind_df,
+        loaded_nhs_df,
+    ) = load_data(
+        data_version="current", data_postfix="raw", reference_data_version="reference"
+    )
 
     mock_git_checkout_folder.assert_called_once()
     mock_pull_data.assert_called_once()
     assert_frame_equal(mind, loaded_mind_df)
     assert_frame_equal(nhs, loaded_nhs_df)
+    assert current_data_version == "current"
+    assert reference_data_version == "reference"
 
 
 def test_load_data_raises_exception_when_data_does_not_exist(
@@ -98,7 +107,11 @@ def test_load_data_raises_exception_when_data_does_not_exist(
     os.mkdir(data_location)
 
     with pytest.raises(FileNotFoundError) as e:
-        _, _ = load_data(data_version="test", data_postfix="raw")
+        _, _, _, _ = load_data(
+            data_version="current",
+            data_postfix="raw",
+            reference_data_version="reference",
+        )
 
         assert (
             "Required CSV files do not exist in 'data' folder, ensure the previous pipeline has been run."
@@ -123,7 +136,11 @@ def test_load_data_raises_exception_when_data_directory_does_not_exist(
     )
 
     with pytest.raises(FileNotFoundError) as e:
-        _, _ = load_data(data_version="test", data_postfix="raw")
+        _, _, _, _ = load_data(
+            data_version="current",
+            data_postfix="raw",
+            reference_data_version="reference",
+        )
 
         assert "Folder with the name 'data' does not exist." in str(e)
 

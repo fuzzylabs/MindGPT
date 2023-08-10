@@ -120,6 +120,7 @@ module = [
     "transformers.*",
     "chromadb.*",
     "textstat.*",
-    "metric_service.*"
+    "metric_service.*",
+    "scipy.*"
 ]
 ignore_missing_imports = true
