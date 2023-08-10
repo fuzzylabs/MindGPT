@@ -226,7 +226,7 @@ def test_fetch_reference_and_current_embeddings(local_persist_api: API):
         "bdd440fb-0667-4ad1-9c80-317fa3b1799d",
         "bdd540fb-0667-4ad1-9c80-317fa3b1799d",
     ]
-    input_texts = ["foo", "dummy"]
+    input_texts = ["foo", "dummy", "I like apples"]
     store = ChromaStore()
     store._client = local_persist_api
 
@@ -234,7 +234,7 @@ def test_fetch_reference_and_current_embeddings(local_persist_api: API):
 
     # Add example documents to the test collection
     store.add_texts(
-        collection_name="test",
+        collection_name="test_new",
         texts=input_texts,
         embedding_function=MockEmbeddingFunction(),
         ids=uuids,
@@ -245,13 +245,14 @@ def test_fetch_reference_and_current_embeddings(local_persist_api: API):
         reference_embeddings,
         current_embeddings,
     ) = store.fetch_reference_and_current_embeddings(
-        collection_name="test",
+        collection_name="test_new",
         reference_data_version="test_version",
         current_data_version="test_version",
     )
 
     assert isinstance(reference_embeddings, list)
     assert isinstance(current_embeddings, list)
-    print(reference_embeddings)
-    print(type(reference_embeddings))
-    print(reference_embeddings[0])
+    assert len(reference_embeddings) == 3
+    assert len(current_embeddings) == 3
+    assert all(len(item) for item in reference_embeddings) == 3
+    assert all(len(item) for item in current_embeddings) == 3
