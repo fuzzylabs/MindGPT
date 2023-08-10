@@ -49,6 +49,11 @@ def clean_html(html: str) -> str:
     for video in video_class:
         video.decompose()
 
+    # Remove podcast for Mind dataset
+    podcast_href = bs.find_all("a", {"href": "/information-support/podcasts/"})
+    for podcast in podcast_href:
+        podcast.parent.parent.decompose()
+
     # Punctuate headings
     headings = bs.find_all(["h1", "h2", "h3", "li"])
     for heading in headings:
