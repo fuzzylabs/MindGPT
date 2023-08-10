@@ -369,6 +369,6 @@ def scrape_mind_data() -> Annotated[pd.DataFrame, "output_mind_data"]:
 
     logger.info(f"Creating dataframe with {len(data)} rows of data")
     df = scraper.create_dataframe(data)
-    df.to_csv(os.path.join(DATA_DIR, "mind_data_raw.csv"))
+    df.to_csv(os.path.join(DATA_DIR, "mind_data_raw.csv"), index=False)
 
     return df
