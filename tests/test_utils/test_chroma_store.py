@@ -251,3 +251,7 @@ def test_fetch_reference_and_current_embeddings(local_persist_api: API):
     )
 
     assert isinstance(reference_embeddings, list)
+    assert isinstance(current_embeddings, list)
+    print(reference_embeddings)
+    print(type(reference_embeddings))
+    print(reference_embeddings[0])
