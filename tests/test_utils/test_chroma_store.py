@@ -225,6 +225,7 @@ def test_fetch_reference_and_current_embeddings(local_persist_api: API):
     uuids = [
         "bdd440fb-0667-4ad1-9c80-317fa3b1799d",
         "bdd540fb-0667-4ad1-9c80-317fa3b1799d",
+        "bdd540fb-0667-4ad1-9c80-317fa3b1799d",
     ]
     input_texts = ["foo", "dummy", "I like apples"]
     store = ChromaStore()
