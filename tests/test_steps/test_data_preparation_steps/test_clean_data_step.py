@@ -1,4 +1,5 @@
 """Test the data cleaning functionality."""
+import bs4
 import pandas as pd
 import pytest
 from pandas._testing import assert_frame_equal
@@ -10,7 +11,7 @@ from steps.data_preparation_steps.clean_data_step.clean_data_step import (
     insert_space_between_numbers_and_letters,
     remove_nbsp,
     remove_new_line,
-    strip_string,
+    strip_string, is_lone_link,
 )
 
 
@@ -23,7 +24,14 @@ def dirty_html_case() -> str:
     Returns:
         str: HTML containing various cases
     """
-    return "<div><h2>Special HTML case</h2><h3>Inner heading!</h3><p>Some content</p><aside>Shall be removed</aside></div>"
+    return "<div>" \
+           "<h2>Special HTML case</h2>" \
+           "<h3>Inner heading!</h3>" \
+           "<p>Some content.</p>" \
+           "<aside>Shall be removed</aside>" \
+           "<p><a>Lone link</a></p>" \
+           "<p>But keep this<a>one</a></p>" \
+           "</div>"
 
 
 @pytest.fixture
@@ -43,7 +51,7 @@ def expected_cleaned_html_case() -> str:
     Returns:
         str: Expected cleaned HTML case
     """
-    return "Special HTML case. Inner heading! Some content"
+    return "Special HTML case. Inner heading! Some content. But keep this one"
 
 
 @pytest.fixture
@@ -202,3 +210,22 @@ def test_contract_white_space():
         contract_white_space("   this   string  has      strange     spacing         ")
         == " this string has strange spacing "
     )
+
+
+def test_is_lone_link():
+    """Test whether lone links are detected correctly."""
+    test_html = """
+    <div>
+        <a id="no_parent">Special case, no parent, keep</a>
+        <p><a id="lone">Lone in paragraph</a></p>
+        <h1><a id="lone_heading">Lone in heading</a></h1>
+        <p>Some text <a id="non_lone">not alone</a></p>
+        <h1>Some heading <a id="non_lone_heading">not alone</a></h1>
+    </div>
+    """
+    soup = bs4.BeautifulSoup(test_html)
+    assert not is_lone_link(soup.find(id="no_parent"))
+    assert is_lone_link(soup.find(id="lone"))
+    assert is_lone_link(soup.find(id="lone_heading"))
+    assert not is_lone_link(soup.find(id="non_lone"))
+    assert not is_lone_link(soup.find(id="non_lone_heading"))

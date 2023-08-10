@@ -1,8 +1,9 @@
 """Clean the scraped data."""
 import re
+from typing import Union
 
 import pandas as pd
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from zenml import step
 
 
@@ -21,6 +22,46 @@ def add_punctuation(text: str) -> str:
         return text + "."
     else:
         return text
+
+
+def is_lone_link(a_tag: Tag) -> bool:
+    """Check whether the link is lone.
+
+    Lone link is when it does not have any other text within the same parent tag,
+    i.e. the only text there is the link text itself.
+
+    Args:
+        a_tag (Tag): <a> tag to test
+
+    Returns:
+        bool: decision
+    """
+    def get_text_parent(tag: Tag) -> Union[Tag, None]:
+        """Get the innermost text tag.
+
+        Text tag is a p, h1, h2, or h3
+
+        Args:
+            tag (Tag): tag to get the parent for
+
+        Returns:
+            Tag: text parent tag
+        """
+        text_tags = ["p", "h1", "h2", "h3"]
+        parent = tag.parent
+        if parent:
+            if parent.name in text_tags:
+                return parent
+            else:
+                return get_text_parent(parent)
+        else:
+            return None
+
+    parent = get_text_parent(a_tag)
+    if parent is None:
+        return False  # Special case, when the link is not within any text tag
+
+    return parent.text == a_tag.text
 
 
 def clean_html(html: str) -> str:
@@ -58,6 +99,12 @@ def clean_html(html: str) -> str:
     headings = bs.find_all(["h1", "h2", "h3", "li"])
     for heading in headings:
         heading.replace_with(add_punctuation(heading.text.strip()))
+
+    # Remove lone links
+    links = bs.find_all("a")
+    for link in links:
+        if is_lone_link(link):
+            link.decompose()
 
     return bs.get_text(" ")
 
