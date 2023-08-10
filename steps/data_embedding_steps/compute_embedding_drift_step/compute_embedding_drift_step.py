@@ -77,6 +77,7 @@ def calculate_euclidean_distance(
         raise ValueError(
             "The length of the reference embeddings mean list should equal to the length of the current embeddings mean list"
         )
+
     reference_embeddings_mean = calculate_means(reference_embeddings)
     current_embeddings_mean = calculate_means(current_embeddings)
 
