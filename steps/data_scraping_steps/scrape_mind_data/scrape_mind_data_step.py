@@ -196,7 +196,7 @@ class Scraper:
             if navigation_list:
                 for heading in navigation_list:
                     a_tag = heading.find("a")
-                    if a_tag and "href" in a_tag:
+                    if a_tag and "href" in a_tag.attrs:
                         side_bar_urls.append(a_tag["href"])
 
         return side_bar_urls
