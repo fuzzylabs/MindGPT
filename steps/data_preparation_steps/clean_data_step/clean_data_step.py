@@ -1,8 +1,112 @@
 """Clean the scraped data."""
 import re
+from typing import Union
 
 import pandas as pd
+from bs4 import BeautifulSoup, Tag
 from zenml import step
+
+
+def add_punctuation(text: str) -> str:
+    """Add a full stop if the text does not end with a punctuation mark.
+
+    Args:
+        text (str): text to update
+
+    Returns:
+        str: updated text
+    """
+    if len(text) == 0:
+        return text
+    elif text[-1] not in [".", "!", "?"]:
+        return text + "."
+    else:
+        return text
+
+
+def is_lone_link(a_tag: Tag) -> bool:
+    """Check whether the link is lone.
+
+    Lone link is when it does not have any other text within the same parent tag,
+    i.e. the only text there is the link text itself.
+
+    Args:
+        a_tag (Tag): <a> tag to test
+
+    Returns:
+        bool: decision
+    """
+    def get_text_parent(tag: Tag) -> Union[Tag, None]:
+        """Get the innermost text tag.
+
+        Text tag is a p, h1, h2, or h3
+
+        Args:
+            tag (Tag): tag to get the parent for
+
+        Returns:
+            Tag: text parent tag
+        """
+        text_tags = ["p", "h1", "h2", "h3"]
+        parent = tag.parent
+        if parent:
+            if parent.name in text_tags:
+                return parent
+            else:
+                return get_text_parent(parent)
+        else:
+            return None
+
+    parent = get_text_parent(a_tag)
+    if parent is None:
+        return False  # Special case, when the link is not within any text tag
+
+    return parent.text == a_tag.text
+
+
+def clean_html(html: str) -> str:
+    """Clean html.
+
+    Args:
+        html (str): HTML string to clean
+
+    Return:
+        str: cleaned text, with html tags removed
+    """
+    bs = BeautifulSoup(html, "lxml")
+
+    # Remove <aside>
+    aside = bs.find_all("aside")
+    for tag in aside:
+        tag.decompose()
+
+    # Remove videos for Mind dataset
+    video_class = bs.find_all("div", {"class": "video-wrapper"})
+    for video in video_class:
+        video.parent.decompose()
+
+    # Remove videos for NHS dataset
+    video_class = bs.find_all("div", {"class": "app-brightcove-video"})
+    for video in video_class:
+        video.decompose()
+
+    # Remove podcast for Mind dataset
+    podcast_href = bs.find_all("a", {"href": "/information-support/podcasts/"})
+    for podcast in podcast_href:
+        podcast.parent.parent.decompose()
+
+    # Punctuate headings
+    headings = bs.find_all(["h1", "h2", "h3", "li"])
+    for heading in headings:
+        heading.replace_with(add_punctuation(heading.text.strip()))
+
+    # Remove lone links
+    links = bs.find_all("a")
+    for link in links:
+        if is_lone_link(link):
+            link.decompose()
+
+    return bs.get_text(" ")
 
 
 def remove_new_line(s: str) -> str:
@@ -91,6 +195,8 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
     """
     data = data.dropna().copy()
 
+    data["text_scraped"] = data["html_scraped"].map(clean_html)
+
     data["text_scraped"] = data["text_scraped"].map(remove_new_line)
     data["text_scraped"] = data["text_scraped"].map(strip_string)
     data["text_scraped"] = data["text_scraped"].map(remove_nbsp)
@@ -101,5 +207,6 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
 
     data = data.drop(data[data.text_scraped == ""].index)
     data = data.drop_duplicates()
+    data = data.drop(columns=["html_scraped"])
 
     return data.reset_index(drop=True)
