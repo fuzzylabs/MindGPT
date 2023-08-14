@@ -6,6 +6,8 @@ To start the notebook with our poetry environment, we will first need to install
 First, let's find out the name of our environment.
 
 ```bash
+poetry shell
+
 poetry env list
 
 # We should expect to see something like this:
@@ -15,6 +17,7 @@ mindgpt-JiFggUPm-py3.10 (Activated)
 Now, we will make our poetry environment accessible from within the notebook by installing it as a ipython kernel.
 
 ```bash
+# The kernel name is the output you get from `poetry env list`, "mindgpt-JiFggUPm-py3.10".
 poetry run ipython kernel install --user --name=<KERNEL_NAME>
 
 # And start a Jupyter notebook after.
