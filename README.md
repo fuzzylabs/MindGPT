@@ -225,13 +225,8 @@ curl -X POST localhost:5000/embedding_drift -H "Content-Type: application/json" 
 # This should insert the embedding drift data to our "EmbeddingDrift" relation. If success, we should see the following response message:
 "{"message":"Validation error: 'reference_dataset is not found in the data dictionary.'","status_code":400}"
 
-
 # We can also query our database with:
 curl localhost:5000/query_readability
-
-or
-
-curl localhost:5000//query_embedding_drift
 ```
 
 ## Streamlit Application
