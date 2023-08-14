@@ -23,7 +23,7 @@ def version_data(
         data_version_name: Forms part of the git tag for this data version.
         filename_roots: filenames without extensions of the data to be versioned.
         debug_mode: If in debug mode, calls to this step won't push anything to the repository.
-        data_postfix (str): Postfix to add to data version name as tag.
+        data_postfix (str): Postfix to add to data version name as tag. Defaults to "raw".
 
     """
     if not debug_mode and get_active_branch_name() == "develop":
