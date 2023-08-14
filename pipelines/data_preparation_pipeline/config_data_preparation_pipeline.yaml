@@ -14,4 +14,4 @@ steps:
     parameters:
       data_version_name: "second_version"
       filename_roots: ["mind_data_validated", "nhs_data_validated"]
-      debug_mode: False
+      debug_mode: True
