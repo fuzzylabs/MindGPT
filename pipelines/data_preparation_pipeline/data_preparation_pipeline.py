@@ -26,4 +26,6 @@ def data_preparation_pipeline() -> None:
     mind_df = validate_data(mind_df, "mind")
     nhs_df = validate_data(nhs_df, "nhs")
 
-    version_data(after=["load_data", "clean_data", "validate_data"])
+    version_data(
+        after=["load_data", "clean_data", "validate_data"], data_postfix="validated"
+    )

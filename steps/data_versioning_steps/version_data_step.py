@@ -12,7 +12,10 @@ from zenml import step
 
 @step
 def version_data(
-    data_version_name: str, filename_roots: List[str], debug_mode: bool
+    data_version_name: str,
+    filename_roots: List[str],
+    debug_mode: bool,
+    data_postfix: str = "raw",
 ) -> None:
     """Step for versioning new data.
 
@@ -20,6 +23,7 @@ def version_data(
         data_version_name: Forms part of the git tag for this data version.
         filename_roots: filenames without extensions of the data to be versioned.
         debug_mode: If in debug mode, calls to this step won't push anything to the repository.
+        data_postfix (str): Postfix to add to data version name as tag.
 
     """
     if not debug_mode and get_active_branch_name() == "develop":
@@ -31,4 +35,4 @@ def version_data(
 
     if not debug_mode:
         push_data()
-        push_and_tag_dvc_changes_to_git(tag=f"data/{data_version_name}")
+        push_and_tag_dvc_changes_to_git(tag=f"data/{data_version_name}_{data_postfix}")

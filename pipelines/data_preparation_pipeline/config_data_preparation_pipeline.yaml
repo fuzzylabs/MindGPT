@@ -2,14 +2,16 @@ steps:
   load_data:
     enable_cache: False
     parameters:
-      data_version: "data/first_version"
+      data_version: "data/second_version"
       data_postfix: "raw"
+      reference_data_version: "data/second_version"
   clean_data:
     enable_cache: False
   validate_data:
     enable_cache: False
   version_data:
+    enable_cache: False
     parameters:
-      data_version_name: "first_version"
+      data_version_name: "second_version"
       filename_roots: ["mind_data_validated", "nhs_data_validated"]
-      debug_mode: True
+      debug_mode: False

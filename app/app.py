@@ -202,7 +202,21 @@ def _create_payload(messages: Dict[str, str]) -> Dict[str, List[Dict[str, Any]]]
                 "shape": [-1],
                 "datatype": "string",
                 "data": str(input_text),
-            }
+            },
+            {
+                "name": "max_length",
+                "shape": [-1],
+                "datatype": "INT32",
+                "data": [300],
+                "parameters": {"content_type": "raw"},
+            },
+            {
+                "name": "temperature",
+                "shape": [-1],
+                "datatype": "INT32",
+                "data": [0.8],
+                "parameters": {"content_type": "raw"},
+            },
         ]
     }
 
