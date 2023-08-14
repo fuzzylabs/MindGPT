@@ -226,6 +226,8 @@ To compute the embedding drift when running the embedding pipeline, we will port
 kubectl port-forward service/monitoring-service 5000:5000
 ```
 
+There is also a [notebook](notebook/monitoring_notebook.ipynb) that demonstrate how we could retrieve our metric data with the metric service and a simple example of what we can do with the data.
+
 ## Streamlit Application
 
 To deploy the Streamlit application on AKS, we first need to build a Docker image and then push it to ACR.
