@@ -112,11 +112,17 @@ Next, we apply the Kubernetes manifest to deploy the metric service and the metr
 kubectl apply -f infrastructure/monitoring
 ```
 
-Finally, once the pod is running, we verify that our monitoring service is working. The command below should provide an IP address for the metric service interface.
+Once `kubectl` has finished applying the manifest, we should verify that the monitoring service is running. Running the commands below will give you an IP address for the service, which we can then `curl` for a response:
 
 ```bash
 kubectl get pods # Checking whether the monitoring pod is running
 
+# Expected output (Note the name of pod will be different)
+NAME                                    READY   STATUS    RESTARTS   AGE
+monitoring-service-588f644c49-ldjhf     2/2     Running   0          3d1h
+```
+
+```bash
 kubectl get svc monitoring-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 ```
 
@@ -129,7 +135,7 @@ curl {external-ip:5000}
 Hello world from the metric service.
 ```
 
-To compute the embedding drift when running the embedding pipeline, we will port-forward the monitoring service to localhost using the following command. This will ensure we can access the server from localhost.
+Now we know that everything is up and running, we need to use port-forwarding so the embedding pipeline (which is running locally) can communicate with the service hosted on Kubernetes:
 
 ```bash
 kubectl port-forward service/monitoring-service 5000:5000
