@@ -7,11 +7,13 @@ from steps.data_preparation_steps import clean_data
 from steps.data_preparation_steps.clean_data_step.clean_data_step import (
     add_punctuation,
     clean_html,
+    clean_mind_dataset,
     contract_white_space,
     insert_space_between_numbers_and_letters,
+    is_lone_link,
     remove_nbsp,
     remove_new_line,
-    strip_string, is_lone_link,
+    strip_string,
 )
 
 
@@ -24,14 +26,16 @@ def dirty_html_case() -> str:
     Returns:
         str: HTML containing various cases
     """
-    return "<div>" \
-           "<h2>Special HTML case</h2>" \
-           "<h3>Inner heading!</h3>" \
-           "<p>Some content.</p>" \
-           "<aside>Shall be removed</aside>" \
-           "<p><a>Lone link</a></p>" \
-           "<p>But keep this<a>one</a></p>" \
-           "</div>"
+    return (
+        "<div>"
+        "<h2>Special HTML case</h2>"
+        "<h3>Inner heading!</h3>"
+        "<p>Some content.</p>"
+        "<aside>Shall be removed</aside>"
+        "<p><a>Lone link</a></p>"
+        "<p>But keep this<a>one</a></p>"
+        "</div>"
+    )
 
 
 @pytest.fixture
@@ -229,3 +233,17 @@ def test_is_lone_link():
     assert is_lone_link(soup.find(id="lone_heading"))
     assert not is_lone_link(soup.find(id="non_lone"))
     assert not is_lone_link(soup.find(id="non_lone_heading"))
+
+
+def test_clean_mind_dataset(video_wrapper_class: str):
+    """Test that the Mind dataset is cleaned as expected."""
+    soup = bs4.BeautifulSoup(video_wrapper_class)
+    cleaned_soup = clean_mind_dataset(soup)
+    assert cleaned_soup.find("p").text == "Keep me"
+    assert not cleaned_soup.find_all("div", {"class": "video-wrapper"})
+
+
+# def test_clean_nhs_dataset():
+#     """Test that the Mind dataset is cleaned as expected."""
+#     soup = bs4.BeautifulSoup()
+#     cleaned_soup = clean_nhs_dataset(soup)

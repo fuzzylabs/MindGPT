@@ -66,13 +66,13 @@ def is_lone_link(a_tag: Tag) -> bool:
 
 
 def clean_mind_dataset(bs: BeautifulSoup) -> BeautifulSoup:
-    """_summary_.
+    """Clean Mind dataset.
 
     Args:
-        bs (BeautifulSoup): _description_
+        bs (BeautifulSoup): Raw HTML data
 
     Returns:
-        str: _description_
+        BeautifulSoup: Cleaned HTML data
     """
     # Remove videos for Mind dataset
     video_class = bs.find_all("div", {"class": "video-wrapper"})
@@ -88,19 +88,23 @@ def clean_mind_dataset(bs: BeautifulSoup) -> BeautifulSoup:
 
 
 def clean_nhs_dataset(bs: BeautifulSoup) -> BeautifulSoup:
-    """_summary_.
+    """Clean NHS dataset.
 
     Args:
-        bs (BeautifulSoup): _description_
+        bs (BeautifulSoup): Raw HTML data
 
     Returns:
-        BeautifulSoup: _description_
+        BeautifulSoup: Cleaned HTML data
     """
     # Remove videos for NHS dataset
     video_class = bs.find_all("div", {"class": "app-brightcove-video"})
     for video in video_class:
         video.decompose()
 
+    # Remove dates at the end of the page
+    page_end_dates = bs.find_all("p", {"class": "nhsuk-u-margin-top-7"})
+    for page_dates in page_end_dates:
+        page_dates.decompose()
     return bs
 
 
