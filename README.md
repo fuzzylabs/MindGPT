@@ -229,6 +229,11 @@ curl -X POST localhost:5000/embedding_drift -H "Content-Type: application/json" 
 curl localhost:5000/query_readability
 ```
 
+### Monitoring MindGPT 👀
+We've created a [notebook](notebook/monitoring_notebook.ipynb) which accesses the monitoring service, fetches the metrics, and creates some simple plots showing the change over time.
+
+This is a starting point for accessing the metrics, and we're planning to introduce a hosted dashboard version of these plots at some point in the future.
+
 ## Streamlit Application
 
 To deploy the Streamlit application on AKS, we first need to build a Docker image and then push it to ACR.
