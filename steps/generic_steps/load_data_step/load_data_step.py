@@ -42,7 +42,7 @@ def load_data(
                 Name: timestamp, dtype: datetime64[ns]
                 Name: url, dtype: object
     """
-    git_checkout_folder(tag_name=data_version, folder_name="data")
+    git_checkout_folder(tag_name=f"{data_version}_{data_postfix}", folder_name="data")
     pull_data()
 
     mind_file_path = os.path.join(DATA_DIR, f"mind_data_{data_postfix}.csv")

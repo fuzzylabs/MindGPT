@@ -2,6 +2,6 @@ steps:
   load_data:
     enable_cache: False
     parameters:
-      data_version: "data/first_version"
-      reference_data_version: "data/first_version"
+      data_version: "data/second_version"
+      reference_data_version: "data/second_version"
       data_postfix: "validated"
