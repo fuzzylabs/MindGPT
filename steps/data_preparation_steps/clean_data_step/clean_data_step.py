@@ -88,6 +88,11 @@ def clean_mind_dataset(bs: BeautifulSoup) -> BeautifulSoup:
     feedback_form = bs.find_all("div", {"class": "feedback"})
     for feedback in feedback_form:
         feedback.parent.decompose()
+
+    # Remove navigation text at end of page
+    next_page_navigation = bs.find_all("div", {"class": "next-prev"})
+    for next_page_text in next_page_navigation:
+        next_page_text.parent.decompose()
     return bs
 
 
