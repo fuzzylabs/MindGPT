@@ -226,7 +226,10 @@ To compute the embedding drift when running the embedding pipeline, we will port
 kubectl port-forward service/monitoring-service 5000:5000
 ```
 
-There is also a [notebook](notebook/monitoring_notebook.ipynb) that demonstrate how we could retrieve our metric data with the metric service and a simple example of what we can do with the data.
+### Monitoring MindGPT 👀
+We've created a [notebook](notebook/monitoring_notebook.ipynb) which accesses the monitoring service, fetches the metrics, and creates some simple plots showing the change over time.
+
+This is a starting point for accessing the metrics, and we're planning to introduce a hosted dashboard version of these plots at some point in the future.
 
 ## Streamlit Application
 
