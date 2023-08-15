@@ -59,23 +59,23 @@ DEFAULT_QUERY_INSTRUCTION = (
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Prompt Templates
-SIMPLE_TEMPLATE = "Context: {context}\n\nQuestion: {question}\n\n"
-
-COMPLEX_TEMPLATE = """Use the following pieces of context to answer the question at the end.
+prompt_templates = {
+    "simple": "Context: {context}\n\nQuestion: {question}\n\n",
+    "complex": """Use the following pieces of context to answer the question at the end.
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
 Use three sentences maximum and keep the answer as concise as possible.
 Always say "thanks for asking!" at the end of the answer.
 {context}
 Question: {question}
-Helpful Answer:"""
-
-ADVANCED_TEMPLATE = """You are a highly skilled AI trained in language comprehension and summarisation.
+Helpful Answer:""",
+    "advanced": """You are a highly skilled AI trained in language comprehension and summarisation.
 I would like you to read the following text and summarise it into a concise abstract paragraph. Use the following pieces of context to answer the question at the end.
 Aim to retain the most important points, providing a coherent and readable summary that could help a person understand the main points of the discussion without needing to read the entire text.
 Please avoid unnecessary details or tangential points.
 {context}
 Question: {question}
 Helpful Answer:"""
+}
 
 st.set_page_config(
     page_title="MindGPT",
@@ -181,17 +181,23 @@ def query_vector_store(
     return documents
 
 
-def _create_payload(messages: Dict[str, str]) -> Dict[str, List[Dict[str, Any]]]:
+def _create_payload(
+    messages: Dict[str, str],
+    temperature: float,
+    max_length: int,
+) -> Dict[str, List[Dict[str, Any]]]:
     """Create a payload from the user input to send to the LLM model.
 
     Args:
         messages (Dict[str, str]): List of previous messages from both the AI and user.
+        temperature (float): inference temperature
+        max_length (int): max response length in tokens
 
     Returns:
         Dict[str, List[Dict[str, Any]]]: the payload to send in the correct format.
     """
     context = messages.get("context", DEFAULT_CONTEXT)
-    input_text = SIMPLE_TEMPLATE.format(
+    input_text = prompt_templates[st.session_state.prompt_template].format(
         question=messages["prompt_query"], context=context
     )
     logging.info(f"Prompt to LLM : {input_text}")
@@ -207,14 +213,14 @@ def _create_payload(messages: Dict[str, str]) -> Dict[str, List[Dict[str, Any]]]
                 "name": "max_length",
                 "shape": [-1],
                 "datatype": "INT32",
-                "data": [300],
+                "data": [max_length],
                 "parameters": {"content_type": "raw"},
             },
             {
                 "name": "temperature",
                 "shape": [-1],
                 "datatype": "INT32",
-                "data": [0.8],
+                "data": [temperature],
                 "parameters": {"content_type": "raw"},
             },
         ]
@@ -242,18 +248,26 @@ def _get_predictions(
     return data["generated_text"]
 
 
-def query_llm(prediction_endpoint: str, messages: Dict[str, str]) -> str:
+def query_llm(
+    prediction_endpoint: str,
+    messages: Dict[str, str],
+    temperature: float,
+    max_length: int,
+) -> str:
     """Query endpoint to fetch the summary.
 
     Args:
         prediction_endpoint (str): Prediction endpoint.
         messages (Dict[str, str]): Dict of message containing prompt and context.
+        temperature (float): inference temperature
+        max_length (int): max response length in tokens
 
     Returns:
         str: Summarised text.
     """
     with st.spinner("Loading response..."):
-        payload = _create_payload(messages)
+        payload = _create_payload(messages, temperature, max_length)
+        logging.info(payload)
         summary_txt = _get_predictions(prediction_endpoint, payload)
     return summary_txt
 
@@ -276,20 +290,34 @@ def post_response_to_metric_service(
     return result
 
 
-def show_disclaimer() -> bool:
-    """Show disclaimer on sidebar with streamlit.
+def accept_disclaimer():
+    st.session_state.accept = True
 
-    Returns:
-        bool: True if disclaimer accepted, False if not.
-    """
-    st.sidebar.title("Disclaimer")
+
+def show_disclaimer() -> None:
+    """Show disclaimer on the sidebar."""
+    st.title("Disclaimer")
     with open("app/disclaimer.txt") as f:
         disclaimer_text = f.read()
     st.sidebar.markdown(disclaimer_text)
 
-    accept = st.sidebar.button("I Accept")
+    st.button("I Accept", on_click=accept_disclaimer)
 
-    return accept
+
+def show_settings() -> None:
+    """Show inference settings on the sidebar."""
+    st.title("Settings")
+    st.session_state.temperature = st.slider("Temperature", min_value=0.0, max_value=2.0, value=0.8)
+    st.session_state.max_length = st.slider("Max response length", min_value=50, max_value=500, value=300, step=1)
+    st.session_state.prompt_template = st.select_slider("Prompt template", options=["simple", "complex", "advanced"], value="simple")
+
+def show_sidebar():
+    """Show the sidebar."""
+    with st.sidebar:
+        if not st.session_state.accept:
+            show_disclaimer()
+        else:
+            show_settings()
 
 
 def main() -> None:
@@ -297,10 +325,7 @@ def main() -> None:
     if "accept" not in st.session_state:
         st.session_state.accept = False
 
-    if not st.session_state.accept:
-        accept = show_disclaimer()
-        if accept:
-            st.session_state.accept = True
+    show_sidebar()
 
     if st.session_state.accept:
         # Initialise chat history
@@ -362,7 +387,12 @@ def main() -> None:
                         message = {"prompt_query": prompt, "context": context}
 
                         # Query LLM by passing query and context
-                        assistant_response = query_llm(prediction_endpoint, message)
+                        assistant_response = query_llm(
+                            prediction_endpoint=prediction_endpoint,
+                            messages=message,
+                            temperature=st.session_state.temperature,
+                            max_length=st.session_state.max_length,
+                        )
 
                         full_response += f"{source}: {assistant_response}  \n"
 
