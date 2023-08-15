@@ -36,6 +36,7 @@ def is_lone_link(a_tag: Tag) -> bool:
     Returns:
         bool: decision
     """
+
     def get_text_parent(tag: Tag) -> Union[Tag, None]:
         """Get the innermost text tag.
 
@@ -64,6 +65,43 @@ def is_lone_link(a_tag: Tag) -> bool:
     return parent.text == a_tag.text
 
 
+def clean_mind_dataset(bs: BeautifulSoup) -> BeautifulSoup:
+    """_summary_.
+
+    Args:
+        bs (BeautifulSoup): _description_
+
+    Returns:
+        str: _description_
+    """
+    # Remove videos for Mind dataset
+    video_class = bs.find_all("div", {"class": "video-wrapper"})
+    for video in video_class:
+        video.parent.decompose()
+
+    # Remove podcast for Mind dataset
+    podcast_href = bs.find_all("a", {"href": "/information-support/podcasts/"})
+    for podcast in podcast_href:
+        podcast.parent.parent.decompose()
+
+    return bs
+
+
+def clean_nhs_dataset(bs: BeautifulSoup) -> BeautifulSoup:
+    """_summary_.
+
+    Args:
+        bs (BeautifulSoup): _description_
+
+    Returns:
+        BeautifulSoup: _description_
+    """
+    # Remove videos for NHS dataset
+    video_class = bs.find_all("div", {"class": "app-brightcove-video"})
+    for video in video_class:
+        video.decompose()
+
+
 def clean_html(html: str) -> str:
     """Clean html.
 
@@ -80,20 +118,11 @@ def clean_html(html: str) -> str:
     for tag in aside:
         tag.decompose()
 
-    # Remove videos for Mind dataset
-    video_class = bs.find_all("div", {"class": "video-wrapper"})
-    for video in video_class:
-        video.parent.decompose()
+    # Clean Mind dataset
+    bs = clean_mind_dataset(bs)
 
-    # Remove videos for NHS dataset
-    video_class = bs.find_all("div", {"class": "app-brightcove-video"})
-    for video in video_class:
-        video.decompose()
-
-    # Remove podcast for Mind dataset
-    podcast_href = bs.find_all("a", {"href": "/information-support/podcasts/"})
-    for podcast in podcast_href:
-        podcast.parent.parent.decompose()
+    # Clean NHS dataset
+    bs = clean_nhs_dataset(bs)
 
     # Punctuate headings
     headings = bs.find_all(["h1", "h2", "h3", "li"])
