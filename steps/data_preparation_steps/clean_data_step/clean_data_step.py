@@ -101,6 +101,8 @@ def clean_nhs_dataset(bs: BeautifulSoup) -> BeautifulSoup:
     for video in video_class:
         video.decompose()
 
+    return bs
+
 
 def clean_html(html: str) -> str:
     """Clean html.
