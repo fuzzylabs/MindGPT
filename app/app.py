@@ -267,7 +267,6 @@ def query_llm(
     """
     with st.spinner("Loading response..."):
         payload = _create_payload(messages, temperature, max_length)
-        print(payload)
         summary_txt = _get_predictions(prediction_endpoint, payload)
     return summary_txt
 
