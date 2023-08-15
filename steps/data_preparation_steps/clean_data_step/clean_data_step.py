@@ -84,6 +84,10 @@ def clean_mind_dataset(bs: BeautifulSoup) -> BeautifulSoup:
     for podcast in podcast_href:
         podcast.parent.parent.decompose()
 
+    # Remove feedback form at end of page
+    feedback_form = bs.find_all("div", {"class": "feedback"})
+    for feedback in feedback_form:
+        feedback.parent.decompose()
     return bs
 
 
