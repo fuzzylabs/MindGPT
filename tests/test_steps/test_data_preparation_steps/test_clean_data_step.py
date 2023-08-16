@@ -14,7 +14,7 @@ from steps.data_preparation_steps.clean_data_step.clean_data_step import (
     is_lone_link,
     remove_nbsp,
     remove_new_line,
-    strip_string,
+    strip_string, remove_pattern,
 )
 
 
@@ -265,3 +265,22 @@ def test_clean_nhs_dataset(unclean_nhs_html: str):
     cleaned_soup = clean_nhs_dataset(soup)
     assert cleaned_soup.find("p").text == "Keep me"
     assert not cleaned_soup.find_all("div", {"class": "app-brightcove-video"})
+
+
+def test_remove_pattern():
+    """Test that remove pattern function only removes specified patterns."""
+    pattern = r"\d+"  # One or more digits
+    expected = "abcdefg"
+
+    got = remove_pattern(pattern, "abcdefg")  # Nothing to remove
+    assert expected == got
+
+    got = remove_pattern(pattern, "abcd1efg")  # One character
+    assert expected == got
+
+    got = remove_pattern(pattern, "ab123cdefg")  # Multiple characters
+    assert expected == got
+
+    got = remove_pattern(pattern, "ab123cdef567g")  # Multiple instances
+    assert expected == got
+

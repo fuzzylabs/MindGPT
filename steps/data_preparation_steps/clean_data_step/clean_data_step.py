@@ -117,6 +117,19 @@ def clean_nhs_dataset(bs: BeautifulSoup) -> BeautifulSoup:
     return bs
 
 
+def remove_pattern(pattern: str, text: str) -> str:
+    """Remove a pattern from the given string.
+
+    Args:
+        pattern (str): a Regexp of the pattern to remove
+        text (str): text to remove the pattern from
+
+    Returns:
+        str: cleaned text
+    """
+    return re.sub(pattern, "", text)
+
+
 def clean_html(html: str) -> str:
     """Clean html.
 
@@ -248,6 +261,11 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
     data["text_scraped"] = data["text_scraped"].map(
         insert_space_between_numbers_and_letters
     )
+
+    # Remove specific patterns from the data
+    data["text_scraped"] = data["text_scraped"].map(lambda text: remove_pattern(r"See our page[^\.]+[\.]", text))
+    data["text_scraped"] = data["text_scraped"].map(lambda text: remove_pattern(r"Or see our page[^\.]+[\.]", text))
+    data["text_scraped"] = data["text_scraped"].map(lambda text: remove_pattern(r"Read more about[^\.]+[\.]", text))
 
     data = data.drop(data[data.text_scraped == ""].index)
     data = data.drop_duplicates()
