@@ -458,8 +458,6 @@ def main() -> None:
                     full_response = "Here's what the NHS and Mind each have to say:\n\n"
                     message_placeholder = st.empty()
 
-                    # full_response = "Here's what the NHS and Mind each have to say:\n\n"
-
                     for collection, source in COLLECTION_NAME_MAP.items():
                         # Query vector store
                         context = query_vector_store(
