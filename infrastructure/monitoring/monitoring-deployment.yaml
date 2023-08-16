@@ -36,7 +36,7 @@ spec:
               memory: 256Mi
 
         - name: metric-service
-          image: <acr-registry-name>.azurecr.io/monitoring # UPDATE THIS LINE!!
+          image: crmindgpt.azurecr.io/monitoring # UPDATE THIS LINE!!
           ports:
             - containerPort: 5000
           resources:

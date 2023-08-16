@@ -56,6 +56,8 @@ DEFAULT_QUERY_INSTRUCTION = (
     "Represent the question for retrieving supporting documents: "
 )
 
+CONVERSATIONAL_MEMORY_SIZE = 5
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Prompt Templates
@@ -75,7 +77,7 @@ Please avoid unnecessary details or tangential points.
 {context}
 Question: {question}
 Helpful Answer:""",
-    "conversational_memory": """Use the conversation history and context provided to inform your response.
+    "conversational": """Use the conversation history and context provided to inform your response.
 
 Conversation history:
 {history}
@@ -222,17 +224,21 @@ def _create_payload(
     """
     context = messages.get("context", DEFAULT_CONTEXT)
     history: List[Dict[str, str]] = messages.get("history", [])
+    question = messages["prompt_query"]
 
-    if history:
-        history_string = _build_conversation_history_template(history)
-
-        input_text = prompt_templates[st.session_state.prompt_template].format(
-            history=history_string, question=messages["prompt_query"], context=context
-        )
+    if st.session_state.prompt_template == "conversational":
+        if history:
+            history_string = _build_conversation_history_template(history)
+            template = prompt_templates["conversational"]
+            input_text = template.format(
+                history=history_string, question=question, context=context
+            )
+        else:
+            template = prompt_templates["simple"]
+            input_text = template.format(question=question, context=context)
     else:
-        input_text = prompt_templates[st.session_state.prompt_template].format(
-            question=messages["prompt_query"], context=context
-        )
+        template = prompt_templates[st.session_state.prompt_template]
+        input_text = template.format(question=question, context=context)
 
     logging.info(f"Prompt to LLM : {input_text}")
 
@@ -268,7 +274,7 @@ def _build_conversation_history_template(history_list: List[Dict[str, str]]) -> 
         user_input = history["user_input"]
         ai_response = history["ai_response"]
 
-        history_string += f"User input: {user_input}\nAI response: {ai_response}"
+        history_string += f"User input: {user_input}\nAI response: {ai_response}\n"
 
     return history_string
 
@@ -362,7 +368,7 @@ def show_settings() -> None:
     )
     st.session_state.prompt_template = st.select_slider(
         "Prompt template",
-        options=["simple", "complex", "advanced", "conversational_memory"],
+        options=["simple", "complex", "advanced", "conversational"],
         value="simple",
     )
 
@@ -447,11 +453,12 @@ def main() -> None:
                     icon="🚨",
                 )
             else:
+                logging.info(st.session_state.prompt_template)
                 with st.chat_message("assistant"):
-                    full_response = ""
+                    full_response = "Here's what the NHS and Mind each have to say:\n\n"
                     message_placeholder = st.empty()
 
-                    full_response = "Here's what the NHS and Mind each have to say:\n\n"
+                    # full_response = "Here's what the NHS and Mind each have to say:\n\n"
 
                     for collection, source in COLLECTION_NAME_MAP.items():
                         # Query vector store
@@ -481,16 +488,13 @@ def main() -> None:
                             max_length=st.session_state.max_length,
                         )
 
-                        # Append the response to the appropriate memory
+                        # Append the response to the appropriate memory and update session state
+                        memory_dict = build_memory_dict(prompt, assistant_response)
                         if collection == "mind_data":
-                            mind_memory.append(
-                                build_memory_dict(prompt, assistant_response)
-                            )
+                            mind_memory.append(memory_dict)
                             st.session_state.mind_memory = mind_memory
                         else:
-                            nhs_memory.append(
-                                build_memory_dict(prompt, assistant_response)
-                            )
+                            nhs_memory.append(memory_dict)
                             st.session_state.nhs_memory = nhs_memory
 
                         full_response += f"{source}: {assistant_response}  \n"
@@ -504,6 +508,12 @@ def main() -> None:
                                 metric_service_endpoint, assistant_response
                             )
                             logging.info(result.text)
+
+                    # Remove first conversation in memory if either exceeds the size limit
+                    if len(mind_memory) > CONVERSATIONAL_MEMORY_SIZE:
+                        mind_memory.pop(0)
+                    if len(nhs_memory) > CONVERSATIONAL_MEMORY_SIZE:
+                        nhs_memory.pop(0)
 
                     message_placeholder.markdown(full_response)
 
