@@ -56,7 +56,7 @@ DEFAULT_QUERY_INSTRUCTION = (
     "Represent the question for retrieving supporting documents: "
 )
 
-CONVERSATIONAL_MEMORY_SIZE = 5
+CONVERSATIONAL_MEMORY_SIZE = 1
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
