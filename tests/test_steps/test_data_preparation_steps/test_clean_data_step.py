@@ -7,11 +7,14 @@ from steps.data_preparation_steps import clean_data
 from steps.data_preparation_steps.clean_data_step.clean_data_step import (
     add_punctuation,
     clean_html,
+    clean_mind_dataset,
+    clean_nhs_dataset,
     contract_white_space,
     insert_space_between_numbers_and_letters,
+    is_lone_link,
     remove_nbsp,
     remove_new_line,
-    strip_string, is_lone_link,
+    strip_string, remove_pattern,
 )
 
 
@@ -24,24 +27,36 @@ def dirty_html_case() -> str:
     Returns:
         str: HTML containing various cases
     """
-    return "<div>" \
-           "<h2>Special HTML case</h2>" \
-           "<h3>Inner heading!</h3>" \
-           "<p>Some content.</p>" \
-           "<aside>Shall be removed</aside>" \
-           "<p><a>Lone link</a></p>" \
-           "<p>But keep this<a>one</a></p>" \
-           "</div>"
+    return (
+        "<div>"
+        "<h2>Special HTML case</h2>"
+        "<h3>Inner heading!</h3>"
+        "<p>Some content.</p>"
+        "<aside>Shall be removed</aside>"
+        "<p><a>Lone link</a></p>"
+        "<p>But keep this<a>one</a></p>"
+        "</div>"
+    )
 
 
 @pytest.fixture
-def video_wrapper_class() -> str:
-    """Fixture containing video class that will be removed.
+def unclean_mind_html() -> str:
+    """Fixture containing scraped mind html including video class that will be removed.
 
     Returns:
-        str: HTML containing video class
+        str: HTML containing scraped mind page
     """
     return """<div><p>Keep me</p></div><div class="col-md-8 column"><div><h3>Video heading?</h3><p>In this video, we will remove entire parent div.</p><div class="video-wrapper"><iframe src="https://www.dummy"></iframe></div></div></div>"""
+
+
+@pytest.fixture
+def unclean_nhs_html() -> str:
+    """Fixture containing scraped nhs html including video class that will be removed.
+
+    Returns:
+        str: HTML containing scraped nhs page
+    """
+    return """<div><p>Keep me</p></div><div class="app-brightcove-video"><div><h3>Video heading?</h3><p>In this video, we will remove entire parent div.</p></div></div>"""
 
 
 @pytest.fixture
@@ -56,7 +71,7 @@ def expected_cleaned_html_case() -> str:
 
 @pytest.fixture
 def scraped_data_fixture(
-    dirty_html_case: str, video_wrapper_class: str
+    dirty_html_case: str, unclean_mind_html: str, unclean_nhs_html: str
 ) -> pd.DataFrame:
     """Fixture mocking the result of the scraping pipeline.
 
@@ -70,7 +85,8 @@ def scraped_data_fixture(
             "<p>But otherwise, it's not so bad.</p>",
             "<p>But otherwise, it's not so bad.</p>",
             dirty_html_case,
-            video_wrapper_class,
+            unclean_mind_html,
+            unclean_nhs_html,
         ],
         "text_scraped": [
             "This is some scraped data! It has some really wild  spacing.",
@@ -78,6 +94,7 @@ def scraped_data_fixture(
             "But otherwise, it's not so bad.",
             "But otherwise, it's not so bad.",
             "Special HTML case",
+            "Keep me",
             "Keep me",
         ],
         "url": [
@@ -87,6 +104,7 @@ def scraped_data_fixture(
             "https://www.link3.com",
             "https://www.link4.com",
             "https://www.link5.com",
+            "https://www.link6.com",
         ],
     }
     return pd.DataFrame(data)
@@ -106,6 +124,7 @@ def expected_cleaned_data(expected_cleaned_html_case: str) -> pd.DataFrame:
             "But otherwise, it's not so bad.",
             expected_cleaned_html_case,
             "Keep me",
+            "Keep me",
         ],
         "url": [
             "https://www.link1.com",
@@ -113,6 +132,7 @@ def expected_cleaned_data(expected_cleaned_html_case: str) -> pd.DataFrame:
             "https://www.link3.com",
             "https://www.link4.com",
             "https://www.link5.com",
+            "https://www.link6.com",
         ],
     }
     return pd.DataFrame(data)
@@ -229,3 +249,38 @@ def test_is_lone_link():
     assert is_lone_link(soup.find(id="lone_heading"))
     assert not is_lone_link(soup.find(id="non_lone"))
     assert not is_lone_link(soup.find(id="non_lone_heading"))
+
+
+def test_clean_mind_dataset(unclean_mind_html: str):
+    """Test that the Mind dataset is cleaned as expected."""
+    soup = bs4.BeautifulSoup(unclean_mind_html)
+    cleaned_soup = clean_mind_dataset(soup)
+    assert cleaned_soup.find("p").text == "Keep me"
+    assert not cleaned_soup.find_all("div", {"class": "video-wrapper"})
+
+
+def test_clean_nhs_dataset(unclean_nhs_html: str):
+    """Test that the Mind dataset is cleaned as expected."""
+    soup = bs4.BeautifulSoup(unclean_nhs_html)
+    cleaned_soup = clean_nhs_dataset(soup)
+    assert cleaned_soup.find("p").text == "Keep me"
+    assert not cleaned_soup.find_all("div", {"class": "app-brightcove-video"})
+
+
+def test_remove_pattern():
+    """Test that remove pattern function only removes specified patterns."""
+    pattern = r"\d+"  # One or more digits
+    expected = "abcdefg"
+
+    got = remove_pattern(pattern, "abcdefg")  # Nothing to remove
+    assert expected == got
+
+    got = remove_pattern(pattern, "abcd1efg")  # One character
+    assert expected == got
+
+    got = remove_pattern(pattern, "ab123cdefg")  # Multiple characters
+    assert expected == got
+
+    got = remove_pattern(pattern, "ab123cdef567g")  # Multiple instances
+    assert expected == got
+

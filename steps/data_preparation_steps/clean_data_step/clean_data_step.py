@@ -36,6 +36,7 @@ def is_lone_link(a_tag: Tag) -> bool:
     Returns:
         bool: decision
     """
+
     def get_text_parent(tag: Tag) -> Union[Tag, None]:
         """Get the innermost text tag.
 
@@ -64,6 +65,71 @@ def is_lone_link(a_tag: Tag) -> bool:
     return parent.text == a_tag.text
 
 
+def clean_mind_dataset(bs: BeautifulSoup) -> BeautifulSoup:
+    """Clean Mind dataset.
+
+    Args:
+        bs (BeautifulSoup): Raw HTML data
+
+    Returns:
+        BeautifulSoup: Cleaned HTML data
+    """
+    # Remove videos for Mind dataset
+    video_class = bs.find_all("div", {"class": "video-wrapper"})
+    for video in video_class:
+        video.parent.decompose()
+
+    # Remove podcast for Mind dataset
+    podcast_href = bs.find_all("a", {"href": "/information-support/podcasts/"})
+    for podcast in podcast_href:
+        podcast.parent.parent.decompose()
+
+    # Remove feedback form at end of page
+    feedback_form = bs.find_all("div", {"class": "feedback"})
+    for feedback in feedback_form:
+        feedback.parent.decompose()
+
+    # Remove navigation text at end of page
+    next_page_navigation = bs.find_all("div", {"class": "next-prev"})
+    for next_page_text in next_page_navigation:
+        next_page_text.parent.decompose()
+    return bs
+
+
+def clean_nhs_dataset(bs: BeautifulSoup) -> BeautifulSoup:
+    """Clean NHS dataset.
+
+    Args:
+        bs (BeautifulSoup): Raw HTML data
+
+    Returns:
+        BeautifulSoup: Cleaned HTML data
+    """
+    # Remove videos for NHS dataset
+    video_class = bs.find_all("div", {"class": "app-brightcove-video"})
+    for video in video_class:
+        video.decompose()
+
+    # Remove dates at the end of the page
+    page_end_dates = bs.find_all("p", {"class": "nhsuk-u-margin-top-7"})
+    for page_dates in page_end_dates:
+        page_dates.decompose()
+    return bs
+
+
+def remove_pattern(pattern: str, text: str) -> str:
+    """Remove a pattern from the given string.
+
+    Args:
+        pattern (str): a Regexp of the pattern to remove
+        text (str): text to remove the pattern from
+
+    Returns:
+        str: cleaned text
+    """
+    return re.sub(pattern, "", text)
+
+
 def clean_html(html: str) -> str:
     """Clean html.
 
@@ -80,20 +146,11 @@ def clean_html(html: str) -> str:
     for tag in aside:
         tag.decompose()
 
-    # Remove videos for Mind dataset
-    video_class = bs.find_all("div", {"class": "video-wrapper"})
-    for video in video_class:
-        video.parent.decompose()
+    # Clean Mind dataset
+    bs = clean_mind_dataset(bs)
 
-    # Remove videos for NHS dataset
-    video_class = bs.find_all("div", {"class": "app-brightcove-video"})
-    for video in video_class:
-        video.decompose()
-
-    # Remove podcast for Mind dataset
-    podcast_href = bs.find_all("a", {"href": "/information-support/podcasts/"})
-    for podcast in podcast_href:
-        podcast.parent.parent.decompose()
+    # Clean NHS dataset
+    bs = clean_nhs_dataset(bs)
 
     # Punctuate headings
     headings = bs.find_all(["h1", "h2", "h3", "li"])
@@ -204,6 +261,11 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
     data["text_scraped"] = data["text_scraped"].map(
         insert_space_between_numbers_and_letters
     )
+
+    # Remove specific patterns from the data
+    data["text_scraped"] = data["text_scraped"].map(lambda text: remove_pattern(r"See our page[^\.]+[\.]", text))
+    data["text_scraped"] = data["text_scraped"].map(lambda text: remove_pattern(r"Or see our page[^\.]+[\.]", text))
+    data["text_scraped"] = data["text_scraped"].map(lambda text: remove_pattern(r"Read more about[^\.]+[\.]", text))
 
     data = data.drop(data[data.text_scraped == ""].index)
     data = data.drop_duplicates()
