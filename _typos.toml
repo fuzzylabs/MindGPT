@@ -1,5 +1,5 @@
 [files]
-extend-exclude=[".gitignore", "LICENSE", ".*",]
+extend-exclude=["experiments/*.ipynb", ".gitignore", "LICENSE", ".*"]
 
 [default.extend-identifiers]
 aks="aks"
@@ -13,9 +13,6 @@ AKS="AKS"
 "parametrize"="parametrize"
 "dum"="dum"
 "te"="te"
-"idea"="idea"
-"Anonymized"="Anonymized"
-
 
 [default]
 locale="en-gb"
