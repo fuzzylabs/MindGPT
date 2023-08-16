@@ -1,45 +1,151 @@
 """Test the data cleaning functionality."""
+import bs4
 import pandas as pd
 import pytest
+from pandas._testing import assert_frame_equal
 from steps.data_preparation_steps import clean_data
 from steps.data_preparation_steps.clean_data_step.clean_data_step import (
+    add_punctuation,
+    clean_html,
+    clean_mind_dataset,
+    clean_nhs_dataset,
     contract_white_space,
     insert_space_between_numbers_and_letters,
+    is_lone_link,
     remove_nbsp,
     remove_new_line,
-    strip_string,
+    strip_string, remove_pattern,
 )
 
 
 @pytest.fixture
-def scraped_data_fixture() -> pd.DataFrame:
+def dirty_html_case() -> str:
+    """Fixture for a dirty HTML case.
+
+    It's reused both in scraped data and in other unit tests.
+
+    Returns:
+        str: HTML containing various cases
+    """
+    return (
+        "<div>"
+        "<h2>Special HTML case</h2>"
+        "<h3>Inner heading!</h3>"
+        "<p>Some content.</p>"
+        "<aside>Shall be removed</aside>"
+        "<p><a>Lone link</a></p>"
+        "<p>But keep this<a>one</a></p>"
+        "</div>"
+    )
+
+
+@pytest.fixture
+def unclean_mind_html() -> str:
+    """Fixture containing scraped mind html including video class that will be removed.
+
+    Returns:
+        str: HTML containing scraped mind page
+    """
+    return """<div><p>Keep me</p></div><div class="col-md-8 column"><div><h3>Video heading?</h3><p>In this video, we will remove entire parent div.</p><div class="video-wrapper"><iframe src="https://www.dummy"></iframe></div></div></div>"""
+
+
+@pytest.fixture
+def unclean_nhs_html() -> str:
+    """Fixture containing scraped nhs html including video class that will be removed.
+
+    Returns:
+        str: HTML containing scraped nhs page
+    """
+    return """<div><p>Keep me</p></div><div class="app-brightcove-video"><div><h3>Video heading?</h3><p>In this video, we will remove entire parent div.</p></div></div>"""
+
+
+@pytest.fixture
+def expected_cleaned_html_case() -> str:
+    """Fixture for the expected cleaned counter-part of the dirty HTML case.
+
+    Returns:
+        str: Expected cleaned HTML case
+    """
+    return "Special HTML case. Inner heading! Some content. But keep this one"
+
+
+@pytest.fixture
+def scraped_data_fixture(
+    dirty_html_case: str, unclean_mind_html: str, unclean_nhs_html: str
+) -> pd.DataFrame:
     """Fixture mocking the result of the scraping pipeline.
 
     Returns:
         A pandas DataFrame mimicking the results of the scraping procedure.
     """
     data = {
+        "html_scraped": [
+            "<p>This is some scraped data! It has some really wild  spacing.</p>",
+            "<p>It also has some BiZzArE casing. And lots - of * ridiculous,, %% punctuation.</p>",
+            "<p>But otherwise, it's not so bad.</p>",
+            "<p>But otherwise, it's not so bad.</p>",
+            dirty_html_case,
+            unclean_mind_html,
+            unclean_nhs_html,
+        ],
         "text_scraped": [
             "This is some scraped data! It has some really wild  spacing.",
             "It also has some BiZzArE casing. And lots - of * ridiculous,, %% punctuation.",
             "But otherwise, it's not so bad.",
             "But otherwise, it's not so bad.",
+            "Special HTML case",
+            "Keep me",
+            "Keep me",
         ],
         "url": [
             "https://www.link1.com",
             "https://www.link2.com",
             "https://www.link3.com",
             "https://www.link3.com",
+            "https://www.link4.com",
+            "https://www.link5.com",
+            "https://www.link6.com",
         ],
     }
     return pd.DataFrame(data)
 
 
-def test_clean_data(scraped_data_fixture: pd.DataFrame):
+@pytest.fixture
+def expected_cleaned_data(expected_cleaned_html_case: str) -> pd.DataFrame:
+    """Fixture for expected cleaned data results.
+
+    Returns:
+        A pandas DataFrame with expected cleaned data results.
+    """
+    data = {
+        "text_scraped": [
+            "This is some scraped data! It has some really wild spacing.",
+            "It also has some BiZzArE casing. And lots - of * ridiculous,, %% punctuation.",
+            "But otherwise, it's not so bad.",
+            expected_cleaned_html_case,
+            "Keep me",
+            "Keep me",
+        ],
+        "url": [
+            "https://www.link1.com",
+            "https://www.link2.com",
+            "https://www.link3.com",
+            "https://www.link4.com",
+            "https://www.link5.com",
+            "https://www.link6.com",
+        ],
+    }
+    return pd.DataFrame(data)
+
+
+def test_clean_data(
+    scraped_data_fixture: pd.DataFrame, expected_cleaned_data: pd.DataFrame
+):
     """Run a short test on the fake scraped data.
 
     Args:
         scraped_data_fixture: A pandas dataframe mimicking the scraped data format.
+        expected_cleaned_data: A pandas DataFrame with expected cleaned data results.
     """
     cleaned_data = clean_data(scraped_data_fixture)
     for idx in cleaned_data.index:
@@ -52,6 +158,30 @@ def test_clean_data(scraped_data_fixture: pd.DataFrame):
         assert "  " not in cleaned_data.loc[idx, "text_scraped"]
         assert len(cleaned_data) == len(scraped_data_fixture.dropna().drop_duplicates())
     assert len(cleaned_data) == len(scraped_data_fixture) - 1
+    assert_frame_equal(expected_cleaned_data, cleaned_data)
+
+
+def test_clean_html(dirty_html_case: str, expected_cleaned_html_case: str):
+    """Test clean_html function.
+
+    Args:
+        dirty_html_case (str): Dirty HTML to test with
+        expected_cleaned_html_case (str): expected cleaning results
+    """
+    assert not clean_html("")
+    assert expected_cleaned_html_case == clean_html(dirty_html_case)
+
+
+def test_add_punctuation():
+    """Test add_punctuation function."""
+    assert not add_punctuation("")  # Special case for empty strings
+    assert add_punctuation("Heading") == "Heading."
+    assert add_punctuation("Heading.") == "Heading."
+    assert add_punctuation("Heading!") == "Heading!"
+    assert add_punctuation("Heading?") == "Heading?"
+    assert (
+        add_punctuation("Heading;") == "Heading;."
+    )  # We do not accept non-end-of-sentence punctuation
 
 
 def test_remove_new_line():
@@ -100,3 +230,57 @@ def test_contract_white_space():
         contract_white_space("   this   string  has      strange     spacing         ")
         == " this string has strange spacing "
     )
+
+
+def test_is_lone_link():
+    """Test whether lone links are detected correctly."""
+    test_html = """
+    <div>
+        <a id="no_parent">Special case, no parent, keep</a>
+        <p><a id="lone">Lone in paragraph</a></p>
+        <h1><a id="lone_heading">Lone in heading</a></h1>
+        <p>Some text <a id="non_lone">not alone</a></p>
+        <h1>Some heading <a id="non_lone_heading">not alone</a></h1>
+    </div>
+    """
+    soup = bs4.BeautifulSoup(test_html)
+    assert not is_lone_link(soup.find(id="no_parent"))
+    assert is_lone_link(soup.find(id="lone"))
+    assert is_lone_link(soup.find(id="lone_heading"))
+    assert not is_lone_link(soup.find(id="non_lone"))
+    assert not is_lone_link(soup.find(id="non_lone_heading"))
+
+
+def test_clean_mind_dataset(unclean_mind_html: str):
+    """Test that the Mind dataset is cleaned as expected."""
+    soup = bs4.BeautifulSoup(unclean_mind_html)
+    cleaned_soup = clean_mind_dataset(soup)
+    assert cleaned_soup.find("p").text == "Keep me"
+    assert not cleaned_soup.find_all("div", {"class": "video-wrapper"})
+
+
+def test_clean_nhs_dataset(unclean_nhs_html: str):
+    """Test that the Mind dataset is cleaned as expected."""
+    soup = bs4.BeautifulSoup(unclean_nhs_html)
+    cleaned_soup = clean_nhs_dataset(soup)
+    assert cleaned_soup.find("p").text == "Keep me"
+    assert not cleaned_soup.find_all("div", {"class": "app-brightcove-video"})
+
+
+def test_remove_pattern():
+    """Test that remove pattern function only removes specified patterns."""
+    pattern = r"\d+"  # One or more digits
+    expected = "abcdefg"
+
+    got = remove_pattern(pattern, "abcdefg")  # Nothing to remove
+    assert expected == got
+
+    got = remove_pattern(pattern, "abcd1efg")  # One character
+    assert expected == got
+
+    got = remove_pattern(pattern, "ab123cdefg")  # Multiple characters
+    assert expected == got
+
+    got = remove_pattern(pattern, "ab123cdef567g")  # Multiple instances
+    assert expected == got
+

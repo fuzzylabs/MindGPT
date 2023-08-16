@@ -1,8 +1,169 @@
 """Clean the scraped data."""
 import re
+from typing import Union
 
 import pandas as pd
+from bs4 import BeautifulSoup, Tag
 from zenml import step
+
+
+def add_punctuation(text: str) -> str:
+    """Add a full stop if the text does not end with a punctuation mark.
+
+    Args:
+        text (str): text to update
+
+    Returns:
+        str: updated text
+    """
+    if len(text) == 0:
+        return text
+    elif text[-1] not in [".", "!", "?"]:
+        return text + "."
+    else:
+        return text
+
+
+def is_lone_link(a_tag: Tag) -> bool:
+    """Check whether the link is lone.
+
+    Lone link is when it does not have any other text within the same parent tag,
+    i.e. the only text there is the link text itself.
+
+    Args:
+        a_tag (Tag): <a> tag to test
+
+    Returns:
+        bool: decision
+    """
+
+    def get_text_parent(tag: Tag) -> Union[Tag, None]:
+        """Get the innermost text tag.
+
+        Text tag is a p, h1, h2, or h3
+
+        Args:
+            tag (Tag): tag to get the parent for
+
+        Returns:
+            Tag: text parent tag
+        """
+        text_tags = ["p", "h1", "h2", "h3"]
+        parent = tag.parent
+        if parent:
+            if parent.name in text_tags:
+                return parent
+            else:
+                return get_text_parent(parent)
+        else:
+            return None
+
+    parent = get_text_parent(a_tag)
+    if parent is None:
+        return False  # Special case, when the link is not within any text tag
+
+    return parent.text == a_tag.text
+
+
+def clean_mind_dataset(bs: BeautifulSoup) -> BeautifulSoup:
+    """Clean Mind dataset.
+
+    Args:
+        bs (BeautifulSoup): Raw HTML data
+
+    Returns:
+        BeautifulSoup: Cleaned HTML data
+    """
+    # Remove videos for Mind dataset
+    video_class = bs.find_all("div", {"class": "video-wrapper"})
+    for video in video_class:
+        video.parent.decompose()
+
+    # Remove podcast for Mind dataset
+    podcast_href = bs.find_all("a", {"href": "/information-support/podcasts/"})
+    for podcast in podcast_href:
+        podcast.parent.parent.decompose()
+
+    # Remove feedback form at end of page
+    feedback_form = bs.find_all("div", {"class": "feedback"})
+    for feedback in feedback_form:
+        feedback.parent.decompose()
+
+    # Remove navigation text at end of page
+    next_page_navigation = bs.find_all("div", {"class": "next-prev"})
+    for next_page_text in next_page_navigation:
+        next_page_text.parent.decompose()
+    return bs
+
+
+def clean_nhs_dataset(bs: BeautifulSoup) -> BeautifulSoup:
+    """Clean NHS dataset.
+
+    Args:
+        bs (BeautifulSoup): Raw HTML data
+
+    Returns:
+        BeautifulSoup: Cleaned HTML data
+    """
+    # Remove videos for NHS dataset
+    video_class = bs.find_all("div", {"class": "app-brightcove-video"})
+    for video in video_class:
+        video.decompose()
+
+    # Remove dates at the end of the page
+    page_end_dates = bs.find_all("p", {"class": "nhsuk-u-margin-top-7"})
+    for page_dates in page_end_dates:
+        page_dates.decompose()
+    return bs
+
+
+def remove_pattern(pattern: str, text: str) -> str:
+    """Remove a pattern from the given string.
+
+    Args:
+        pattern (str): a Regexp of the pattern to remove
+        text (str): text to remove the pattern from
+
+    Returns:
+        str: cleaned text
+    """
+    return re.sub(pattern, "", text)
+
+
+def clean_html(html: str) -> str:
+    """Clean html.
+
+    Args:
+        html (str): HTML string to clean
+
+    Return:
+        str: cleaned text, with html tags removed
+    """
+    bs = BeautifulSoup(html, "lxml")
+
+    # Remove <aside>
+    aside = bs.find_all("aside")
+    for tag in aside:
+        tag.decompose()
+
+    # Clean Mind dataset
+    bs = clean_mind_dataset(bs)
+
+    # Clean NHS dataset
+    bs = clean_nhs_dataset(bs)
+
+    # Punctuate headings
+    headings = bs.find_all(["h1", "h2", "h3", "li"])
+    for heading in headings:
+        heading.replace_with(add_punctuation(heading.text.strip()))
+
+    # Remove lone links
+    links = bs.find_all("a")
+    for link in links:
+        if is_lone_link(link):
+            link.decompose()
+
+    return bs.get_text(" ")
 
 
 def remove_new_line(s: str) -> str:
@@ -91,6 +252,8 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
     """
     data = data.dropna().copy()
 
+    data["text_scraped"] = data["html_scraped"].map(clean_html)
+
     data["text_scraped"] = data["text_scraped"].map(remove_new_line)
     data["text_scraped"] = data["text_scraped"].map(strip_string)
     data["text_scraped"] = data["text_scraped"].map(remove_nbsp)
@@ -99,7 +262,13 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
         insert_space_between_numbers_and_letters
     )
 
+    # Remove specific patterns from the data
+    data["text_scraped"] = data["text_scraped"].map(lambda text: remove_pattern(r"See our page[^\.]+[\.]", text))
+    data["text_scraped"] = data["text_scraped"].map(lambda text: remove_pattern(r"Or see our page[^\.]+[\.]", text))
+    data["text_scraped"] = data["text_scraped"].map(lambda text: remove_pattern(r"Read more about[^\.]+[\.]", text))
+
     data = data.drop(data[data.text_scraped == ""].index)
     data = data.drop_duplicates()
+    data = data.drop(columns=["html_scraped"])
 
     return data.reset_index(drop=True)

@@ -25,8 +25,8 @@ spec:
             - name: POSTGRES_PASSWORD
               value: postgres
           volumeMounts:
-          - mountPath: /var/lib/postgres/data
-            name: metric-db-data
+            - mountPath: /var/lib/postgres/data
+              name: metric-db-data
           resources:
             limits:
               cpu: 2
@@ -36,7 +36,7 @@ spec:
               memory: 256Mi
 
         - name: metric-service
-          image: crmindgpt.azurecr.io/monitoring
+          image: <acr-registry-name>.azurecr.io/monitoring # UPDATE THIS LINE!!
           ports:
             - containerPort: 5000
           resources:

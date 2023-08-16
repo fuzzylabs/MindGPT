@@ -1,5 +1,6 @@
-chromadb==0.3.29
+chromadb==0.4.3
 https://download.pytorch.org/whl/cpu-cxx11-abi/torch-2.0.1%2Bcpu.cxx11.abi-cp310-cp310-linux_x86_64.whl
 InstructorEmbedding==1.0.1
+pysqlite3-binary
 sentence_transformers>=2.2.0
 streamlit==1.24.1

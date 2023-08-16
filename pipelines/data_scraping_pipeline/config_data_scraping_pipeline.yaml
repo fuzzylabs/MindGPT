@@ -4,7 +4,8 @@ steps:
   scrape_mind_data:
     enable_cache: False
   version_data:
+    enable_cache: False
     parameters:
-      data_version_name: "first_version"
+      data_version_name: "second_version"
       filename_roots: ["mind_data_raw", "nhs_data_raw"]
       debug_mode: True

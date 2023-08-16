@@ -73,17 +73,72 @@ After the provisioning completes, we will have on hand these resources:
 * Seldon Core installed on this cluster
 * Istio ingress installed on this cluster
 
+### Chroma
+
 Next, we apply Kubernetes manifests to deploy Chroma server on AKS using following commands
 
 ```bash
-cd infrastructure/chroma_server_k8s
-kubectl apply -f .
+kubectl apply -f infrastructure/chroma_server_k8s
 ```
 
 Port-forward the chroma server service to localhost using the following command. This will ensure we can access the server from localhost.
 
 ```bash
 kubectl port-forward service/chroma-service 8000:8000
+```
+
+### Monitoring
+
+To run the monitoring service on k8s, `matcha provision` must be run beforehand. We will need to build and push the metric service application to ACR. This image will be used by Kubernetes deployment. Before that, we need to set two bash variables, one for ACR registry URI and another for ACR registry name. We will use matcha get command to do this.
+
+```bash
+acr_registry_uri=$(matcha get container-registry registry-url --output json | sed -n 's/.*"registry-url": "\(.*\)".*/\1/p')
+acr_registry_name=$(matcha get container-registry registry-name --output json | sed -n 's/.*"registry-name": "\(.*\)".*/\1/p')
+```
+
+Now we're ready to login into ACR, build and push the image to the ACR.
+
+```bash
+az acr login --name $acr_registry_name
+docker build -t $acr_registry_uri/monitoring:latest -f monitoring/metric_service/Dockerfile .
+docker push $acr_registry_uri/monitoring:latest
+```
+
+Line number 39 in [monitoring-deployment.yaml](./infrastructure/monitoring/monitoring-deployment.yaml#L39) should be updated to match the Docker image name which we've just pushed to the ACR, and it will need to be in the following format: `<name-of-acr-registry>.azurecr.io/monitoring`.
+
+Next, we apply the Kubernetes manifest to deploy the metric service and the metric database on AKS.
+
+```bash
+kubectl apply -f infrastructure/monitoring
+```
+
+Once `kubectl` has finished applying the manifest, we should verify that the monitoring service is running. Running the commands below will give you an IP address for the service, which we can then `curl` for a response:
+
+```bash
+kubectl get pods # Checking whether the monitoring pod is running
+
+# Expected output (Note the name of pod will be different)
+NAME                                    READY   STATUS    RESTARTS   AGE
+monitoring-service-588f644c49-ldjhf     2/2     Running   0          3d1h
+```
+
+```bash
+kubectl get svc monitoring-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+```
+
+We should be able to curl the external IP returned running the above command at port 5000.
+
+```bash
+curl {external-ip:5000}
+
+# The response should be:
+Hello world from the metric service.
+```
+
+Now we know that everything is up and running, we need to use port-forwarding so the embedding pipeline (which is running locally) can communicate with the service hosted on Kubernetes:
+
+```bash
+kubectl port-forward service/monitoring-service 5000:5000
 ```
 
 In data embedding pipeline, we take the validated dataset from data preparation pipeline and use Chroma vector database to store the embedding of the text data. This pipelines uses both the Mind and NHS data.
@@ -107,7 +162,7 @@ To deploy a pre-trained LLM model, we first need a Kubernetes cluster with [Seld
 Apply the prepared kubernetes manifest to deploy the model:
 
 ```bash
-kubectl apply -f infrastructure/llm/seldondeployment.yaml
+kubectl apply -f infrastructure/llm_k8s/seldon-deployment.yaml
 ```
 
 This will create a Seldon deployment, which consists of:
@@ -151,11 +206,13 @@ The expected payload structure is as follows:
 To run the monitoring service on your local machine, we'll utilise docker-compose. This will initialise two services - the metric service interface, which listens for POST and GET requests, and the metric database service.
 
 To run docker-compose:
+
 ```
 docker-compose -f monitoring/docker-compose.yml up
 ```
 
 Once the two containers has started, we can curl our metric service from the outside.
+
 ```
 curl localhost:5000/
 # This should return a default message saying "Hello world from the metric service."
@@ -168,53 +225,14 @@ curl -X POST localhost:5000/embedding_drift -H "Content-Type: application/json" 
 # This should insert the embedding drift data to our "EmbeddingDrift" relation. If success, we should see the following response message:
 "{"message":"Validation error: 'reference_dataset is not found in the data dictionary.'","status_code":400}"
 
-
 # We can also query our database with:
 curl localhost:5000/query_readability
-
-or
-
-curl localhost:5000//query_embedding_drift
 ```
 
-### Running on k8s cluster
-To run the monitoring service on k8s, `matcha provision` must be run beforehand. We will need to build and push the metric service application to ACR. This image will be used by Kubernetes deployment. Before that, we need to set two bash variables, one for ACR registry URI and another for ACR registry name. We will use matcha get command to do this.
+### Monitoring MindGPT 👀
+We've created a [notebook](notebook/monitoring_notebook.ipynb) which accesses the monitoring service, fetches the metrics, and creates some simple plots showing the change over time.
 
-```bash
-acr_registry_uri=$(matcha get container-registry registry-url --output json | sed -n 's/.*"registry-url": "\(.*\)".*/\1/p')
-acr_registry_name=$(matcha get container-registry registry-name --output json | sed -n 's/.*"registry-name": "\(.*\)".*/\1/p')
-```
-
-Now we're ready to login into ACR, build and push the image to the ACR.
-
-```bash
-az acr login --name $acr_registry_name
-docker build -t $acr_registry_uri/monitoring:latest -f monitoring/metric_service/Dockerfile .
-docker push $acr_registry_uri/monitoring:latest
-```
-
-Next, we apply the Kubernetes manifest to deploy the metric service and the metric database on AKS.
-
-```bash
-kubectl apply -f infrastructure/monitoring
-```
-
-Finally, once the pod is running, we verify that our monitoring service is working. The command below should provide an IP address for the metric service interface.
-
-```bash
-kubectl get pods # Checking whether the monitoring pod is running
-
-kubectl get svc monitoring-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
-```
-
-We should be able to curl the external IP returned running the above command at port 5000.
-
-```bash
-curl {external-ip:5000}
-
-# The response should be:
-Hello world from the metric service.
-```
+This is a starting point for accessing the metrics, and we're planning to introduce a hosted dashboard version of these plots at some point in the future.
 
 ## Streamlit Application
 
@@ -250,8 +268,7 @@ Line number 19 in [streamlit-deployment.yaml](./infrastructure/streamlit_k8s/str
 Next, we apply the Kubernetes manifest to deploy the streamlit application on AKS.
 
 ```bash
-cd infrastructure/streamlit_app_k8s
-kubectl apply -f .
+kubectl apply -f infrastructure/streamlit_k8s
 ```
 
 Finally, we verify the streamlit application. The command below should provide an IP address for the streamlit application.
