@@ -149,11 +149,11 @@ def compute_embedding_drift(
     payload = build_embedding_drift_payload(
         reference_data_version, current_data_version, distance
     )
-    response = requests.post(
-        f"http://{MONITORING_METRICS_HOST_NAME}:{MONITORING_METRICS_PORT}/embedding_drift",
-        json=payload,
-    )
+    # response = requests.post(
+    #     f"http://{MONITORING_METRICS_HOST_NAME}:{MONITORING_METRICS_PORT}/embedding_drift",
+    #     json=payload,
+    # )
 
-    logger.info(response.text)
+    # logger.info(response.text)
 
     return float(distance)

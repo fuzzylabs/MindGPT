@@ -267,7 +267,7 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
     data["text_scraped"] = data["text_scraped"].map(lambda text: remove_pattern(r"Or see our page[^\.]+[\.]", text))
     data["text_scraped"] = data["text_scraped"].map(lambda text: remove_pattern(r"Read more about[^\.]+[\.]", text))
 
-    data = data.drop(data[data.text_scraped == ""].index)
+    data = data[data.text_scraped != ""]
     data = data.drop_duplicates()
     data = data.drop(columns=["html_scraped"])
 
