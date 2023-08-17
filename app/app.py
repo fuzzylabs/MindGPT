@@ -56,7 +56,7 @@ DEFAULT_QUERY_INSTRUCTION = (
     "Represent the question for retrieving supporting documents: "
 )
 
-CONVERSATIONAL_MEMORY_SIZE = 1
+CONVERSATIONAL_MEMORY_SIZE = 3
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -79,8 +79,9 @@ Question: {question}
 Helpful Answer:""",
     "conversational": """Use the conversation history and context provided to inform your response.
 
-Conversation history:
+Start of conversation history
 {history}
+End of conversation history
 
 Context: {context}
 
@@ -269,12 +270,20 @@ def _create_payload(
 
 
 def _build_conversation_history_template(history_list: List[Dict[str, str]]) -> str:
+    """Build the conversation history as a string to be append to the prompt template.
+
+    Args:
+        history_list (List[Dict[str, str]]): the conversation history dictionary containing the questions posed by user and the response by the model.
+
+    Returns:
+        str: the conversation history string.
+    """
     history_string = ""
     for history in history_list:
         user_input = history["user_input"]
         ai_response = history["ai_response"]
 
-        history_string += f"User input: {user_input}\nAI response: {ai_response}\n"
+        history_string += f"\nUser: {user_input}\nAI: {ai_response}\n"
 
     return history_string
 
