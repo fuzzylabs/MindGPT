@@ -74,7 +74,7 @@ Aim to retain the most important points, providing a coherent and readable summa
 Please avoid unnecessary details or tangential points.
 {context}
 Question: {question}
-Helpful Answer:"""
+Helpful Answer:""",
 }
 
 st.set_page_config(
@@ -273,18 +273,19 @@ def query_llm(
 
 
 def post_response_to_metric_service(
-    metric_service_endpoint: str, response: str
+    metric_service_endpoint: str, response: str, dataset: str
 ) -> Response:
     """Send the LLM's response to the metric service for readability computation using a POST request.
 
     Args:
         metric_service_endpoint (str): the metric service endpoint where the readability is computed
         response (str): the response produced by the LLM
+        dataset (str): the dataset that was used to generate the response.
 
     Returns:
         Response: the post request response
     """
-    response_dict = {"response": response}
+    response_dict = {"response": response, "dataset": dataset.lower()}
     result = requests.post(url=metric_service_endpoint, json=response_dict)
 
     return result
@@ -307,9 +308,16 @@ def show_disclaimer() -> None:
 def show_settings() -> None:
     """Show inference settings on the sidebar."""
     st.title("Settings")
-    st.session_state.temperature = st.slider("Temperature", min_value=0.0, max_value=2.0, value=0.8)
-    st.session_state.max_length = st.slider("Max response length", min_value=50, max_value=500, value=300, step=1)
-    st.session_state.prompt_template = st.select_slider("Prompt template", options=["simple", "complex", "advanced"], value="simple")
+    st.session_state.temperature = st.slider(
+        "Temperature", min_value=0.0, max_value=2.0, value=0.8
+    )
+    st.session_state.max_length = st.slider(
+        "Max response length", min_value=50, max_value=500, value=300, step=1
+    )
+    st.session_state.prompt_template = st.select_slider(
+        "Prompt template", options=["simple", "complex", "advanced"], value="simple"
+    )
+
 
 def show_sidebar():
     """Show the sidebar."""
@@ -398,7 +406,7 @@ def main() -> None:
 
                         if metric_service_endpoint:
                             result = post_response_to_metric_service(
-                                metric_service_endpoint, assistant_response
+                                metric_service_endpoint, assistant_response, source
                             )
                             logging.info(result.text)
 

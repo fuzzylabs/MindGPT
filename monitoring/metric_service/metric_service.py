@@ -1,5 +1,5 @@
 """Functions for the metric service for computing readability and validate llm response and embedding drift data."""
-from typing import Dict, Union
+from typing import Dict, Tuple, Union
 
 import textstat
 
@@ -33,7 +33,7 @@ def compute_readability(llm_response: str) -> float:
     return float(textstat.flesch_reading_ease(llm_response))
 
 
-def validate_llm_response(llm_response_dict: Dict[str, str]) -> str:
+def validate_llm_response(llm_response_dict: Dict[str, str]) -> Tuple[str, str]:
     """This function validate the payload which should be a dictionary containing the response text.
 
     Args:
@@ -46,7 +46,7 @@ def validate_llm_response(llm_response_dict: Dict[str, str]) -> str:
         ValueError: raise if the model response received is a empty string
 
     Returns:
-        str: the validated response text
+        Tuple[str, str]: the validated response text
     """
     if not isinstance(llm_response_dict, dict):
         raise TypeError("The model response is not a dictionary.")
@@ -54,7 +54,12 @@ def validate_llm_response(llm_response_dict: Dict[str, str]) -> str:
     response = llm_response_dict.get("response")
     if response is None:
         raise ValueError(
-            "The response dictionary does not contain the right key value pair."
+            "The response dictionary does not contain the response key value pair."
+        )
+    dataset = llm_response_dict.get("dataset")
+    if dataset is None:
+        raise ValueError(
+            "The response dictionary does not contain the dataset key value pair."
         )
 
     if not isinstance(response, str):
@@ -62,7 +67,12 @@ def validate_llm_response(llm_response_dict: Dict[str, str]) -> str:
     elif len(response) == 0:
         raise ValueError("The model response must not be an empty string.")
 
-    return response
+    if not isinstance(dataset, str):
+        raise TypeError("The name of the dataset is not a string.")
+    elif len(dataset) == 0:
+        raise ValueError("The dataset name must not be an empty string.")
+
+    return response, dataset
 
 
 def validate_embedding_drift_data(
@@ -85,6 +95,7 @@ def validate_embedding_drift_data(
         "current_dataset": str,
         "distance": float,
         "drifted": bool,
+        "dataset": str,
     }
 
     for key, expected_type in required_keys_types.items():

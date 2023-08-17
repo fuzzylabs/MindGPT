@@ -46,34 +46,38 @@ class SQLQueries:
 
     @staticmethod
     def create_readability_relation_query() -> str:
-        """SQL query for creating the readability relation with 3 columns, ID, TimeStamp and ReadabilityScore.
+        """SQL query for creating the readability relation with 3 columns.
+
+        Columns:
+            - id (Primary Key)
+            - time_stamp
+            - readability_score
+            - dataset (the dataset used for generating the response)
 
         Returns:
             str: SQL query for creating the readability relation
         """
         sql_query = """
-            CREATE TABLE "readability" (
-                "id" SERIAL PRIMARY KEY,
-                "time_stamp" TIMESTAMP,
-                "readability_score" FLOAT(2)
+            CREATE TABLE readability (
+                id SERIAL PRIMARY KEY,
+                time_stamp TIMESTAMP,
+                readability_score FLOAT(2),
+                dataset VARCHAR(50) REFERENCES datasets(name)
             );
             """
 
         return sql_query
 
     @staticmethod
-    def insert_readability_data(score: float) -> str:
+    def insert_readability_data() -> str:
         """SQL query for inserting a row of data into the readability relation.
-
-        Args:
-            score (float): the readability score computed.
 
         Returns:
             str: SQL query for inserting a row of data into the readability relation.
         """
-        sql_query = f"""
-            INSERT INTO "readability" ("time_stamp", "readability_score")
-            VALUES (NOW(), {score});
+        sql_query = """
+            INSERT INTO readability (time_stamp, readability_score, dataset)
+            VALUES (NOW(), %(score)s, %(dataset)s);
             """
 
         return sql_query
@@ -89,36 +93,64 @@ class SQLQueries:
             - current_dataset (Version Number)
             - distance
             - drifted (Bool) - Optional
+            - dataset (Foreign Key referencing datasets.name)
 
         Returns:
             str: SQL query for creating the EmbeddingDrift relation
         """
         sql_query = """
-            CREATE TABLE "embedding_drift" (
-                "id" SERIAL PRIMARY KEY,
-                "time_stamp" TIMESTAMP,
-                "reference_dataset" VARCHAR(50),
-                "current_dataset" VARCHAR(50),
-                "distance" FLOAT(3),
-                "drifted" BOOLEAN
+            CREATE TABLE embedding_drift (
+                id SERIAL PRIMARY KEY,
+                time_stamp TIMESTAMP,
+                reference_dataset VARCHAR(50),
+                current_dataset VARCHAR(50),
+                distance FLOAT(3),
+                drifted BOOLEAN,
+                dataset VARCHAR(50) REFERENCES datasets(name)
             );
             """
 
         return sql_query
 
     @staticmethod
-    def insert_embedding_drift_data(data: Dict[str, Union[str, float, bool]]) -> str:
+    def insert_embedding_drift_data() -> str:
         """SQL query for inserting a row of data into the EmbeddingDrift relation.
-
-        Args:
-            data (Dict[str, Union[str, float, bool]]): the dictionary containing the embedding drift data
 
         Returns:
             str: SQL query for inserting a row of data into the EmbeddingDrift relation.
         """
-        sql_query = f"""
-            INSERT INTO "embedding_drift" ("time_stamp", "reference_dataset", "current_dataset", "distance", "drifted")
-            VALUES (NOW(), {data["reference_dataset"]}, {data["current_dataset"]}, {data["distance"]}, {data["drifted"]});
+        sql_query = """
+            INSERT INTO embedding_drift (time_stamp, reference_dataset, current_dataset, distance, drifted, dataset)
+            VALUES (NOW(), %(reference_dataset)s, %(current_dataset)s, %(distance)s, %(drifted)s, %(dataset)s);
+            """
+
+        return sql_query
+
+    @staticmethod
+    def create_datasets_relation_query() -> str:
+        """SQL query for creating the dataset relation with 2 columns, id and tag.
+
+        Returns:
+            str: SQL query for creating the datasets relation
+        """
+        sql_query = """
+            CREATE TABLE datasets (
+                name varchar(50) PRIMARY KEY
+            );
+            """
+
+        return sql_query
+
+    @staticmethod
+    def insert_datasets_data() -> str:
+        """SQL query for inserting a row of data into the datasets relation.
+
+        Returns:
+            str: SQL query for inserting a row of data into the datasets relation.
+        """
+        sql_query = """
+            INSERT INTO datasets (name)
+            VALUES (%(name)s);
             """
 
         return sql_query
@@ -164,7 +196,11 @@ class SQLQueries:
 class DatabaseInterface:
     """Class containing methods for interacting with the postgres database."""
 
-    relation_names = {"readability", "embedding_drift"}
+    relation_names = {
+        "datasets",
+        "readability",
+        "embedding_drift",
+    }  # The datasets relation must be created first as the other two relations reference to it.
 
     def __init__(self) -> None:
         """Constructor which will initialise a database connection."""
@@ -196,7 +232,10 @@ class DatabaseInterface:
                 time.sleep(5)
 
         for name in self.relation_names:
-            if not self.check_relation_existence(name):
+            if not self.check_relation_existence(name) and name == "datasets":
+                self.create_relation(name)
+                self.insert_datasets_data()
+            elif not self.check_relation_existence(name):
                 self.create_relation(name)
 
     def get_conn(self) -> extensions.connection:
@@ -216,12 +255,16 @@ class DatabaseInterface:
         )  # cast type for mypy
 
     def execute_query(
-        self, query: str, fetch: bool = False
+        self,
+        query: str,
+        query_parameters: Optional[Dict[str, Any]] = None,
+        fetch: bool = False,
     ) -> Optional[List[Tuple[Any, ...]]]:
         """Executes a SQL query on the database.
 
         Args:
             query (str): the SQL query to be executed.
+            query_parameters (Optional[Dict[str, Any]]): The parameters that the SQL query to execute should take. Defaults to None.
             fetch (bool): if set to True, the method will fetch and return the results of the query. Defaults to False.
 
         Returns:
@@ -233,7 +276,10 @@ class DatabaseInterface:
             conn = self.get_conn()
 
             with conn.cursor() as cursor:
-                cursor.execute(query)
+                if query_parameters:
+                    cursor.execute(query, query_parameters)
+                else:
+                    cursor.execute(query)
                 if fetch:
                     result = cursor.fetchall()
 
@@ -267,18 +313,22 @@ class DatabaseInterface:
     def create_relation(self, relation_name: str) -> None:
         """This function creates a relation."""
         query_map = {
+            "datasets": SQLQueries.create_datasets_relation_query(),
             "readability": SQLQueries.create_readability_relation_query(),
             "embedding_drift": SQLQueries.create_embedding_drift_relation_query(),
         }
         self.execute_query(str(query_map.get(relation_name)))
 
-    def insert_readability_data(self, score: float) -> None:
+    def insert_readability_data(self, score: float, dataset: str) -> None:
         """This function insert a row of data into to readability relation.
 
         Args:
             score (float): the readability score computed.
+            dataset (str): the dataset used to generate the response.
         """
-        self.execute_query(SQLQueries.insert_readability_data(score))
+        self.execute_query(
+            SQLQueries.insert_readability_data(), {"score": score, "dataset": dataset}
+        )
 
     def insert_embedding_drift_data(
         self, data: Dict[str, Union[str, float, bool]]
@@ -288,7 +338,25 @@ class DatabaseInterface:
         Args:
             data (Dict[str, Union[str, float, bool]]): a dictionary containing the embedding drift data to be inserted to the relation.
         """
-        self.execute_query(SQLQueries.insert_embedding_drift_data(data))
+        self.execute_query(
+            SQLQueries.insert_embedding_drift_data(),
+            {
+                "reference_dataset": data["reference_dataset"],
+                "current_dataset": data["current_dataset"],
+                "distance": data["distance"],
+                "drifted": data["drifted"],
+                "dataset": data["dataset"],
+            },
+        )
+
+    def insert_datasets_data(self) -> None:
+        """This function insert two rows of data into the dataset relation which are the names of the dataset."""
+        dataset_names = ["nhs", "mind"]
+
+        for dataset_name in dataset_names:
+            self.execute_query(
+                SQLQueries.insert_datasets_data(), {"name": dataset_name}
+            )
 
     def query_relation(self, relation_name: str) -> List[Tuple[Any, ...]]:
         """This function queries a specific relation in the database, based on the provided relation name.

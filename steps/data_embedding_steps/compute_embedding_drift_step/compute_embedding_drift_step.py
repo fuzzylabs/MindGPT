@@ -16,6 +16,8 @@ MONITORING_METRICS_PORT = 5000
 CHROMA_SERVER_HOSTNAME = "localhost"  # Switch hostname to chroma-service.default if running the pipeline on k8s
 CHROMA_SERVER_PORT = 8000
 
+COLLECTION_NAME_MAP = {"mind_data": "mind", "nhs_data": "nhs"}
+
 
 def validate_embeddings(
     reference_embeddings: List[List[float]], current_embeddings: List[List[float]]
@@ -85,7 +87,10 @@ def calculate_euclidean_distance(
 
 
 def build_embedding_drift_payload(
-    reference_data_version: str, current_data_version: str, distance: float
+    reference_data_version: str,
+    current_data_version: str,
+    distance: float,
+    dataset: str,
 ) -> Dict[str, Union[str, float, bool]]:
     """Construct a payload for send the embedding drift data to the metric service via post request.
 
@@ -93,6 +98,7 @@ def build_embedding_drift_payload(
         reference_data_version (str): the version identifier for the reference data.
         current_data_version (str): the version identifier for the current data.
         distance (float): the computed Euclidean distance between the embeddings of the reference and current data.
+        dataset (str): the dataset used for computing embedding drift.
 
     Returns:
         Dict[str, Union[str, float, bool]]: a dictionary containing the 4 items required by the metric service embedding drift relation.
@@ -107,6 +113,7 @@ def build_embedding_drift_payload(
         "current_dataset": f"{formatted_current_data_version}",
         "distance": distance,
         "drifted": drifted,
+        "dataset": dataset,
     }
 
 
@@ -147,7 +154,10 @@ def compute_embedding_drift(
     )
 
     payload = build_embedding_drift_payload(
-        reference_data_version, current_data_version, distance
+        reference_data_version,
+        current_data_version,
+        distance,
+        COLLECTION_NAME_MAP[collection_name],
     )
     response = requests.post(
         f"http://{MONITORING_METRICS_HOST_NAME}:{MONITORING_METRICS_PORT}/embedding_drift",

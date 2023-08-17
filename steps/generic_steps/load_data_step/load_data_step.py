@@ -56,4 +56,4 @@ def load_data(
     mind_df = pd.read_csv(mind_file_path)
     nhs_df = pd.read_csv(nhs_file_path)
 
-    return data_version, reference_data_version, mind_df, nhs_df
+    return data_version, reference_data_version, mind_df[:3], nhs_df[:3]
