@@ -5,9 +5,13 @@ steps:
       data_version: "data/second_version"
       data_postfix: "raw"
       reference_data_version: "data/second_version"
-  clean_data:
+  clean_data_mind:
     enable_cache: False
-  validate_data:
+  clean_data_nhs:
+    enable_cache: False
+  validate_data_mind:
+    enable_cache: False
+  validate_data_nhs:
     enable_cache: False
   version_data:
     enable_cache: False

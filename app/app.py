@@ -27,7 +27,7 @@ logging.basicConfig(
 
 
 # Setup for chroma vector store
-CHROMA_SERVER_HOST_NAME = "chroma-service.default"
+CHROMA_SERVER_HOST_NAME = "localhost"
 CHROMA_SERVER_PORT = 8000
 DEFAULT_EMBED_MODEL = "base"  # ["base", "large", "xl"]
 N_CLOSEST_MATCHES = 3
@@ -99,7 +99,7 @@ def _get_prediction_endpoint() -> Optional[str]:
     Returns:
         Optional[str]: the url endpoint if it exists and is valid, None otherwise.
     """
-    return f"http://{SELDON_SERVICE_NAME}.{SELDON_NAMESPACE}:{SELDON_PORT}/v2/models/transformer/infer"
+    return f"http://localhost:9000/v2/models/transformer/infer"
 
 
 @st.cache_data(show_spinner=False)
@@ -307,7 +307,7 @@ def show_disclaimer() -> None:
 def show_settings() -> None:
     """Show inference settings on the sidebar."""
     st.title("Settings")
-    st.session_state.temperature = st.slider("Temperature", min_value=0.0, max_value=2.0, value=0.8)
+    st.session_state.temperature = st.slider("Temperature", min_value=0.0, max_value=2.0, value=0.0)
     st.session_state.max_length = st.slider("Max response length", min_value=50, max_value=500, value=300, step=1)
     st.session_state.prompt_template = st.select_slider("Prompt template", options=["simple", "complex", "advanced"], value="simple")
 
@@ -383,6 +383,8 @@ def main() -> None:
                             embedding_function=embed_function,
                         )
 
+                        print(context)
+
                         # Create a dict of prompt and context
                         message = {"prompt_query": prompt, "context": context}
 
@@ -396,11 +398,11 @@ def main() -> None:
 
                         full_response += f"{source}: {assistant_response}  \n"
 
-                        if metric_service_endpoint:
-                            result = post_response_to_metric_service(
-                                metric_service_endpoint, assistant_response
-                            )
-                            logging.info(result.text)
+                        # if metric_service_endpoint:
+                        #     result = post_response_to_metric_service(
+                        #         metric_service_endpoint, assistant_response
+                        #     )
+                        #     logging.info(result.text)
 
                     message_placeholder.markdown(full_response)
 
