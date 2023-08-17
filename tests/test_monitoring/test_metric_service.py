@@ -13,10 +13,19 @@ from monitoring.metric_service.metric_service import (
     "response, expectation",
     [
         (int(123), pytest.raises(TypeError)),
-        ({"incorrect key": "mock response"}, pytest.raises(ValueError)),
-        ({"response": int(123)}, pytest.raises(TypeError)),
-        ({"response": ""}, pytest.raises(ValueError)),
-        ({"response": "mock response"}, does_not_raise()),
+        (
+            {"incorrect key": "mock response", "dataset": "mock_dataset"},
+            pytest.raises(ValueError),
+        ),
+        (
+            {"response": "mock response", "incorrect key": "mock_dataset"},
+            pytest.raises(ValueError),
+        ),
+        ({"response": int(123), "dataset": "mock_dataset"}, pytest.raises(TypeError)),
+        ({"response": "", "dataset": "mock_dataset"}, pytest.raises(ValueError)),
+        ({"response": "mock response", "dataset": int(123)}, pytest.raises(TypeError)),
+        ({"response": "mock response", "dataset": ""}, pytest.raises(ValueError)),
+        ({"response": "mock response", "dataset": "mock_dataset"}, does_not_raise()),
     ],
 )
 def test_validate_llm_response(response: dict, expectation: pytest.raises) -> None:
@@ -57,6 +66,7 @@ def test_readability_score_for_good_sentences() -> None:
                 "current_dataset": 1.2,
                 "distance": 0.1,
                 "drifted": True,
+                "dataset": "nhs",
             },
             pytest.raises(TypeError),
         ),
@@ -66,6 +76,7 @@ def test_readability_score_for_good_sentences() -> None:
                 "current_dataset": "str",
                 "distance": 0.1,
                 "drifted": True,
+                "dataset": "mind",
             },
             pytest.raises(TypeError),
         ),
@@ -75,6 +86,7 @@ def test_readability_score_for_good_sentences() -> None:
                 "current_dataset": "1.2",
                 "distance": False,
                 "drifted": True,
+                "dataset": "nhs",
             },
             pytest.raises(TypeError),
         ),
@@ -84,23 +96,54 @@ def test_readability_score_for_good_sentences() -> None:
                 "current_dataset": "1.2",
                 "distance": 0.1,
                 "drifted": "True",
+                "dataset": "mind",
             },
             pytest.raises(TypeError),
         ),
         (
-            {"current_dataset": "1.2", "distance": 0.1, "drifted": "True"},
+            {
+                "reference_dataset": "1.1",
+                "current_dataset": "1.2",
+                "distance": 0.1,
+                "drifted": "True",
+                "dataset": 0.1,
+            },
+            pytest.raises(TypeError),
+        ),
+        (
+            {
+                "current_dataset": "1.2",
+                "distance": 0.1,
+                "drifted": "True",
+                "dataset": "nhs",
+            },
             pytest.raises(KeyError),
         ),
         (
-            {"reference_dataset": "1.1", "distance": 0.1, "drifted": "True"},
+            {
+                "reference_dataset": "1.1",
+                "distance": 0.1,
+                "drifted": "True",
+                "dataset": "nhs",
+            },
             pytest.raises(KeyError),
         ),
         (
-            {"reference_dataset": "1.1", "current_dataset": "1.2", "drifted": "True"},
+            {
+                "reference_dataset": "1.1",
+                "current_dataset": "1.2",
+                "drifted": "True",
+                "dataset": "nhs",
+            },
             pytest.raises(KeyError),
         ),
         (
-            {"reference_dataset": "1.1", "current_dataset": "1.2", "distance": 0.1},
+            {
+                "reference_dataset": "1.1",
+                "current_dataset": "1.2",
+                "distance": 0.1,
+                "dataset": "nhs",
+            },
             pytest.raises(KeyError),
         ),
         (
@@ -109,6 +152,16 @@ def test_readability_score_for_good_sentences() -> None:
                 "current_dataset": "1.2",
                 "distance": 0.1,
                 "drifted": True,
+            },
+            pytest.raises(KeyError),
+        ),
+        (
+            {
+                "reference_dataset": "1.1",
+                "current_dataset": "1.2",
+                "distance": 0.1,
+                "drifted": True,
+                "dataset": "nhs",
             },
             does_not_raise(),
         ),
