@@ -105,9 +105,6 @@ def build_embedding_drift_payload(
     """
     drifted = distance > 0
 
-    # formatted_reference_data_version = f"'{reference_data_version}'"
-    # formatted_current_data_version = f"'{current_data_version}'"
-
     return {
         "reference_dataset": reference_data_version,
         "current_dataset": current_data_version,
