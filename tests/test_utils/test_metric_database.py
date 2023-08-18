@@ -168,15 +168,21 @@ def test_database_interface():
 
         db_interface.query_relation("readability")
         mock_execute_query.assert_called_with(
-            SQLQueries.get_data_from_relation(), "readability", fetch=True
+            SQLQueries.get_data_from_relation(),
+            {"relation_name": "readability"},
+            fetch=True,
         )
 
         db_interface.query_relation("embedding_drift")
         mock_execute_query.assert_called_with(
-            SQLQueries.get_data_from_relation(), "embedding_drift", fetch=True
+            SQLQueries.get_data_from_relation(),
+            {"relation_name": "embedding_drift"},
+            fetch=True,
         )
 
         db_interface.query_relation("datasets")
         mock_execute_query.assert_called_with(
-            SQLQueries.get_data_from_relation(), "datasets", fetch=True
+            SQLQueries.get_data_from_relation(),
+            {"relation_name": "datasets"},
+            fetch=True,
         )
