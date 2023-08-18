@@ -191,10 +191,10 @@ class DatabaseInterface:
     """Class containing methods for interacting with the postgres database."""
 
     relation_names = {
-        "datasets",
         "readability",
         "embedding_drift",
-    }  # The datasets relation must be created first as the other two relations reference to it.
+    }
+    # The datasets relation MUST be created first as the other two relations reference to it.
 
     def __init__(self) -> None:
         """Constructor which will initialise a database connection."""
@@ -225,11 +225,13 @@ class DatabaseInterface:
 
                 time.sleep(5)
 
+        # Check if `datasets`` relation exists and create it if it doesn't, this is to ensure the `datasets` relation is created first
+        if not self.check_relation_existence("datasets"):
+            self.create_relation("datasets")
+            self.insert_datasets_data()
+
         for name in self.relation_names:
-            if not self.check_relation_existence(name) and name == "datasets":
-                self.create_relation(name)
-                self.insert_datasets_data()
-            elif not self.check_relation_existence(name):
+            if not self.check_relation_existence(name):
                 self.create_relation(name)
 
     def get_conn(self) -> extensions.connection:
