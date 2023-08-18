@@ -156,20 +156,17 @@ class SQLQueries:
         return sql_query
 
     @staticmethod
-    def relation_existence_query(relation_name: str) -> str:
+    def relation_existence_query() -> str:
         """SQL query for checking whether the relation specified exists or not.
-
-        Args:
-            relation_name (str): name of the relation to check for.
 
         Returns:
             str: SQL query for checking a relation existence
         """
-        sql_query = f"""
+        sql_query = """
             SELECT EXISTS (
                 SELECT FROM pg_tables
                 WHERE  schemaname = 'public'
-                AND    tablename  = '{relation_name}'
+                AND    tablename  = %(relation_name)s
             );
             """
         # This query would return a tuple such as (True,) if the relation exists, otherwise false
@@ -177,17 +174,14 @@ class SQLQueries:
         return sql_query
 
     @staticmethod
-    def get_data_from_relation(relation_name: str) -> str:
+    def get_data_from_relation() -> str:
         """SQL query for getting data from the readability relation.
-
-        Args:
-            relation_name (str): name of the relation to get data from.
 
         Returns:
             str: SQL query for getting data from the readability relation.
         """
-        sql_query = f"""
-            SELECT * FROM "{relation_name}"
+        sql_query = """
+            SELECT * FROM %(relation_name)s
             """
 
         return sql_query
@@ -303,7 +297,9 @@ class DatabaseInterface:
             bool: returns True if exists, False otherwise
         """
         result = self.execute_query(
-            SQLQueries.relation_existence_query(relation_name), fetch=True
+            SQLQueries.relation_existence_query(),
+            {"relation_name": relation_name},
+            fetch=True,
         )
         if result:  # mypy
             return bool(result[0][0])
@@ -368,7 +364,9 @@ class DatabaseInterface:
             List[Tuple[Any, ...]]: a list of tuples representing the data rows from the queried relation.
         """
         result = self.execute_query(
-            SQLQueries.get_data_from_relation(relation_name), fetch=True
+            SQLQueries.get_data_from_relation(),
+            {"relation_name": relation_name},
+            fetch=True,
         )
 
         return result  # type: ignore
