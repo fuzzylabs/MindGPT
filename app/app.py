@@ -482,10 +482,9 @@ def main() -> None:
 
                         # Add history if neither memory is None
                         if nhs_memory and mind_memory:
-                            if collection == "mind_data":
-                                message["history"] = mind_memory
-                            else:
-                                message["history"] = nhs_memory
+                            message["history"] = (
+                                mind_memory if collection == "mind_data" else nhs_memory
+                            )
 
                         # Query LLM by passing query and context
                         assistant_response = query_llm(
