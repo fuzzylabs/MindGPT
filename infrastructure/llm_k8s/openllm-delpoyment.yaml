@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadate:
+  labels:
+    app: openllm-mindgpt
+  name: openllm-mindgpt-deployment
+spec:
+  replicas: 1
+  selectors:
+    matchLabels:
+      app: openllm-mindgpt
+  template:
+    metadate:
+      labels:
+        app: openllm-mindgpt
+    spec:
+      containers:
+        - name: openllm
+          image: largellmcr.azurecr.io/mindgpt/openllm
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+          ports:
+            - containerPort: 3000
+      restartPolicy: OnFailure
+      tolerations:
+        - key: "sku"
+          operator: "Equal"
+          value: "gpu"
+          effect: "NoSchedule"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openllm-mindgpt-svc
+spec:
+  selector:
+    app: openllm-mindgpt
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
