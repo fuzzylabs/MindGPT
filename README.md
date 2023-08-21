@@ -286,15 +286,17 @@ In this section, we'll show how to deploy a larger LLM model on AKS. We will use
 
 ### Deploying the model on AKS
 
-For this approach, we will deploy 2 VMs.
+For this approach, we will deploy 2 VMs, one VM will act as CPU pool and other VM will act as GPU pool. GPU pool will be used to run the model.
 
-1. Create a new AKS cluster with the system node pool using `Standard_DS2_v3` VM instance.
+> Note: `Standard_NC4as_T4_v3` VM instance is not readily available. A quota request has to be submitted to Azure.
+
+1. Create a new AKS cluster with the system node CPU pool using `Standard_DS2_v3` VM instance.
 
     ```bash
     az aks create --resource-group <existing-resource-group> --name largellm --node-count 1 --node-vm-size Standard_DS2_v3 --generate-ssh-keys
     ```
 
-2. Create a GPU Node pool using `Standard_NC4as_T4_v3` VM instance.
+2. Create a GPU Node pool using `Standard_NC4as_T4_v3` VM instance. This VM instance contains 28 GB RAM and T4 GPU with 16 GB VRAM.
 
     ```bash
     az extension add --name aks-preview
@@ -309,12 +311,23 @@ For this approach, we will deploy 2 VMs.
     --cluster-name largellm \
     --name gpunp \
     --node-count 1 \
-    --node-vm-size Standard_NC6 \
+    --node-vm-size Standard_NC4as_T4_v3 \
     --node-taints sku=gpu:NoSchedule \
     --aks-custom-headers UseGPUDedicatedVHD=true \
     --enable-cluster-autoscaler \
     --min-count 1 \
     --max-count 1
+    ```
+
+    Verify both the nodes are provisioned.
+
+    ```bash
+    kubectl get nodes
+
+    Expected Output (the names of node might be different)
+    NAME                                STATUS   ROLES   AGE    VERSION
+    aks-gpunp-42873702-vmss000000       Ready    agent   5h5m   v1.26.6
+    aks-nodepool1-25311124-vmss000000   Ready    agent   5h9m   v1.26.6
     ```
 
 3. Build and push docker image to ACR.
@@ -337,7 +350,7 @@ For this approach, we will deploy 2 VMs.
     ```bash
     kubectl get pods
 
-    Expected Output (the name of pod will be different)
+    Expected Output (the name of pod might be different)
     NAME                                          READY   STATUS    RESTARTS   AGE
     openllm-mindgpt-deployment-77985f86c9-4fj8b   1/1     Running   0          137m
     ```
