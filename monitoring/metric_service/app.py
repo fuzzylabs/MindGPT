@@ -31,17 +31,18 @@ def readability() -> Response:
     llm_response_dict = request.get_json()
 
     try:
-        validated_response = validate_llm_response(llm_response_dict)
+        validated_response, dataset = validate_llm_response(llm_response_dict)
         score = compute_readability(validated_response)
     except Exception as e:  # catch any exception from response validation
         return jsonify({"status_code": 400, "message": f"Validation error: {str(e)}"})
 
-    db_interface.insert_readability_data(float(score))
+    db_interface.insert_readability_data(float(score), str(dataset))
 
     return jsonify(
         {
             "status_code": 200,
             "score": score,
+            "dataset": dataset,
             "message": "Readability data has been successfully inserted.",
         }
     )

@@ -1,7 +1,6 @@
 """Test suite for testing metric database utility."""
 import os
 from contextlib import nullcontext as does_not_raise
-from typing import Dict, Union
 from unittest import mock
 from unittest.mock import patch
 
@@ -53,52 +52,64 @@ def test_validate_env() -> None:
         database_credentials.validate_env()
 
 
-def test_query_is_correct_with_readability_data() -> None:
-    """Test that the insert_readability_data query is built as expected based on the argument passed."""
-    mock_score: float = 88
-
+def test_insert_query_is_correct_for_readability_relation() -> None:
+    """Test that the insert_readability_data query is built as expected."""
     expected_query = """
-            INSERT INTO "readability" ("time_stamp", "readability_score")
-            VALUES (NOW(), 88);
+            INSERT INTO readability (time_stamp, readability_score, dataset)
+            VALUES (NOW(), %(score)s, %(dataset)s);
         """.strip()
 
-    generated_query = SQLQueries.insert_readability_data(mock_score).strip()
+    generated_query = SQLQueries.insert_readability_data().strip()
 
     assert generated_query == expected_query
 
 
-def test_query_is_correct_with_embedding_data_dict() -> None:
-    """Test that the insert_embedding_drift_data query is built as expected based on the argument passed."""
-    mock_data_dict: Dict[str, Union[str, float, bool]] = {
-        "reference_dataset": "1.1",
-        "current_dataset": "1.2",
-        "distance": 0.1,
-        "drifted": True,
-    }
-
+def test_insert_query_is_correct_for_embedding_drift_relation() -> None:
+    """Test that the insert_embedding_drift_data query is built as expected."""
     expected_query = """
-            INSERT INTO "embedding_drift" ("time_stamp", "reference_dataset", "current_dataset", "distance", "drifted")
-            VALUES (NOW(), 1.1, 1.2, 0.1, True);
+            INSERT INTO embedding_drift (time_stamp, reference_dataset, current_dataset, distance, drifted, dataset)
+            VALUES (NOW(), %(reference_dataset)s, %(current_dataset)s, %(distance)s, %(drifted)s, %(dataset)s);
         """.strip()
 
-    generated_query = SQLQueries.insert_embedding_drift_data(mock_data_dict).strip()
+    generated_query = SQLQueries.insert_embedding_drift_data().strip()
 
     assert generated_query == expected_query
 
 
-def test_query_is_correct_with_relation_name() -> None:
-    """Test that the relation_existence_query is built as expected based on the argument passed."""
-    mock_relation_name: str = "mock_name"
+def test_insert_query_is_correct_for_datasets_relation() -> None:
+    """Test that the insert_datasets_data query is built as expected."""
+    expected_query = """
+            INSERT INTO datasets (name)
+            VALUES (%(name)s);
+        """.strip()
 
+    generated_query = SQLQueries.insert_datasets_data().strip()
+
+    assert generated_query == expected_query
+
+
+def test_query_is_correct_for_relation_existence_query() -> None:
+    """Test that the relation_existence_query is built as expected."""
     expected_query = """
             SELECT EXISTS (
                 SELECT FROM pg_tables
                 WHERE  schemaname = 'public'
-                AND    tablename  = 'mock_name'
+                AND    tablename  = %(relation_name)s
             );
             """.strip()
 
-    generated_query = SQLQueries.relation_existence_query(mock_relation_name).strip()
+    generated_query = SQLQueries.relation_existence_query().strip()
+
+    assert generated_query == expected_query
+
+
+def test_query_is_correct_get_data_from_relation_query() -> None:
+    """Test that the get_data_from_relation query built as expected."""
+    expected_query = """
+            SELECT * FROM %(relation_name)s
+            """.strip()
+
+    generated_query = SQLQueries.get_data_from_relation().strip()
 
     assert generated_query == expected_query
 
@@ -114,6 +125,11 @@ def test_database_interface():
 
         mock_check_relation_existence.assert_called()
 
+        db_interface.create_relation("datasets")
+        mock_execute_query.assert_called_with(
+            SQLQueries.create_datasets_relation_query()
+        )
+
         db_interface.create_relation("readability")
         mock_execute_query.assert_called_with(
             SQLQueries.create_readability_relation_query()
@@ -124,26 +140,49 @@ def test_database_interface():
             SQLQueries.create_embedding_drift_relation_query()
         )
 
-        db_interface.insert_readability_data(1)
-        mock_execute_query.assert_called_with(SQLQueries.insert_readability_data(1))
+        db_interface.insert_datasets_data()
+        mock_execute_query.assert_called_with(
+            SQLQueries.insert_datasets_data(),
+            {
+                "name": "mind"  # This must be mind as it calls with nhs first and then mind.
+            },
+        )
+
+        db_interface.insert_readability_data(1, "nhs")
+        mock_execute_query.assert_called_with(
+            SQLQueries.insert_readability_data(), {"score": 1, "dataset": "nhs"}
+        )
 
         mock_embedding_drift_data = {
             "reference_dataset": "1.1",
             "current_dataset": "1.2",
             "distance": 0.1,
             "drifted": True,
+            "dataset": "nhs",
         }
         db_interface.insert_embedding_drift_data(mock_embedding_drift_data)
         mock_execute_query.assert_called_with(
-            SQLQueries.insert_embedding_drift_data(mock_embedding_drift_data)
+            SQLQueries.insert_embedding_drift_data(),
+            mock_embedding_drift_data,
         )
 
         db_interface.query_relation("readability")
         mock_execute_query.assert_called_with(
-            SQLQueries.get_data_from_relation("readability"), fetch=True
+            SQLQueries.get_data_from_relation(),
+            {"relation_name": "readability"},
+            fetch=True,
         )
 
         db_interface.query_relation("embedding_drift")
         mock_execute_query.assert_called_with(
-            SQLQueries.get_data_from_relation("embedding_drift"), fetch=True
+            SQLQueries.get_data_from_relation(),
+            {"relation_name": "embedding_drift"},
+            fetch=True,
+        )
+
+        db_interface.query_relation("datasets")
+        mock_execute_query.assert_called_with(
+            SQLQueries.get_data_from_relation(),
+            {"relation_name": "datasets"},
+            fetch=True,
         )

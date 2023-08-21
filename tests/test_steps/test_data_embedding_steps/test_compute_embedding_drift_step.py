@@ -89,13 +89,14 @@ def test_calculate_euclidean_distance_expected_result():
 
 def test_build_embedding_drift_payload():
     """Test that the build_embedding_drift_payload function returns the expected dictionary payload."""
-    result = build_embedding_drift_payload("test_version", "test_version", 1.1)
+    result = build_embedding_drift_payload("test_version", "test_version", 1.1, "nhs")
 
     assert result == {
-        "reference_dataset": "'test_version'",
-        "current_dataset": "'test_version'",
+        "reference_dataset": "test_version",
+        "current_dataset": "test_version",
         "distance": 1.1,
         "drifted": True,
+        "dataset": "nhs",
     }
 
 
@@ -108,12 +109,18 @@ def test_compute_embedding_drift_step():
         "steps.data_embedding_steps.compute_embedding_drift_step.compute_embedding_drift_step.ChromaStore"
     ) as mock_chroma, patch(
         "steps.data_embedding_steps.compute_embedding_drift_step.compute_embedding_drift_step.requests.post"
-    ) as mock_post_requests:
+    ) as mock_post_requests, patch(
+        "steps.data_embedding_steps.compute_embedding_drift_step.compute_embedding_drift_step.COLLECTION_NAME_MAP"
+    ) as mock_collection_name_map:
         mock_chroma_instance = mock_chroma.return_value
         mock_chroma_instance.fetch_reference_and_current_embeddings.return_value = (
             mock_reference_embedding,
             mock_current_embedding,
         )
+
+        mock_collection_name_map.return_value = {
+            "mock_collection_name": "mock_collection"
+        }
 
         mock_post_requests.return_value.text = "OK"
 

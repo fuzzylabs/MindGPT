@@ -334,18 +334,19 @@ def query_llm(
 
 
 def post_response_to_metric_service(
-    metric_service_endpoint: str, response: str
+    metric_service_endpoint: str, response: str, dataset: str
 ) -> Response:
     """Send the LLM's response to the metric service for readability computation using a POST request.
 
     Args:
         metric_service_endpoint (str): the metric service endpoint where the readability is computed
         response (str): the response produced by the LLM
+        dataset (str): the dataset that was used to generate the response.
 
     Returns:
         Response: the post request response
     """
-    response_dict = {"response": response}
+    response_dict = {"response": response, "dataset": dataset.lower()}
     result = requests.post(url=metric_service_endpoint, json=response_dict)
 
     return result
@@ -511,7 +512,7 @@ def main() -> None:
 
                         if metric_service_endpoint:
                             result = post_response_to_metric_service(
-                                metric_service_endpoint, assistant_response
+                                metric_service_endpoint, assistant_response, source
                             )
                             logging.info(result.text)
 
