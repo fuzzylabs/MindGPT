@@ -39,9 +39,9 @@ EMBED_MODEL_MAP = {
 COLLECTION_NAME_MAP = {"mind_data": "Mind", "nhs_data": "NHS"}
 
 # Seldon configuration
-SELDON_SERVICE_NAME = "llm-default-transformer"
-SELDON_NAMESPACE = "matcha-seldon-workloads"
-SELDON_PORT = 9000
+OPENLLM_SERVICE_NAME = "openllm-mindgpt-svc"
+OPENLLM_NAMESPACE = "default"
+OPENLLM_PORT = 3000
 
 # Metric service configuration
 METRIC_SERVICE_NAME = "monitoring-service"
@@ -111,7 +111,9 @@ def _get_prediction_endpoint() -> Optional[str]:
     Returns:
         Optional[str]: the url endpoint if it exists and is valid, None otherwise.
     """
-    return f"http://{SELDON_SERVICE_NAME}.{SELDON_NAMESPACE}:{SELDON_PORT}/v2/models/transformer/infer"
+    return (
+        f"http://{OPENLLM_SERVICE_NAME}.{OPENLLM_NAMESPACE}:{OPENLLM_PORT}/v1/generate"
+    )
 
 
 @st.cache_data(show_spinner=False)
@@ -212,7 +214,7 @@ def _create_payload(
     messages: MessagesType,
     temperature: float,
     max_length: int,
-) -> Dict[str, List[Dict[str, Any]]]:
+) -> Dict[str, Union[str, Dict[str, float]]]:
     """Create a payload from the user input to send to the LLM model.
 
     Args:
@@ -221,7 +223,7 @@ def _create_payload(
         max_length (int): max response length in tokens
 
     Returns:
-        Dict[str, List[Dict[str, Any]]]: the payload to send in the correct format.
+        Dict[str, Union[str, Dict[str, float]]]: the payload to send in the correct format.
     """
     context = messages.get("context", DEFAULT_CONTEXT)
     history: List[Dict[str, str]] = messages.get("history", [])
@@ -244,28 +246,8 @@ def _create_payload(
     logging.info(f"Prompt to LLM : {input_text}")
 
     return {
-        "inputs": [
-            {
-                "name": "array_inputs",
-                "shape": [-1],
-                "datatype": "string",
-                "data": str(input_text),
-            },
-            {
-                "name": "max_length",
-                "shape": [-1],
-                "datatype": "INT32",
-                "data": [max_length],
-                "parameters": {"content_type": "raw"},
-            },
-            {
-                "name": "temperature",
-                "shape": [-1],
-                "datatype": "INT32",
-                "data": [temperature],
-                "parameters": {"content_type": "raw"},
-            },
-        ]
+        "prompt": str(input_text),
+        "llm_config": {"temperature": temperature, "max_new_tokens": max_length},
     }
 
 
@@ -289,13 +271,13 @@ def _build_conversation_history_template(history_list: List[Dict[str, str]]) -> 
 
 
 def _get_predictions(
-    prediction_endpoint: str, payload: Dict[str, List[Dict[str, Any]]]
+    prediction_endpoint: str, payload: Dict[str, Union[str, Dict[str, float]]]
 ) -> str:
     """Using the prediction endpoint and payload, make a prediction request to the deployed model.
 
     Args:
         prediction_endpoint (str): the url endpoint.
-        payload (Dict[str, List[Dict[str, Any]]]): the payload to send to the model.
+        payload (Dict[str, Union[str, Dict[str, float]]]): the payload to send to the model.
 
     Returns:
         str: the predictions from the model.
@@ -305,8 +287,7 @@ def _get_predictions(
         data=json.dumps(payload),
         headers={"Content-Type": "application/json"},
     )
-    data = json.loads(json.loads(response.text)["outputs"][0]["data"][0])
-    return data["generated_text"]
+    return str(json.loads(response.text)["responses"][0])
 
 
 def query_llm(
@@ -371,7 +352,7 @@ def show_settings() -> None:
     """Show inference settings on the sidebar."""
     st.title("Settings")
     st.session_state.temperature = st.slider(
-        "Temperature", min_value=0.0, max_value=2.0, value=0.8
+        "Temperature", min_value=0.0, max_value=2.0, value=0.1
     )
     st.session_state.max_length = st.slider(
         "Max response length", min_value=50, max_value=500, value=300, step=1
