@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
-metadate:
+metadata:
+  name: openllm-mindgpt-deployment
   labels:
     app: openllm-mindgpt
-  name: openllm-mindgpt-deployment
 spec:
   replicas: 1
-  selectors:
+  selector:
     matchLabels:
       app: openllm-mindgpt
   template:
-    metadate:
+    metadata:
       labels:
         app: openllm-mindgpt
     spec:
       containers:
-        - name: openllm
+        - name: openllm-container
           image: largellmcr.azurecr.io/mindgpt/openllm
           imagePullPolicy: IfNotPresent
           resources:
@@ -23,7 +23,7 @@ spec:
               nvidia.com/gpu: 1
           ports:
             - containerPort: 3000
-      restartPolicy: OnFailure
+      restartPolicy: Always
       tolerations:
         - key: "sku"
           operator: "Equal"
