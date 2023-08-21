@@ -230,6 +230,7 @@ curl localhost:5000/query_readability
 ```
 
 ### Monitoring MindGPT 👀
+
 We've created a [notebook](notebook/monitoring_notebook.ipynb) which accesses the monitoring service, fetches the metrics, and creates some simple plots showing the change over time.
 
 This is a starting point for accessing the metrics, and we're planning to introduce a hosted dashboard version of these plots at some point in the future.
@@ -278,6 +279,68 @@ kubectl get service streamlit-service -o jsonpath='{.status.loadBalancer.ingress
 ```
 
 If you visit that URL in browser, you should be able to interact with the deployed streamlit application.
+
+## Larger LLM models
+
+In this section, we'll show how to deploy a larger LLM model on AKS. We will use [OpenLLM](https://github.com/bentoml/OpenLLM) project to deploy a `flan-t5-xl` model. `xl` variant contains 3B parameters and weighs about 11 GB in size.
+
+### Deploying the model on AKS
+
+For this approach, we will deploy 2 VMs.
+
+1. Create a new AKS cluster with the system node pool using `Standard_DS2_v3` VM instance.
+
+    ```bash
+    az aks create --resource-group <existing-resource-group> --name largellm --node-count 1 --node-vm-size Standard_DS2_v3 --generate-ssh-keys
+    ```
+
+2. Create a GPU Node pool using `Standard_NC4as_T4_v3` VM instance.
+
+    ```bash
+    az extension add --name aks-preview
+    az extension update --name aks-preview
+    az feature register --namespace "Microsoft.ContainerService" --name "GPUDedicatedVHDPreview"
+    az provider register --namespace Microsoft.ContainerService
+    ```
+
+    ```bash
+    az aks nodepool add \
+    --resource-group <existing-resource-group> \
+    --cluster-name largellm \
+    --name gpunp \
+    --node-count 1 \
+    --node-vm-size Standard_NC6 \
+    --node-taints sku=gpu:NoSchedule \
+    --aks-custom-headers UseGPUDedicatedVHD=true \
+    --enable-cluster-autoscaler \
+    --min-count 1 \
+    --max-count 1
+    ```
+
+3. Build and push docker image to ACR.
+
+    > Note: This creates a docker image of size **12-13 GB** that should be pushed to the ACR.
+
+    ```bash
+    docker build -t $acr_registry_uri/mindgpt/openllm:latest -f infrastructure/llm_k8s/Dockerfile .
+    docker push $acr_registry_uri/mindgpt/openllm:latest
+    ```
+
+4. Apply the Kubernetes manifest to deploy the model on AKS.
+
+    ```bash
+    kubectl apply -f infrastructure/llm_k8s/openllm-deployment.yaml
+    ```
+
+5. Verify the model is deployed.
+
+    ```bash
+    kubectl get pods
+
+    Expected Output (the name of pod will be different)
+    NAME                                          READY   STATUS    RESTARTS   AGE
+    openllm-mindgpt-deployment-77985f86c9-4fj8b   1/1     Running   0          137m
+    ```
 
 # &#129309; Acknowledgements
 
