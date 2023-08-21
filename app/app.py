@@ -66,7 +66,6 @@ prompt_templates = {
     "complex": """Use the following pieces of context to answer the question at the end.
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
 Use three sentences maximum and keep the answer as concise as possible.
-Always say "thanks for asking!" at the end of the answer.
 {context}
 Question: {question}
 Helpful Answer:""",
@@ -352,7 +351,7 @@ def show_settings() -> None:
     """Show inference settings on the sidebar."""
     st.title("Settings")
     st.session_state.temperature = st.slider(
-        "Temperature", min_value=0.0, max_value=2.0, value=0.1
+        "Temperature", min_value=0.1, max_value=1.0, value=0.1
     )
     st.session_state.max_length = st.slider(
         "Max response length", min_value=50, max_value=500, value=300, step=1
