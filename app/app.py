@@ -9,7 +9,7 @@ sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
 import json
 import logging
 import os
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, TypedDict
 
 import requests
 import streamlit as st
@@ -56,6 +56,8 @@ DEFAULT_QUERY_INSTRUCTION = (
     "Represent the question for retrieving supporting documents: "
 )
 
+CONVERSATIONAL_MEMORY_SIZE = 3
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Prompt Templates
@@ -74,7 +76,17 @@ Aim to retain the most important points, providing a coherent and readable summa
 Please avoid unnecessary details or tangential points.
 {context}
 Question: {question}
-Helpful Answer:"""
+Helpful Answer:""",
+    "conversational": """Use the conversation history and context provided to inform your response.
+
+Start of conversation history
+{history}
+End of conversation history
+
+Context: {context}
+
+Question: {question}
+""",
 }
 
 st.set_page_config(
@@ -131,6 +143,21 @@ def _get_embedding_function(embed_model_type: str) -> Union[EmbeddingFunction, N
     )
 
 
+class MessagesType(TypedDict, total=False):
+    """The class specifies constraints about which keys map to which types in the payload messages.
+
+    This is required for mypy to understand the structure of the `messages` dictionary.
+
+    Args:
+        TypedDict (type): A class from the `typing` module to define types for specific dictionary keys.
+        total (bool, optional): this signify that not all keys are mandatory in the dictionary.
+    """
+
+    history: List[Dict[str, str]]
+    context: str
+    prompt_query: str
+
+
 def connect_vector_store(chroma_server_host: str, chroma_server_port: int) -> API:
     """Connect to Chroma vector store.
 
@@ -182,7 +209,7 @@ def query_vector_store(
 
 
 def _create_payload(
-    messages: Dict[str, str],
+    messages: MessagesType,
     temperature: float,
     max_length: int,
 ) -> Dict[str, List[Dict[str, Any]]]:
@@ -197,10 +224,25 @@ def _create_payload(
         Dict[str, List[Dict[str, Any]]]: the payload to send in the correct format.
     """
     context = messages.get("context", DEFAULT_CONTEXT)
-    input_text = prompt_templates[st.session_state.prompt_template].format(
-        question=messages["prompt_query"], context=context
-    )
+    history: List[Dict[str, str]] = messages.get("history", [])
+    question = messages["prompt_query"]
+
+    if st.session_state.prompt_template == "conversational":
+        if history:
+            history_string = _build_conversation_history_template(history)
+            template = prompt_templates["conversational"]
+            input_text = template.format(
+                history=history_string, question=question, context=context
+            )
+        else:
+            template = prompt_templates["simple"]
+            input_text = template.format(question=question, context=context)
+    else:
+        template = prompt_templates[st.session_state.prompt_template]
+        input_text = template.format(question=question, context=context)
+
     logging.info(f"Prompt to LLM : {input_text}")
+
     return {
         "inputs": [
             {
@@ -227,6 +269,25 @@ def _create_payload(
     }
 
 
+def _build_conversation_history_template(history_list: List[Dict[str, str]]) -> str:
+    """Build the conversation history as a string to be append to the prompt template.
+
+    Args:
+        history_list (List[Dict[str, str]]): the conversation history dictionary containing the questions posed by user and the response by the model.
+
+    Returns:
+        str: the conversation history string.
+    """
+    history_string = ""
+    for history in history_list:
+        user_input = history["user_input"]
+        ai_response = history["ai_response"]
+
+        history_string += f"\nUser: {user_input}\nAI: {ai_response}\n"
+
+    return history_string
+
+
 def _get_predictions(
     prediction_endpoint: str, payload: Dict[str, List[Dict[str, Any]]]
 ) -> str:
@@ -250,7 +311,7 @@ def _get_predictions(
 
 def query_llm(
     prediction_endpoint: str,
-    messages: Dict[str, str],
+    messages: MessagesType,
     temperature: float,
     max_length: int,
 ) -> str:
@@ -258,7 +319,7 @@ def query_llm(
 
     Args:
         prediction_endpoint (str): Prediction endpoint.
-        messages (Dict[str, str]): Dict of message containing prompt and context.
+        messages (MessagesType): Dict of message containing prompt and context.
         temperature (float): inference temperature
         max_length (int): max response length in tokens
 
@@ -290,7 +351,8 @@ def post_response_to_metric_service(
     return result
 
 
-def accept_disclaimer():
+def accept_disclaimer() -> None:
+    """Set session state accept variable."""
     st.session_state.accept = True
 
 
@@ -307,17 +369,39 @@ def show_disclaimer() -> None:
 def show_settings() -> None:
     """Show inference settings on the sidebar."""
     st.title("Settings")
-    st.session_state.temperature = st.slider("Temperature", min_value=0.0, max_value=2.0, value=0.8)
-    st.session_state.max_length = st.slider("Max response length", min_value=50, max_value=500, value=300, step=1)
-    st.session_state.prompt_template = st.select_slider("Prompt template", options=["simple", "complex", "advanced"], value="simple")
+    st.session_state.temperature = st.slider(
+        "Temperature", min_value=0.0, max_value=2.0, value=0.8
+    )
+    st.session_state.max_length = st.slider(
+        "Max response length", min_value=50, max_value=500, value=300, step=1
+    )
+    st.session_state.prompt_template = st.select_slider(
+        "Prompt template",
+        options=["simple", "complex", "advanced", "conversational"],
+        value="simple",
+    )
 
-def show_sidebar():
+
+def show_sidebar() -> None:
     """Show the sidebar."""
     with st.sidebar:
         if not st.session_state.accept:
             show_disclaimer()
         else:
             show_settings()
+
+
+def build_memory_dict(question: str, response: str) -> Dict[str, str]:
+    """Build the memory dictionary from user's question and the model's response.
+
+    Args:
+        question (str): the question asked by the user.
+        response (str): the response by the model.
+
+    Returns:
+        Dict[str, str]: the memory dictionary.
+    """
+    return {"user_input": question, "ai_response": response}
 
 
 def main() -> None:
@@ -331,6 +415,17 @@ def main() -> None:
         # Initialise chat history
         if "messages" not in st.session_state:
             st.session_state.messages = []
+
+        # Initialise conversational memory
+        if "nhs_memory" not in st.session_state:
+            st.session_state.nhs_memory = []
+        else:
+            nhs_memory = st.session_state.nhs_memory
+
+        if "mind_memory" not in st.session_state:
+            st.session_state.mind_memory = []
+        else:
+            mind_memory = st.session_state.mind_memory
 
         # Display chat messages from history on app rerun
         for message in st.session_state.messages:
@@ -367,11 +462,10 @@ def main() -> None:
                     icon="🚨",
                 )
             else:
+                logging.info(st.session_state.prompt_template)
                 with st.chat_message("assistant"):
-                    full_response = ""
-                    message_placeholder = st.empty()
-
                     full_response = "Here's what the NHS and Mind each have to say:\n\n"
+                    message_placeholder = st.empty()
 
                     for collection, source in COLLECTION_NAME_MAP.items():
                         # Query vector store
@@ -386,6 +480,12 @@ def main() -> None:
                         # Create a dict of prompt and context
                         message = {"prompt_query": prompt, "context": context}
 
+                        # Add history if neither memory is None
+                        if nhs_memory and mind_memory:
+                            message["history"] = (
+                                mind_memory if collection == "mind_data" else nhs_memory
+                            )
+
                         # Query LLM by passing query and context
                         assistant_response = query_llm(
                             prediction_endpoint=prediction_endpoint,
@@ -394,13 +494,32 @@ def main() -> None:
                             max_length=st.session_state.max_length,
                         )
 
+                        # Append the response to the appropriate memory and update session state
+                        memory_dict = build_memory_dict(prompt, assistant_response)
+                        if collection == "mind_data":
+                            mind_memory.append(memory_dict)
+                            st.session_state.mind_memory = mind_memory
+                        else:
+                            nhs_memory.append(memory_dict)
+                            st.session_state.nhs_memory = nhs_memory
+
                         full_response += f"{source}: {assistant_response}  \n"
+
+                        logging.info("MEMORY LOG")
+                        logging.info(nhs_memory)
+                        logging.info(mind_memory)
 
                         if metric_service_endpoint:
                             result = post_response_to_metric_service(
                                 metric_service_endpoint, assistant_response
                             )
                             logging.info(result.text)
+
+                    # Remove first conversation in memory if either exceeds the size limit
+                    if len(mind_memory) > CONVERSATIONAL_MEMORY_SIZE:
+                        mind_memory.pop(0)
+                    if len(nhs_memory) > CONVERSATIONAL_MEMORY_SIZE:
+                        nhs_memory.pop(0)
 
                     message_placeholder.markdown(full_response)
 
