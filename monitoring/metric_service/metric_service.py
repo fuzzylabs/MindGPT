@@ -107,3 +107,33 @@ def validate_embedding_drift_data(
             )
 
     return data
+
+
+def validate_user_feedback_data(data: Dict[str, str]) -> Dict[str, str]:
+    """Validate that the given user feedback data dictionary has the required keys and values of correct types.
+
+    Args:
+        data (Dict[str, str]): a dictionary containing the user feedback data to be validated.
+
+    Raises:
+        KeyError: raise if any of the required keys is not found in the dictionary.
+        TypeError: raise if the value associated with any of the keys is of incorrect type.
+
+    Returns:
+        Dict[str, str]: the validated user feedback data dictionary.
+    """
+    required_keys_types = {
+        "user_rating": str,
+        "question": str,
+        "full_response": str,
+    }
+
+    for key, expected_type in required_keys_types.items():
+        if key not in data:
+            raise KeyError(f"{key} is not found in the data dictionary.")
+        if not isinstance(data[key], expected_type):
+            raise TypeError(
+                f"'{key}' has incorrect type, expected {expected_type.__name__}."
+            )
+
+    return data

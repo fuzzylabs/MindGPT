@@ -7,6 +7,7 @@ from metric_service import (
     compute_readability,
     validate_embedding_drift_data,
     validate_llm_response,
+    validate_user_feedback_data,
 )
 from utils.metric_database import DatabaseInterface
 
@@ -72,6 +73,30 @@ def embedding_drift() -> Response:
     )
 
 
+@app.route("/user_feedback", methods=["POST"])
+def user_feedback() -> Response:
+    """Receives and validates the user feedback data from a POST request, and then inserts it into the database if it's valid.
+
+    Returns:
+        Response: a tuple containing a success and the HTTP status code.
+    """
+    user_feedback_data_dict = request.get_json()
+
+    try:
+        validated_data = validate_user_feedback_data(user_feedback_data_dict)
+        db_interface.insert_user_feedback_data(validated_data)
+    except Exception as e:
+        return jsonify({"status_code": 400, "message": f"Validation error: {str(e)}"})
+
+    return jsonify(
+        {
+            "status_code": 200,
+            "data": validated_data,
+            "message": "User feedback data has been successfully inserted.",
+        }
+    )
+
+
 @app.route("/query_readability", methods=["GET"])
 def query_readability() -> List[Tuple[Any, ...]]:
     """This function queries the "Readability" relation using the db_interface's query_relation method and returns the results as a list of tuple.
@@ -90,6 +115,16 @@ def query_embedding_drift() -> List[Tuple[Any, ...]]:
         List[Tuple[Any, ...]]: the query result
     """
     return db_interface.query_relation(relation_name="embedding_drift")
+
+
+@app.route("/query_user_feedback", methods=["GET"])
+def query_user_feedback() -> List[Tuple[Any, ...]]:
+    """This function queries the "user_feedback" relation using the db_interface's query_relation method and returns the results as a list of tuple.
+
+    Returns:
+        List[Tuple[Any, ...]]: the query result
+    """
+    return db_interface.query_relation(relation_name="user_feedback")
 
 
 @app.route("/")
