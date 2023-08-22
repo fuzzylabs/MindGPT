@@ -296,7 +296,7 @@ For this approach, we will deploy 2 VMs, one VM will act as CPU pool and other V
     az aks create --resource-group <existing-resource-group> --name largellm --node-count 1 --node-vm-size Standard_DS2_v3 --generate-ssh-keys
     ```
 
-2. Create a GPU Node pool using `Standard_NC4as_T4_v3` VM instance. This VM instance contains 28 GB RAM and T4 GPU with 16 GB VRAM.
+2. Create a GPU Node pool using `Standard_NC4as_T4_v3` VM instance. This VM instance contains 4 vCPU, 28 GB RAM and T4 GPU with 16 GB VRAM.
 
     ```bash
     az extension add --name aks-preview
@@ -335,17 +335,24 @@ For this approach, we will deploy 2 VMs, one VM will act as CPU pool and other V
     > Note: This creates a docker image of size **12-13 GB** that should be pushed to the ACR.
 
     ```bash
+    az acr login --name <acr-registry-name>
     docker build -t $acr_registry_uri/mindgpt/openllm:latest -f infrastructure/llm_k8s/Dockerfile .
     docker push $acr_registry_uri/mindgpt/openllm:latest
     ```
 
-4. Apply the Kubernetes manifest to deploy the model on AKS.
+4. Allow AKS to pull the image from ACR.
+
+    ```bash
+    az aks update --resource-group <existing-resource-group> --name largellm --attach-acr <acr-registry-name>
+    ```
+
+5. Apply the Kubernetes manifest to deploy the model on AKS.
 
     ```bash
     kubectl apply -f infrastructure/llm_k8s/openllm-deployment.yaml
     ```
 
-5. Verify the model is deployed.
+6. Verify the model is deployed.
 
     ```bash
     kubectl get pods
