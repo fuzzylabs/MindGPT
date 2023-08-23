@@ -1,10 +1,10 @@
 """MindGPT Streamlit app."""
 # Fix for streamlit + chroma sqllite3 issue: https://discuss.streamlit.io/t/issues-with-chroma-and-sqlite/47950/5
 # flake8: noqa
-__import__("pysqlite3")
-import sys
+# __import__("pysqlite3")
+# import sys
 
-sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+# sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
 
 import json
 import logging
@@ -359,15 +359,13 @@ def accept_disclaimer() -> None:
     st.session_state.accept = True
 
 
-def accept_data_sharing_consent() -> None:
-    """Set session state data sharing consent variable to True."""
-    st.session_state.data_sharing_consent = True
-    st.session_state.accepted_or_declined_data_sharing_consent = True
+def set_data_sharing_consent(accept: bool) -> None:
+    """Set session state data sharing consent variable to True.
 
-
-def decline_data_sharing_consent() -> None:
-    """Set session state data sharing consent variable to False."""
-    st.session_state.data_sharing_consent = False
+    Args:
+        accept (bool): whether the user accept or decline to share data with us.
+    """
+    st.session_state.data_sharing_consent = accept
     st.session_state.accepted_or_declined_data_sharing_consent = True
 
 
@@ -388,8 +386,14 @@ def show_data_collection_permission() -> None:
         data_sharing_consent_text = f.read()
     st.sidebar.markdown(data_sharing_consent_text)
 
-    st.button("Sure, I'm happy to share!", on_click=accept_data_sharing_consent)
-    st.button("No thanks, I'd rather not share.", on_click=decline_data_sharing_consent)
+    st.button(
+        "Sure, I'm happy to share!", on_click=set_data_sharing_consent, args=(True,)
+    )
+    st.button(
+        "No thanks, I'd rather not share.",
+        on_click=set_data_sharing_consent,
+        args=(False,),
+    )
 
 
 def post_question_response_to_metric_service(
