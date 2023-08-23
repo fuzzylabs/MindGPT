@@ -64,17 +64,16 @@ prompt_templates = {
     "complex": """Use the following pieces of context to answer the question at the end.
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
 Use three sentences maximum and keep the answer as concise as possible.
-Always say "thanks for asking!" at the end of the answer.
 {context}
 Question: {question}
-Helpful Answer:""",
+Answer:""",
     "advanced": """You are a highly skilled AI trained in language comprehension and summarisation.
 I would like you to read the following text and summarise it into a concise abstract paragraph. Use the following pieces of context to answer the question at the end.
 Aim to retain the most important points, providing a coherent and readable summary that could help a person understand the main points of the discussion without needing to read the entire text.
 Please avoid unnecessary details or tangential points.
 {context}
 Question: {question}
-Helpful Answer:"""
+Answer:""",
 }
 
 st.set_page_config(
@@ -307,9 +306,16 @@ def show_disclaimer() -> None:
 def show_settings() -> None:
     """Show inference settings on the sidebar."""
     st.title("Settings")
-    st.session_state.temperature = st.slider("Temperature", min_value=0.0, max_value=2.0, value=0.8)
-    st.session_state.max_length = st.slider("Max response length", min_value=50, max_value=500, value=300, step=1)
-    st.session_state.prompt_template = st.select_slider("Prompt template", options=["simple", "complex", "advanced"], value="simple")
+    st.session_state.temperature = st.slider(
+        "Temperature", min_value=0.0, max_value=2.0, value=0.8
+    )
+    st.session_state.max_length = st.slider(
+        "Max response length", min_value=50, max_value=500, value=300, step=1
+    )
+    st.session_state.prompt_template = st.select_slider(
+        "Prompt template", options=["simple", "complex", "advanced"], value="simple"
+    )
+
 
 def show_sidebar():
     """Show the sidebar."""
