@@ -1,10 +1,10 @@
 """MindGPT Streamlit app."""
 # Fix for streamlit + chroma sqllite3 issue: https://discuss.streamlit.io/t/issues-with-chroma-and-sqlite/47950/5
 # flake8: noqa
-# __import__("pysqlite3")
-# import sys
+__import__("pysqlite3")
+import sys
 
-# sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
 
 import json
 import logging
