@@ -511,7 +511,10 @@ def main() -> None:
 
     show_sidebar()  # Show side bar base on the two session state variables, `accept` and `accepted_or_declined_data_sharing_consent`
 
-    if st.session_state.accept:
+    if (
+        st.session_state.accept
+        and st.session_state.accepted_or_declined_data_sharing_consent
+    ):
         # Initialise chat history
         if "messages" not in st.session_state:
             st.session_state.messages = []
