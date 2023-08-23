@@ -100,6 +100,18 @@ def test_insert_user_feedback_data_is_correct_for_user_feedback_relation() -> No
     assert generated_query == expected_query
 
 
+def test_insert_readability_threshold_data_is_correct_for_readability_threshold_relation() -> None:
+    """Test that the insert_readability_threshold_data query is built as expected."""
+    expected_query = """
+            INSERT INTO readability_threshold (time_stamp, readability_score, question, response, dataset)
+            VALUES (NOW(), %(readability_score)s, %(question)s, %(response)s, %(dataset)s);
+            """.strip()
+
+    generated_query = SQLQueries.insert_readability_threshold_data().strip()
+
+    assert generated_query == expected_query
+
+
 def test_query_is_correct_for_relation_existence_query() -> None:
     """Test that the relation_existence_query is built as expected."""
     expected_query = """
@@ -157,6 +169,11 @@ def test_database_interface():
             SQLQueries.create_user_feedback_relation_query()
         )
 
+        db_interface.create_relation("readability_threshold")
+        mock_execute_query.assert_called_with(
+            SQLQueries.create_readability_threshold_relation_query()
+        )
+
         db_interface.insert_datasets_data()
         mock_execute_query.assert_called_with(
             SQLQueries.insert_datasets_data(),
@@ -194,6 +211,18 @@ def test_database_interface():
             mock_user_feedback_data,
         )
 
+        mock_readability_threshold_data = {
+            "readability_score": "mock_readability_score",
+            "question": "mock_question",
+            "response": "full_response",
+            "dataset": "nhs",
+        }
+        db_interface.insert_readability_threshold_data(mock_readability_threshold_data)
+        mock_execute_query.assert_called_with(
+            SQLQueries.insert_readability_threshold_data(),
+            mock_readability_threshold_data,
+        )
+
         db_interface.query_relation("readability")
         mock_execute_query.assert_called_with(
             SQLQueries.get_data_from_relation(),
@@ -219,5 +248,12 @@ def test_database_interface():
         mock_execute_query.assert_called_with(
             SQLQueries.get_data_from_relation(),
             {"relation_name": "user_feedback"},
+            fetch=True,
+        )
+
+        db_interface.query_relation("readability_threshold")
+        mock_execute_query.assert_called_with(
+            SQLQueries.get_data_from_relation(),
+            {"relation_name": "readability_threshold"},
             fetch=True,
         )

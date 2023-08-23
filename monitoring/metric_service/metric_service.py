@@ -1,5 +1,5 @@
 """Functions for the metric service for computing readability and validate llm response and embedding drift data."""
-from typing import Dict, Tuple, Union
+from typing import Dict, Tuple, Type, Union
 
 import textstat
 
@@ -75,62 +75,25 @@ def validate_llm_response(llm_response_dict: Dict[str, str]) -> Tuple[str, str]:
     return response, dataset
 
 
-def validate_embedding_drift_data(
-    data: Dict[str, Union[str, float, bool]]
+def validate_data(
+    data: Dict[str, Union[str, float, bool]], required_keys_types: Dict[str, Type]
 ) -> Dict[str, Union[str, float, bool]]:
-    """Validate that the given embedding data dictionary has required keys and values of correct types.
+    """Validate that the given data dictionary has the required keys and values of correct types.
 
     Args:
-        data (Dict[str, Union[str, float, bool]]): a dictionary containing the embedding drift data to be validated.
+        data (Dict[str, Union[str, float, bool]]): The data dictionary to be validated.
+        required_keys_types (Dict[str, Type]): A mapping of expected keys to their types.
 
     Raises:
-        KeyError: raise if any of the required keys is not found in the dictionary.
-        TypeError: raise if the value associated with any of the keys is of incorrect type.
+        KeyError: Raise if any of the required keys is not found in the dictionary.
+        TypeError: Raise if the value associated with any of the keys is of incorrect type.
 
     Returns:
-        Dict[str, Union[str, float, bool]]: the validated embedding drift data dictionary.
+        Dict[str, Union[str, float, bool]]: The validated data dictionary.
     """
-    required_keys_types = {
-        "reference_dataset": str,
-        "current_dataset": str,
-        "distance": float,
-        "drifted": bool,
-        "dataset": str,
-    }
-
     for key, expected_type in required_keys_types.items():
         if key not in data:
-            raise KeyError(f"{key} is not found in the data dictionary.")
-        if not isinstance(data[key], expected_type):
-            raise TypeError(
-                f"'{key}' has incorrect type, expected {expected_type.__name__}."
-            )
-
-    return data
-
-
-def validate_user_feedback_data(data: Dict[str, str]) -> Dict[str, str]:
-    """Validate that the given user feedback data dictionary has the required keys and values of correct types.
-
-    Args:
-        data (Dict[str, str]): a dictionary containing the user feedback data to be validated.
-
-    Raises:
-        KeyError: raise if any of the required keys is not found in the dictionary.
-        TypeError: raise if the value associated with any of the keys is of incorrect type.
-
-    Returns:
-        Dict[str, str]: the validated user feedback data dictionary.
-    """
-    required_keys_types = {
-        "user_rating": str,
-        "question": str,
-        "full_response": str,
-    }
-
-    for key, expected_type in required_keys_types.items():
-        if key not in data:
-            raise KeyError(f"{key} is not found in the data dictionary.")
+            raise KeyError(f"'{key}' is not found in the data dictionary.")
         if not isinstance(data[key], expected_type):
             raise TypeError(
                 f"'{key}' has incorrect type, expected {expected_type.__name__}."

@@ -392,10 +392,29 @@ def show_data_collection_permission() -> None:
     st.button("No thanks, I'd rather not share.", on_click=decline_data_sharing_consent)
 
 
-def post_question_response_to_metric_service(
+def post_feedback_data_to_metric_service(
+    metric_service_endpoint: str, data: Dict[str, Union[str, Any]]
+) -> None:
+    """Sends data to the metric service using a POST request.
+
+    Args:
+        metric_service_endpoint (str): The metric service endpoint where the data is expected.
+        data (dict): The data to be sent.
+    """
+    if (
+        st.session_state.data_sharing_consent == True
+    ):  # Store the response to metric database if user agrees to share.
+        try:
+            result = requests.post(url=metric_service_endpoint, json=data)
+            logging.info(result.text)
+        except requests.RequestException as e:
+            logging.error(f"Failed to post data to metric service: {e}")
+
+
+def post_user_rating_feedback_to_metric_service(
     metric_service_endpoint: str, user_rating: str, question: str, full_response: str
 ) -> None:
-    """Send the user feedback data to the metric service's `user_feedback` route using a POST request.
+    """Send the user feedback data to the metric service.
 
     Args:
         metric_service_endpoint (str): the metric service endpoint where the the user feedback is expected
@@ -403,39 +422,57 @@ def post_question_response_to_metric_service(
         question (str): the question asked by the user
         full_response (str): the full response used rated
     """
-    if (
-        st.session_state.data_sharing_consent == True
-    ):  # Store the response to metric database if user agree to share.
-        response_dict = {
-            "user_rating": user_rating,
-            "question": question,
-            "full_response": full_response,
-        }
-        result = requests.post(url=metric_service_endpoint, json=response_dict)
-
-        logging.info(result.text)
+    data = {
+        "user_rating": user_rating,
+        "question": question,
+        "full_response": full_response,
+    }
+    post_feedback_data_to_metric_service(metric_service_endpoint, data)
 
 
-def show_thumbs(
-    metric_service_endpoint: str, question: str, full_response: str
+def post_readability_threshold_data_to_metric_service(
+    metric_service_endpoint: str,
+    readability_score: float,
+    question: str,
+    response: str,
+    dataset: str,
 ) -> None:
-    """This function construct two buttons using streamlit buttons and columns.
-
-    With columns, we can define where buttons should be places, in our case, two buttons side by side on the lower left.
-    Reference: https://discuss.streamlit.io/t/st-button-in-one-line/25966/2
+    """Send the user question and response data to the metric service.
 
     Args:
-        metric_service_endpoint (str): the metric service endpoint where the readability is computed
+        metric_service_endpoint (str): the metric service endpoint where the below readability score threshold data is expected
+        readability_score (str): the readability score
+        question (str): the question asked by the user
+        response (str): the response used to compute the readability score
+        dataset (str): the name of the dataset used to generate the response
+    """
+    data = {
+        "readability_score": readability_score,
+        "question": question,
+        "response": response,
+        "dataset": dataset.lower(),
+    }
+    post_feedback_data_to_metric_service(metric_service_endpoint, data)
+
+
+def create_thumbs_buttons(
+    metric_service_endpoint: str, question: str, full_response: str
+) -> None:
+    """Create thumbs up and thumbs down buttons for feedback.
+
+    Args:
+        metric_service_endpoint (str): the metric service endpoint
         question (str): the question user asked
         full_response (str): the full response the user rated.
     """
     _, thumbs_up_button, thumbs_down_button = st.columns(spec=[0.9, 0.05, 0.05])
+
     with thumbs_up_button:
         st.button(
             "👍",
-            on_click=post_question_response_to_metric_service,
+            on_click=post_user_rating_feedback_to_metric_service,
             args=(
-                metric_service_endpoint,
+                f"{metric_service_endpoint}/user_feedback",
                 "thumbs_up",
                 question,
                 full_response,
@@ -444,14 +481,86 @@ def show_thumbs(
     with thumbs_down_button:
         st.button(
             "👎",
-            on_click=post_question_response_to_metric_service,
+            on_click=post_user_rating_feedback_to_metric_service,
             args=(
-                metric_service_endpoint,
+                f"{metric_service_endpoint}/user_feedback",
                 "thumbs_down",
                 question,
                 full_response,
             ),
         )
+
+
+def create_score_threshold_collector(
+    metric_service_endpoint: str,
+    readability_scores: Dict[str, Dict[str, Union[str, float]]],
+) -> None:
+    """Create the readability score threshold collector.
+
+    This function will display a message saying that we have detected the readability score of the response is below a certain threshold.
+    If the user agree to share data with us, we will send this data to our metric service and store them in the metric database.
+
+    Args:
+        metric_service_endpoint (str): the metric service endpoint
+        readability_scores (Dict[str, Dict[str, Union[str, float]]]): a dictionary containing the score, question response.
+    """
+    readability_score_threshold = 55.0
+    sources = readability_scores.keys()
+    below_threshold_sources = []
+
+    for source in sources:
+        score = float(readability_scores[source]["score"])
+        src_question = str(readability_scores[source]["question"])
+        src_response = str(readability_scores[source]["response"])
+
+        if score < readability_score_threshold:
+            below_threshold_sources.append(source)
+            post_readability_threshold_data_to_metric_service(
+                f"{metric_service_endpoint}/readability_threshold",
+                score,
+                src_question,
+                src_response,
+                source,
+            )
+
+    if below_threshold_sources:
+        if len(below_threshold_sources) == 1:
+            source_text = below_threshold_sources[0]
+        else:
+            source_text = " and ".join(below_threshold_sources)
+
+        verb = "falls" if len(below_threshold_sources) == 1 else "fall"
+
+        (threshold_message,) = st.columns(spec=1)
+        with threshold_message:
+            st.markdown(
+                f'<p style="color:#EBEBEB; font-size: 12px; font-style: italic;">We\'ve noticed that the readability score for the {source_text} response {verb} below our established threshold.</p>',
+                unsafe_allow_html=True,
+            )
+
+
+def create_feedback_components(
+    metric_service_endpoint: str,
+    question: str,
+    full_response: str,
+    readability_scores: Dict[str, Dict[str, Union[str, float]]],
+) -> None:
+    """This function construct two feedback components.
+
+    The thumbs and down buttons using streamlit buttons and column.
+    With columns, we can define where buttons should be places, in our case, two buttons side by side on the lower left.
+    Reference: https://discuss.streamlit.io/t/st-button-in-one-line/25966/2
+
+    A readability score threshold collector which display a message when the readability score falls below a threshold and store the score, question and response if user agree to share.
+
+    Args:
+        metric_service_endpoint (str): the metric service endpoint where the readability is computed
+        question (str): the question user asked
+        full_response (str): the full response the user rated.
+        readability_scores (Dict[str, float]): the readability score for Mind and NHS responses.
+    """
+    create_thumbs_buttons(metric_service_endpoint, question, full_response)
+    create_score_threshold_collector(metric_service_endpoint, readability_scores)
 
 
 def show_settings() -> None:
@@ -572,6 +681,7 @@ def main() -> None:
                     feedback_placeholder = (
                         st.empty()
                     )  # Placeholder for the thumbs up and thumbs down button
+                    readability_scores: Dict[str, Dict[str, Union[str, float]]] = {}
 
                     for collection, source in COLLECTION_NAME_MAP.items():
                         # Query vector store
@@ -622,6 +732,11 @@ def main() -> None:
                                 source,
                             )
                             logging.info(result.text)
+                            readability_scores[source] = {
+                                "score": float(json.loads(result.text)["score"]),
+                                "question": str(prompt),
+                                "response": str(assistant_response),
+                            }
 
                     # Remove first conversation in memory if either exceeds the size limit
                     if len(mind_memory) > CONVERSATIONAL_MEMORY_SIZE:
@@ -636,12 +751,15 @@ def main() -> None:
                         {"role": "assistant", "content": full_response}
                     )
 
-                    if metric_service_endpoint:
+                    if (
+                        metric_service_endpoint
+                    ):  # Note: This line means that we only allow user feedback and data collection if the metric service is running
                         with feedback_placeholder.container():  # Show thumbs for every answers generated.
-                            show_thumbs(
-                                f"{metric_service_endpoint}/user_feedback",
+                            create_feedback_components(
+                                f"{metric_service_endpoint}",
                                 prompt,
                                 full_response,
+                                readability_scores,
                             )
 
 
