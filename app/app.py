@@ -162,7 +162,9 @@ class MessagesType(TypedDict, total=False):
     prompt_query: str
 
 
-def connect_vector_store(chroma_server_host: str, chroma_server_port: str) -> API:
+def connect_vector_store(
+    chroma_server_host: str, chroma_server_port: str
+) -> Optional[ChromaStore]:
     """Connect to Chroma vector store.
 
     Args:
@@ -170,7 +172,7 @@ def connect_vector_store(chroma_server_host: str, chroma_server_port: str) -> AP
         chroma_server_port (str): Chroma server port
 
     Returns:
-        API: Chroma client object.
+        Optional[ChromaStore]: ChromaStore interface object. None when there is an exception.
     """
     try:
         # Connect to vector store
@@ -184,8 +186,8 @@ def connect_vector_store(chroma_server_host: str, chroma_server_port: str) -> AP
 
 
 def query_vector_store(
-    chroma_client: API,
-    query_text: str,
+    chroma_client: ChromaStore,
+    query_text: Optional[List[str]],
     collection_name: str,
     n_results: int,
     embedding_function: EmbeddingFunction,
@@ -193,8 +195,8 @@ def query_vector_store(
     """Query vector store to fetch `n_results` closest documents.
 
     Args:
-        chroma_client (API): Chroma vector store client.
-        query_text (str): Query text.
+        chroma_client (ChromaStore): Chroma vector store client.
+        query_text (Optional[List[str]]): Query text.
         collection_name (str): Name of collection
         n_results (int): Number of closest documents to fetch
         embedding_function (EmbeddingFunction): Embedding function used while creating collection
@@ -208,7 +210,7 @@ def query_vector_store(
         n_results=n_results,
         embedding_function=embedding_function,
     )
-    documents = " ".join(result_dict["documents"][0])
+    documents = " ".join(result_dict["documents"][0])  # type: ignore
     return documents
 
 
@@ -310,7 +312,8 @@ def _get_predictions(
         headers={"Content-Type": "application/json"},
     )
     data = json.loads(json.loads(response.text)["outputs"][0]["data"][0])
-    return data["generated_text"]
+
+    return str(data["generated_text"])
 
 
 def query_llm(
@@ -692,10 +695,10 @@ def main() -> None:
                         # Query vector store
                         context = query_vector_store(
                             chroma_client=chroma_client,
-                            query_text=prompt,
+                            query_text=prompt,  # type: ignore
                             collection_name=collection,
                             n_results=N_CLOSEST_MATCHES,
-                            embedding_function=embed_function,
+                            embedding_function=embed_function,  # type: ignore
                         )
 
                         # Create a dict of prompt and context
