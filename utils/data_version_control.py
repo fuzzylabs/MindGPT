@@ -5,6 +5,7 @@ from typing import List, Optional
 
 import git
 from config import DATA_DIR, PROJECT_ROOT_DIR
+from git import Repo  # type: ignore
 from pygit2 import Repository  # type: ignore
 from zenml.logger import get_logger
 
@@ -114,7 +115,7 @@ def _git_tag_exists(tag_name: str) -> bool:
         bool: True, if Git tag exists. False otherwise.
     """
     try:
-        repo = git.Repo(PROJECT_ROOT_DIR)
+        repo = Repo(PROJECT_ROOT_DIR)
         return tag_name in repo.tags
     except git.GitCommandError as e:
         logger.error(f"Error tag '{tag_name}' does not exist: {e}")
@@ -131,7 +132,7 @@ def _git_commit_hash_exists(commit_hash: str) -> bool:
         bool: True, if commit hash exists. False otherwise.
     """
     try:
-        repo = git.Repo(PROJECT_ROOT_DIR)
+        repo = Repo(PROJECT_ROOT_DIR)
         return commit_hash in {str(c) for c in repo.iter_commits()}
     except Exception as e:
         logger.error(f"Error: Commit hash '{commit_hash}' does not exist: {e}")
