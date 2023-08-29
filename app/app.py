@@ -302,8 +302,6 @@ def _get_predictions(
     Returns:
         str: the predictions from the model.
     """
-    logging.info("HERE")
-    logging.info(prediction_endpoint)
     response = requests.post(
         url=prediction_endpoint,
         data=json.dumps(payload),
