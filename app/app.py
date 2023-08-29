@@ -407,9 +407,8 @@ def post_feedback_data_to_metric_service(
         metric_service_endpoint (str): The metric service endpoint where the data is expected.
         data (Dict[str, Union[str, Any]]): The data to be sent.
     """
-    if (
-        st.session_state.data_sharing_consent == True
-    ):  # Store the response to metric database if user agrees to share.
+    # Store the response to metric database if user agrees to share.
+    if st.session_state.data_sharing_consent == True:
         try:
             result = requests.post(url=metric_service_endpoint, json=data)
             logging.info(result.text)
