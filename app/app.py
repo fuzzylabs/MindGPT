@@ -28,7 +28,7 @@ logging.basicConfig(
 
 # Setup for chroma vector store
 CHROMA_SERVER_HOST_NAME = "chroma-service.default"
-CHROMA_SERVER_PORT = 8000
+CHROMA_SERVER_PORT = "8000"
 DEFAULT_EMBED_MODEL = "base"  # ["base", "large", "xl"]
 N_CLOSEST_MATCHES = 3
 EMBED_MODEL_MAP = {
@@ -162,12 +162,12 @@ class MessagesType(TypedDict, total=False):
     prompt_query: str
 
 
-def connect_vector_store(chroma_server_host: str, chroma_server_port: int) -> API:
+def connect_vector_store(chroma_server_host: str, chroma_server_port: str) -> API:
     """Connect to Chroma vector store.
 
     Args:
         chroma_server_host (str): Chroma server host name
-        chroma_server_port (int): Chroma server port
+        chroma_server_port (str): Chroma server port
 
     Returns:
         API: Chroma client object.
