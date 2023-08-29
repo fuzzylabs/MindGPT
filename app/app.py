@@ -681,9 +681,8 @@ def main() -> None:
                     full_response = "Here's what the NHS and Mind each have to say:\n\n"
                     message_placeholder = st.empty()
 
-                    feedback_placeholder = (
-                        st.empty()
-                    )  # Placeholder for the thumbs up and thumbs down button
+                    # Placeholder for the thumbs up and thumbs down button
+                    feedback_placeholder = st.empty()
 
                     readability_scores: Dict[str, Dict[str, Union[str, float]]] = {}
 
