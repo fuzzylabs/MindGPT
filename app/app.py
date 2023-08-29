@@ -302,6 +302,8 @@ def _get_predictions(
     Returns:
         str: the predictions from the model.
     """
+    logging.info("HERE")
+    logging.info(prediction_endpoint)
     response = requests.post(
         url=prediction_endpoint,
         data=json.dumps(payload),
@@ -359,15 +361,13 @@ def accept_disclaimer() -> None:
     st.session_state.accept = True
 
 
-def accept_data_sharing_consent() -> None:
-    """Set session state data sharing consent variable to True."""
-    st.session_state.data_sharing_consent = True
-    st.session_state.accepted_or_declined_data_sharing_consent = True
+def set_data_sharing_consent(accept: bool) -> None:
+    """Set session state data sharing consent variable to True.
 
-
-def decline_data_sharing_consent() -> None:
-    """Set session state data sharing consent variable to False."""
-    st.session_state.data_sharing_consent = False
+    Args:
+        accept (bool): whether the user accept or decline to share data with us.
+    """
+    st.session_state.data_sharing_consent = accept
     st.session_state.accepted_or_declined_data_sharing_consent = True
 
 
@@ -388,8 +388,14 @@ def show_data_collection_permission() -> None:
         data_sharing_consent_text = f.read()
     st.sidebar.markdown(data_sharing_consent_text)
 
-    st.button("Sure, I'm happy to share!", on_click=accept_data_sharing_consent)
-    st.button("No thanks, I'd rather not share.", on_click=decline_data_sharing_consent)
+    st.button(
+        "Sure, I'm happy to share!", on_click=set_data_sharing_consent, args=(True,)
+    )
+    st.button(
+        "No thanks, I'd rather not share.",
+        on_click=set_data_sharing_consent,
+        args=(False,),
+    )
 
 
 def post_feedback_data_to_metric_service(
@@ -415,7 +421,6 @@ def post_user_rating_feedback_to_metric_service(
     metric_service_endpoint: str, user_rating: str, question: str, full_response: str
 ) -> None:
     """Send the user feedback data to the metric service.
-
     Args:
         metric_service_endpoint (str): the metric service endpoint where the the user feedback is expected
         user_rating (str): thumbs up or thumbs down
@@ -438,7 +443,6 @@ def post_readability_threshold_data_to_metric_service(
     dataset: str,
 ) -> None:
     """Send the user question and response data to the metric service.
-
     Args:
         metric_service_endpoint (str): the metric service endpoint where the below readability score threshold data is expected
         readability_score (str): the readability score
@@ -459,7 +463,6 @@ def create_thumbs_buttons(
     metric_service_endpoint: str, question: str, full_response: str
 ) -> None:
     """Create thumbs up and thumbs down buttons for feedback.
-
     Args:
         metric_service_endpoint (str): the metric service endpoint
         question (str): the question user asked
@@ -683,6 +686,9 @@ def main() -> None:
                     )  # Placeholder for the thumbs up and thumbs down button
                     readability_scores: Dict[str, Dict[str, Union[str, float]]] = {}
 
+                    # Placeholder for the thumbs up and thumbs down button
+                    feedback_placeholder = st.empty()
+
                     for collection, source in COLLECTION_NAME_MAP.items():
                         # Query vector store
                         context = query_vector_store(
@@ -751,12 +757,10 @@ def main() -> None:
                         {"role": "assistant", "content": full_response}
                     )
 
-                    if (
-                        metric_service_endpoint
-                    ):  # Note: This line means that we only allow user feedback and data collection if the metric service is running
+                    if metric_service_endpoint:
                         with feedback_placeholder.container():  # Show thumbs for every answers generated.
                             create_feedback_components(
-                                f"{metric_service_endpoint}",
+                                metric_service_endpoint,
                                 prompt,
                                 full_response,
                                 readability_scores,

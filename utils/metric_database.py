@@ -450,7 +450,7 @@ class DatabaseInterface:
         """This function insert a row of data into to user_feedback relation.
 
         Args:
-            data (Dict[str, str]]): a dictionary containing the user feedback data to be inserted to the relation.
+            data (Dict[str, Union[str, float, bool]]): a dictionary containing the user feedback data to be inserted to the relation.
         """
         self.execute_query(
             SQLQueries.insert_user_feedback_data(),
