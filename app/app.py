@@ -405,7 +405,7 @@ def post_feedback_data_to_metric_service(
 
     Args:
         metric_service_endpoint (str): The metric service endpoint where the data is expected.
-        data (dict): The data to be sent.
+        data (Dict[str, Union[str, Any]]): The data to be sent.
     """
     if (
         st.session_state.data_sharing_consent == True
@@ -445,7 +445,7 @@ def post_readability_threshold_data_to_metric_service(
     """Send the user question and response data to the metric service.
     Args:
         metric_service_endpoint (str): the metric service endpoint where the below readability score threshold data is expected
-        readability_score (str): the readability score
+        readability_score (float): the readability score
         question (str): the question asked by the user
         response (str): the response used to compute the readability score
         dataset (str): the name of the dataset used to generate the response
@@ -559,7 +559,7 @@ def create_feedback_components(
         metric_service_endpoint (str): the metric service endpoint where the readability is computed
         question (str): the question user asked
         full_response (str): the full response the user rated.
-        readability_scores (Dict[str, float]): the readability score for Mind and NHS responses.
+        readability_scores (Dict[str, Dict[str, Union[str, float]]]): the readability score for Mind and NHS responses.
     """
     create_thumbs_buttons(metric_service_endpoint, question, full_response)
     create_score_threshold_collector(metric_service_endpoint, readability_scores)
@@ -680,9 +680,11 @@ def main() -> None:
                 with st.chat_message("assistant"):
                     full_response = "Here's what the NHS and Mind each have to say:\n\n"
                     message_placeholder = st.empty()
+
                     feedback_placeholder = (
                         st.empty()
                     )  # Placeholder for the thumbs up and thumbs down button
+
                     readability_scores: Dict[str, Dict[str, Union[str, float]]] = {}
 
                     # Placeholder for the thumbs up and thumbs down button
