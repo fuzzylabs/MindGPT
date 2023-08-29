@@ -263,9 +263,15 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
     )
 
     # Remove specific patterns from the data
-    data["text_scraped"] = data["text_scraped"].map(lambda text: remove_pattern(r"See our page[^\.]+[\.]", text))
-    data["text_scraped"] = data["text_scraped"].map(lambda text: remove_pattern(r"Or see our page[^\.]+[\.]", text))
-    data["text_scraped"] = data["text_scraped"].map(lambda text: remove_pattern(r"Read more about[^\.]+[\.]", text))
+    data["text_scraped"] = data["text_scraped"].map(
+        lambda text: remove_pattern(r"See our page[^\.]+[\.]", text)
+    )
+    data["text_scraped"] = data["text_scraped"].map(
+        lambda text: remove_pattern(r"Or see our page[^\.]+[\.]", text)
+    )
+    data["text_scraped"] = data["text_scraped"].map(
+        lambda text: remove_pattern(r"Read more about[^\.]+[\.]", text)
+    )
 
     data = data.drop(data[data.text_scraped == ""].index)
     data = data.drop_duplicates()
