@@ -573,9 +573,9 @@ def main() -> None:
                 with st.chat_message("assistant"):
                     full_response = "Here's what the NHS and Mind each have to say:\n\n"
                     message_placeholder = st.empty()
-                    feedback_placeholder = (
-                        st.empty()
-                    )  # Placeholder for the thumbs up and thumbs down button
+
+                    # Placeholder for the thumbs up and thumbs down button
+                    feedback_placeholder = st.empty()
 
                     for collection, source in COLLECTION_NAME_MAP.items():
                         # Query vector store
