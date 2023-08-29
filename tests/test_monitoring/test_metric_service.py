@@ -6,6 +6,7 @@ from monitoring.metric_service.metric_service import (
     compute_readability,
     validate_embedding_drift_data,
     validate_llm_response,
+    validate_user_feedback_data,
 )
 
 
@@ -178,3 +179,69 @@ def test_validate_embedding_drift_data(
     """
     with expectation:
         validate_embedding_drift_data(embedding_drift_data)
+
+
+@pytest.mark.parametrize(
+    "user_feedback_data, expectation",
+    [
+        (
+            {
+                "user_rating": 1.1,
+                "question": "1.2",
+                "full_response": "1.3",
+            },
+            pytest.raises(TypeError),
+        ),
+        (
+            {
+                "user_rating": "1.1",
+                "question": 1.2,
+                "full_response": "1.3",
+            },
+            pytest.raises(TypeError),
+        ),
+        (
+            {
+                "user_rating": "1.1",
+                "question": "1.2",
+                "full_response": 1.3,
+            },
+            pytest.raises(TypeError),
+        ),
+        (
+            {
+                "not_user_rating": "1.1",
+                "question": "1.2",
+                "full_response": "1.3",
+            },
+            pytest.raises(KeyError),
+        ),
+        (
+            {
+                "user_rating": "1.1",
+                "not_question": "1.2",
+                "full_response": "1.3",
+            },
+            pytest.raises(KeyError),
+        ),
+        (
+            {
+                "user_rating": "1.1",
+                "question": "1.2",
+                "not_full_response": "1.3",
+            },
+            pytest.raises(KeyError),
+        ),
+    ],
+)
+def test_validate_user_feedback_data(
+    user_feedback_data: dict, expectation: pytest.raises
+) -> None:
+    """Test whether the validate_user_feedback_data function would raise the expected error when the user feedback dictionary contains incorrect data.
+
+    Args:
+        user_feedback_data (dict): mock embedding user feedback data dictionary
+        expectation (pytest.raises): exception to raise
+    """
+    with expectation:
+        validate_user_feedback_data(user_feedback_data)

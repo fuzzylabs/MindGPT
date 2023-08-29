@@ -121,7 +121,9 @@ def _get_metric_service_endpoint() -> str:
     Returns:
         str: the url endpoint if it exists and is valid, None otherwise.
     """
-    return f"http://{METRIC_SERVICE_NAME}.{METRIC_SERVICE_NAMESPACE}:{METRIC_SERVICE_PORT}/readability"
+    return (
+        f"http://{METRIC_SERVICE_NAME}.{METRIC_SERVICE_NAMESPACE}:{METRIC_SERVICE_PORT}"
+    )
 
 
 @st.cache_data(show_spinner=False)
@@ -357,6 +359,16 @@ def accept_disclaimer() -> None:
     st.session_state.accept = True
 
 
+def set_data_sharing_consent(accept: bool) -> None:
+    """Set session state data sharing consent variable to True.
+
+    Args:
+        accept (bool): whether the user accept or decline to share data with us.
+    """
+    st.session_state.data_sharing_consent = accept
+    st.session_state.accepted_or_declined_data_sharing_consent = True
+
+
 def show_disclaimer() -> None:
     """Show disclaimer on the sidebar."""
     st.title("Disclaimer")
@@ -365,6 +377,85 @@ def show_disclaimer() -> None:
     st.sidebar.markdown(disclaimer_text)
 
     st.button("I Accept", on_click=accept_disclaimer)
+
+
+def show_data_collection_permission() -> None:
+    """Show data sharing consent document on the sidebar."""
+    st.title("Data Sharing Consent")
+    with open("app/data_sharing_consent.txt") as f:
+        data_sharing_consent_text = f.read()
+    st.sidebar.markdown(data_sharing_consent_text)
+
+    st.button(
+        "Sure, I'm happy to share!", on_click=set_data_sharing_consent, args=(True,)
+    )
+    st.button(
+        "No thanks, I'd rather not share.",
+        on_click=set_data_sharing_consent,
+        args=(False,),
+    )
+
+
+def post_question_response_to_metric_service(
+    metric_service_endpoint: str, user_rating: str, question: str, full_response: str
+) -> None:
+    """Send the user feedback data to the metric service's `user_feedback` route using a POST request.
+
+    Args:
+        metric_service_endpoint (str): the metric service endpoint where the the user feedback is expected
+        user_rating (str): thumbs up or thumbs down
+        question (str): the question asked by the user
+        full_response (str): the full response used rated
+    """
+    if (
+        st.session_state.data_sharing_consent == True
+    ):  # Store the response to metric database if user agree to share.
+        response_dict = {
+            "user_rating": user_rating,
+            "question": question,
+            "full_response": full_response,
+        }
+        result = requests.post(url=metric_service_endpoint, json=response_dict)
+
+        logging.info(result.text)
+
+
+def show_thumbs(
+    metric_service_endpoint: str, question: str, full_response: str
+) -> None:
+    """This function construct two buttons using streamlit buttons and columns.
+
+    With columns, we can define where buttons should be places, in our case, two buttons side by side on the lower left.
+    Reference: https://discuss.streamlit.io/t/st-button-in-one-line/25966/2
+
+    Args:
+        metric_service_endpoint (str): the metric service endpoint where the readability is computed
+        question (str): the question user asked
+        full_response (str): the full response the user rated.
+    """
+    _, thumbs_up_button, thumbs_down_button = st.columns(spec=[0.9, 0.05, 0.05])
+    with thumbs_up_button:
+        st.button(
+            "👍",
+            on_click=post_question_response_to_metric_service,
+            args=(
+                metric_service_endpoint,
+                "thumbs_up",
+                question,
+                full_response,
+            ),
+        )
+    with thumbs_down_button:
+        st.button(
+            "👎",
+            on_click=post_question_response_to_metric_service,
+            args=(
+                metric_service_endpoint,
+                "thumbs_down",
+                question,
+                full_response,
+            ),
+        )
 
 
 def show_settings() -> None:
@@ -388,6 +479,10 @@ def show_sidebar() -> None:
     with st.sidebar:
         if not st.session_state.accept:
             show_disclaimer()
+        elif (
+            not st.session_state.accepted_or_declined_data_sharing_consent
+        ):  # Show data sharing consent after accepted disclaimer
+            show_data_collection_permission()
         else:
             show_settings()
 
@@ -410,9 +505,20 @@ def main() -> None:
     if "accept" not in st.session_state:
         st.session_state.accept = False
 
-    show_sidebar()
+    if (
+        "accepted_or_declined_data_sharing_consent" not in st.session_state
+    ):  # Same logic as above
+        st.session_state.accepted_or_declined_data_sharing_consent = False
 
-    if st.session_state.accept:
+    if "data_sharing_consent" not in st.session_state:  # Same logic as above
+        st.session_state.data_sharing_consent = False
+
+    show_sidebar()  # Show side bar base on the two session state variables, `accept` and `accepted_or_declined_data_sharing_consent`
+
+    if (
+        st.session_state.accept
+        and st.session_state.accepted_or_declined_data_sharing_consent
+    ):
         # Initialise chat history
         if "messages" not in st.session_state:
             st.session_state.messages = []
@@ -468,6 +574,9 @@ def main() -> None:
                     full_response = "Here's what the NHS and Mind each have to say:\n\n"
                     message_placeholder = st.empty()
 
+                    # Placeholder for the thumbs up and thumbs down button
+                    feedback_placeholder = st.empty()
+
                     for collection, source in COLLECTION_NAME_MAP.items():
                         # Query vector store
                         context = query_vector_store(
@@ -512,7 +621,9 @@ def main() -> None:
 
                         if metric_service_endpoint:
                             result = post_response_to_metric_service(
-                                metric_service_endpoint, assistant_response, source
+                                f"{metric_service_endpoint}/readability",
+                                assistant_response,
+                                source,
                             )
                             logging.info(result.text)
 
@@ -528,6 +639,14 @@ def main() -> None:
                     st.session_state.messages.append(
                         {"role": "assistant", "content": full_response}
                     )
+
+                    if metric_service_endpoint:
+                        with feedback_placeholder.container():  # Show thumbs for every answers generated.
+                            show_thumbs(
+                                f"{metric_service_endpoint}/user_feedback",
+                                prompt,
+                                full_response,
+                            )
 
 
 if __name__ == "__main__":

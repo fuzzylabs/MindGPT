@@ -156,6 +156,48 @@ class SQLQueries:
         return sql_query
 
     @staticmethod
+    def create_user_feedback_relation_query() -> str:
+        """SQL query for creating the user_feedback relation with 6 columns.
+
+        Columns:
+            - id (Primary Key)
+            - time_stamp
+            - user_rating ("thumbs_up" or "thumbs_down")
+            - question
+            - response
+
+        Returns:
+            str: SQL query for creating the user_feedback relation
+        """
+        sql_query = """
+            CREATE TYPE "UserRating" AS ENUM ('thumbs_up', 'thumbs_down');
+
+            CREATE TABLE user_feedback (
+                id SERIAL PRIMARY KEY,
+                time_stamp TIMESTAMP,
+                user_rating "UserRating",
+                question TEXT,
+                full_response TEXT
+            );
+            """
+
+        return sql_query
+
+    @staticmethod
+    def insert_user_feedback_data() -> str:
+        """SQL query for inserting a row of data into the user_feedback relation.
+
+        Returns:
+            str: SQL query for inserting a row of data into the user_feedback relation.
+        """
+        sql_query = """
+            INSERT INTO user_feedback (time_stamp, user_rating, question, full_response)
+            VALUES (NOW(), %(user_rating)s, %(question)s, %(full_response)s);
+            """
+
+        return sql_query
+
+    @staticmethod
     def relation_existence_query() -> str:
         """SQL query for checking whether the relation specified exists or not.
 
@@ -190,10 +232,7 @@ class SQLQueries:
 class DatabaseInterface:
     """Class containing methods for interacting with the postgres database."""
 
-    relation_names = {
-        "readability",
-        "embedding_drift",
-    }
+    relation_names = {"readability", "embedding_drift", "user_feedback"}
     # The datasets relation MUST be created first as the other two relations reference to it.
 
     def __init__(self) -> None:
@@ -314,6 +353,7 @@ class DatabaseInterface:
             "datasets": SQLQueries.create_datasets_relation_query(),
             "readability": SQLQueries.create_readability_relation_query(),
             "embedding_drift": SQLQueries.create_embedding_drift_relation_query(),
+            "user_feedback": SQLQueries.create_user_feedback_relation_query(),
         }
         self.execute_query(str(query_map.get(relation_name)))
 
@@ -355,6 +395,23 @@ class DatabaseInterface:
             self.execute_query(
                 SQLQueries.insert_datasets_data(), {"name": dataset_name}
             )
+
+    def insert_user_feedback_data(
+        self, data: Dict[str, Union[str, float, bool]]
+    ) -> None:
+        """This function insert a row of data into to user_feedback relation.
+
+        Args:
+            data (Dict[str, Union[str, float, bool]]): a dictionary containing the user feedback data to be inserted to the relation.
+        """
+        self.execute_query(
+            SQLQueries.insert_user_feedback_data(),
+            {
+                "user_rating": data["user_rating"],
+                "question": data["question"],
+                "full_response": data["full_response"],
+            },
+        )
 
     def query_relation(self, relation_name: str) -> List[Tuple[Any, ...]]:
         """This function queries a specific relation in the database, based on the provided relation name.
