@@ -58,6 +58,8 @@ DEFAULT_QUERY_INSTRUCTION = (
 
 CONVERSATIONAL_MEMORY_SIZE = 3
 
+READABILITY_SCORE_THRESHOLD = 55.0
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Prompt Templates
@@ -505,7 +507,6 @@ def create_score_threshold_collector(
         metric_service_endpoint (str): the metric service endpoint
         readability_scores (Dict[str, Dict[str, Union[str, float]]]): a dictionary containing the score, question response.
     """
-    readability_score_threshold = 55.0
     sources = readability_scores.keys()
     below_threshold_sources = []
 
@@ -514,7 +515,7 @@ def create_score_threshold_collector(
         src_question = str(readability_scores[source]["question"])
         src_response = str(readability_scores[source]["response"])
 
-        if score < readability_score_threshold:
+        if score < READABILITY_SCORE_THRESHOLD:
             below_threshold_sources.append(source)
             post_readability_threshold_data_to_metric_service(
                 f"{metric_service_endpoint}/readability_threshold",
