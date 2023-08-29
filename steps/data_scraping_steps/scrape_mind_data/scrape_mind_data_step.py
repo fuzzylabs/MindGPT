@@ -45,7 +45,7 @@ class Scraper:
 
     session = HTMLSession()
 
-    def __init__(self, urls_to_discard=None) -> None:
+    def __init__(self, urls_to_discard: Optional[List[str]] = None) -> None:
         """Initialise Mind data scraper.
 
         Args:
@@ -119,7 +119,9 @@ class Scraper:
 
         df["uuid"] = df.apply(lambda row: str(uuid.uuid4()), axis=1)
 
-        df = df[["uuid", "html_scraped", "text_scraped", "timestamp", "url"]]  # Rearrange Columns
+        df = df[
+            ["uuid", "html_scraped", "text_scraped", "timestamp", "url"]
+        ]  # Rearrange Columns
 
         return df
 
@@ -170,9 +172,7 @@ class Scraper:
 
         soup = self.create_soup(self.build_subpage_url(url))
 
-        side_bar_list = soup.find(
-            "ul", class_="sidebar-menu"
-        )
+        side_bar_list = soup.find("ul", class_="sidebar-menu")
 
         if side_bar_list:
             for li_tag in side_bar_list.find_all("li"):  # type: ignore
@@ -192,7 +192,9 @@ class Scraper:
             # - Depression
             # - Recreational drugs
             # - Complementary and alternative therapies
-            navigation_list = soup.find_all("div", class_="content-area")[1].find_all(["h2", "h3"])
+            navigation_list = soup.find_all("div", class_="content-area")[1].find_all(
+                ["h2", "h3"]
+            )
             if navigation_list:
                 for heading in navigation_list:
                     a_tag = heading.find("a")
@@ -201,7 +203,9 @@ class Scraper:
 
         return side_bar_urls
 
-    def scrape_sub_page_data(self, sub_page_url: str, content_class: str) -> Dict[str, str]:
+    def scrape_sub_page_data(
+        self, sub_page_url: str, content_class: str
+    ) -> Dict[str, str]:
         """This function scrapes data given a page URL and the class name of where contents are.
 
         Args:
@@ -231,7 +235,7 @@ class Scraper:
         return {
             "url": self.build_subpage_url(sub_page_url),
             "html_scraped": "\n".join([str(div) for div in content_divs]),
-            "text_scraped": "\n".join(sub_page_data)
+            "text_scraped": "\n".join(sub_page_data),
         }
 
     def discard_decision(self, url: str) -> bool:
@@ -246,7 +250,9 @@ class Scraper:
         return url in self.urls_to_discard
 
 
-def discard_non_content(scraper: Scraper, data: Dict[str, Dict[str, str]]):
+def discard_non_content(
+    scraper: Scraper, data: Dict[str, Dict[str, str]]
+) -> Dict[str, Dict[str, str]]:
     """Discard pages that do not contain content.
 
     Args:
@@ -256,8 +262,11 @@ def discard_non_content(scraper: Scraper, data: Dict[str, Dict[str, str]]):
     Returns:
         Dict[str, Dict[str, str]]: scraped data.
     """
-    cleaned_data = {url: item for url, item in data.items() if not scraper.discard_decision(url)}
+    cleaned_data = {
+        url: item for url, item in data.items() if not scraper.discard_decision(url)
+    }
     return cleaned_data
+
 
 def scrape_conditions_and_drugs_sections(
     scraper: Scraper, data: Dict[str, Dict[str, str]]

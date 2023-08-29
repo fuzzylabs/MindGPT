@@ -105,8 +105,9 @@ class NHSMentalHealthScraper:
             ]
         )
 
-    def discard_non_content(self):
+    def discard_non_content(self) -> None:
         """Discard pages that do not have content, using a heuristic."""
+
         def discard_decision(html_scraped: str) -> bool:
             """Decide whether to discard the HTML based on its content.
 
