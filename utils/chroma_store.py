@@ -1,7 +1,7 @@
 """ChromaDB vector store class."""
 import ipaddress
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 import chromadb
 from chromadb.api.models.Collection import Collection
@@ -132,14 +132,14 @@ class ChromaStore:
             return []
         return [collection.name for collection in collections]
 
-    def query_collection(  # type: ignore
+    def query_collection(
         self,
         collection_name: str,
         query_texts: Optional[List[str]] = None,
         n_results: int = DEFAULT_N_RESULTS,
         where: Optional[Where] = None,
         embedding_function: Optional[EmbeddingFunction] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> QueryResult:
         """Query the collection to return closest documents matching query.
 
