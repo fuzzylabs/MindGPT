@@ -1,5 +1,5 @@
 """Functions for the metric service for computing readability and validate llm response and embedding drift data."""
-from typing import Dict, Tuple, Type, Union
+from typing import Any, Dict, Tuple, Type, Union
 
 import textstat
 
@@ -76,7 +76,7 @@ def validate_llm_response(llm_response_dict: Dict[str, str]) -> Tuple[str, str]:
 
 
 def validate_data(
-    data: Dict[str, Union[str, float, bool]], required_keys_types: Dict[str, Type]
+    data: Dict[str, Union[str, float, bool]], required_keys_types: Dict[str, Type[Any]]
 ) -> Dict[str, Union[str, float, bool]]:
     """Validate that the given data dictionary has the required keys and values of correct types.
 

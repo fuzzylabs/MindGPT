@@ -11,10 +11,10 @@ from zenml.logger import get_logger
 logger = get_logger(__name__)
 
 MONITORING_METRICS_HOST_NAME = "localhost"  # if pipeline runs on k8s, "localhost" should be replaced with "monitoring-service.default"
-MONITORING_METRICS_PORT = 5000
+MONITORING_METRICS_PORT = "5000"
 
 CHROMA_SERVER_HOSTNAME = "localhost"  # Switch hostname to chroma-service.default if running the pipeline on k8s
-CHROMA_SERVER_PORT = 8000
+CHROMA_SERVER_PORT = "8000"
 
 COLLECTION_NAME_MAP = {"mind_data": "mind", "nhs_data": "nhs"}
 

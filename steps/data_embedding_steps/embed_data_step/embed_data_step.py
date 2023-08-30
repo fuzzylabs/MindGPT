@@ -78,13 +78,13 @@ def embed_data(
     # Create a chromadb client
     # Switch hostname to chroma-service.default if running the pipeline on k8s
     chroma_client = ChromaStore(
-        chroma_server_hostname="localhost", chroma_server_port=8000
+        chroma_server_hostname="localhost", chroma_server_port="8000"
     )
 
     chroma_client.add_texts(
         collection_name=collection_name,
         texts=chunks,
         ids=uuids,
-        metadatas=metadatas,
+        metadatas=metadatas,  # type: ignore
         embedding_function=ef,
     )

@@ -67,7 +67,7 @@ class TextSplitter:
         # Combine these smaller pieces into medium size chunks to send to the LLM.
         separator_len = len(separator)
         docs = []
-        current_doc = []
+        current_doc: List[str] = []
         total = 0
 
         for split in splits:

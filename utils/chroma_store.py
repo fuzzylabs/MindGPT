@@ -1,11 +1,18 @@
 """ChromaDB vector store class."""
 import ipaddress
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 import chromadb
 from chromadb.api.models.Collection import Collection
-from chromadb.api.types import CollectionMetadata, EmbeddingFunction
+from chromadb.api.types import (
+    CollectionMetadata,
+    EmbeddingFunction,
+    Metadata,
+    OneOrMany,
+    QueryResult,
+    Where,
+)
 from chromadb.errors import InvalidDimensionException
 
 MIN_COLLECTION_NAME_LENGTH = 3
@@ -27,18 +34,18 @@ class ChromaStore:
     def __init__(
         self,
         chroma_server_hostname: str = "chroma-service.default",
-        chroma_server_port: int = 8000,
+        chroma_server_port: str = "8000",
     ) -> None:
         """Initialise chroma client by connecting it to chroma server.
 
         Args:
             chroma_server_hostname (str, optional): Hostname for chroma server. Defaults to "chroma-service.default".
-            chroma_server_port (int, optional): Port for chroma server. Defaults to 8000.
+            chroma_server_port (str, optional): Port for chroma server. Defaults to 8000.
         """
         self._client = chromadb.HttpClient(
             host=chroma_server_hostname, port=chroma_server_port
         )
-        self._collection = None
+        self._collection: Optional[Collection] = None
 
     def validate_collection_name(
         self, collection_name: str
@@ -130,22 +137,22 @@ class ChromaStore:
         collection_name: str,
         query_texts: Optional[List[str]] = None,
         n_results: int = DEFAULT_N_RESULTS,
-        where: Optional[Dict[str, str]] = None,
+        where: Optional[Where] = None,
         embedding_function: Optional[EmbeddingFunction] = None,
-        **kwargs,
-    ) -> Dict[str, List[Any]]:
+        **kwargs: Any,
+    ) -> QueryResult:
         """Query the collection to return closest documents matching query.
 
         Args:
             collection_name (str): Name of the collection
             query_texts (Optional[List[str]], optional): List of query texts. Defaults to None.
             n_results (int, optional): Number of closest matches to return. Defaults to DEFAULT_N_RESULTS.
-            where (Optional[Dict[str, str]], optional): Additional filtering using where. Defaults to None.
+            where (Optional[Where], optional): Additional filtering using where. Defaults to None.
             embedding_function (Optional[EmbeddingFunction], optional):  Embedding function to use. Defaults to None.
             **kwargs (Dict): Additional keyword arguments
 
         Returns:
-            Dict[str, List[Any]]: Dictionary containing query results
+            QueryResult: a QueryResult object containing the results.
 
         Raises:
             InvalidDimensionException: If the dimension of the embedding function does not match the dimension of the collection
@@ -173,7 +180,7 @@ class ChromaStore:
         collection_name: str,
         texts: List[str],
         ids: List[str],
-        metadatas: Optional[List[dict]] = None,
+        metadatas: Optional[OneOrMany[Metadata]] = None,
         embedding_function: Optional[EmbeddingFunction] = None,
     ) -> None:
         """Add documents to collection.
@@ -182,7 +189,7 @@ class ChromaStore:
             collection_name (str): Name of collection to use for adding documents
             texts (List[str]): List of texts to be added to the collection
             ids (List[str]): List of IDs for texts.
-            metadatas (Optional[List[dict]], optional): Optional list of metadatas for documents. Defaults to None.
+            metadatas (Optional[OneOrMany[Metadata]], optional): Optional list of metadatas for documents. Defaults to None.
             embedding_function (Optional[EmbeddingFunction], optional): Embedding function to be used by collection. Defaults to None.
         """
         self._collection = self._get_or_create_collection(
