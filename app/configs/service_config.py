@@ -1,7 +1,6 @@
 """Config variables for the 3 services."""
 # Setup for chroma vector store
 CHROMA_SERVER_HOST_NAME = "chroma-service.default"
-# CHROMA_SERVER_HOST_NAME = "localhost"
 CHROMA_SERVER_PORT = "8000"
 DEFAULT_EMBED_MODEL = "base"  # ["base", "large", "xl"]
 N_CLOSEST_MATCHES = 3

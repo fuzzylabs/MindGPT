@@ -20,7 +20,6 @@ def get_prediction_endpoint() -> Optional[str]:
         Optional[str]: the url endpoint if it exists and is valid, None otherwise.
     """
     return f"http://{SELDON_SERVICE_NAME}.{SELDON_NAMESPACE}:{SELDON_PORT}/v2/models/transformer/infer"
-    # return f"http://localhost:{SELDON_PORT}/v2/models/transformer/infer"
 
 
 @st.cache_data(show_spinner=False)
@@ -33,6 +32,3 @@ def get_metric_service_endpoint() -> str:
     return (
         f"http://{METRIC_SERVICE_NAME}.{METRIC_SERVICE_NAMESPACE}:{METRIC_SERVICE_PORT}"
     )
-    # return (
-    #     f"http://localhost:{METRIC_SERVICE_PORT}"
-    # )
