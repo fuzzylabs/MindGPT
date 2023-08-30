@@ -5,7 +5,7 @@ from typing import List, Optional
 
 import git
 from config import DATA_DIR, PROJECT_ROOT_DIR
-from pygit2 import Repository  # type: ignore
+from pygit2 import Repository
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
