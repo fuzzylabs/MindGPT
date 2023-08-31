@@ -49,6 +49,7 @@ show_error_codes = true
 exclude = ["docs", "test"]
 strict = true
 namespace_packages = true
+ignore_missing_imports = true
 
 
 [tool.ruff]
@@ -124,4 +125,3 @@ module = [
     "metric_service.*",
     "scipy.*"
 ]
-ignore_missing_imports = true
