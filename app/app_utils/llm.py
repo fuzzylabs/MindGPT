@@ -6,6 +6,11 @@ from typing import Any, Dict, List, TypedDict
 import requests
 import streamlit as st
 from configs.prompt_template import DEFAULT_CONTEXT, PROMPT_TEMPLATES
+from configs.service_config import (
+    SELDON_NAMESPACE,
+    SELDON_PORT,
+    SELDON_SERVICE_NAME,
+)
 
 
 class MessagesType(TypedDict, total=False):
@@ -21,6 +26,16 @@ class MessagesType(TypedDict, total=False):
     history: List[Dict[str, str]]
     context: str
     prompt_query: str
+
+
+@st.cache_data(show_spinner=False)
+def get_prediction_endpoint() -> str:
+    """Get the endpoint for the currently deployed LLM model.
+
+    Returns:
+        str: the url endpoint if it exists and is valid, None otherwise.
+    """
+    return f"http://{SELDON_SERVICE_NAME}.{SELDON_NAMESPACE}:{SELDON_PORT}/v2/models/transformer/infer"
 
 
 def _build_conversation_history_template(history_list: List[Dict[str, str]]) -> str:

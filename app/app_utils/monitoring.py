@@ -5,7 +5,24 @@ from typing import Any, Dict, Union
 import requests
 import streamlit as st
 from configs.app_config import READABILITY_SCORE_THRESHOLD
+from configs.service_config import (
+    METRIC_SERVICE_NAME,
+    METRIC_SERVICE_NAMESPACE,
+    METRIC_SERVICE_PORT,
+)
 from requests.models import Response
+
+
+@st.cache_data(show_spinner=False)
+def get_metric_service_endpoint() -> str:
+    """Get the endpoint for the currently deployed metric service.
+
+    Returns:
+        str: the url endpoint if it exists and is valid, None otherwise.
+    """
+    return (
+        f"http://{METRIC_SERVICE_NAME}.{METRIC_SERVICE_NAMESPACE}:{METRIC_SERVICE_PORT}"
+    )
 
 
 def post_response_to_metric_service(

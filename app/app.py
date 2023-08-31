@@ -21,10 +21,12 @@ from configs.service_config import (
 )
 
 from ui_components import show_sidebar, create_feedback_components
-from app_utils.monitoring import post_response_to_metric_service
+from app_utils.monitoring import (
+    post_response_to_metric_service,
+    get_metric_service_endpoint,
+)
 from app_utils.chroma import connect_vector_store, query_vector_store
-from app_utils.llm import build_memory_dict, query_llm
-from app_utils.endpoints import get_metric_service_endpoint, get_prediction_endpoint
+from app_utils.llm import build_memory_dict, query_llm, get_prediction_endpoint
 
 
 def setup() -> None:
