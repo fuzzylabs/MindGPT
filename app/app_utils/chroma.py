@@ -4,8 +4,8 @@ from typing import List, Optional, Union
 import streamlit as st
 from chromadb.api.types import EmbeddingFunction
 from chromadb.utils import embedding_functions
+from configs.prompt_template import DEFAULT_QUERY_INSTRUCTION
 from configs.service_config import DEFAULT_EMBED_MODEL, EMBED_MODEL_MAP
-from prompt_template import DEFAULT_QUERY_INSTRUCTION
 from utils.chroma_store import ChromaStore
 
 

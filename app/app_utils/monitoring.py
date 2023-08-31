@@ -37,7 +37,7 @@ def post_feedback_data_to_metric_service(
         data (Dict[str, Union[str, Any]]): The data to be sent.
     """
     # Store the response to metric database if user agrees to share.
-    if st.session_state.data_sharing_consent is True:
+    if st.session_state.data_sharing_consent:
         try:
             result = requests.post(url=metric_service_endpoint, json=data)
             logging.info(result.text)

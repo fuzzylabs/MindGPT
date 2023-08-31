@@ -5,7 +5,7 @@ from typing import Any, Dict, List, TypedDict
 
 import requests
 import streamlit as st
-from prompt_template import DEFAULT_CONTEXT, PROMPT_TEMPLATES
+from configs.prompt_template import DEFAULT_CONTEXT, PROMPT_TEMPLATES
 
 
 class MessagesType(TypedDict, total=False):

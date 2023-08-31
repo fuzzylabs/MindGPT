@@ -1,6 +1,4 @@
 """Functions for getting the endpoints for various services."""
-from typing import Optional
-
 import streamlit as st
 from configs.service_config import (
     METRIC_SERVICE_NAME,
@@ -13,11 +11,11 @@ from configs.service_config import (
 
 
 @st.cache_data(show_spinner=False)
-def get_prediction_endpoint() -> Optional[str]:
+def get_prediction_endpoint() -> str:
     """Get the endpoint for the currently deployed LLM model.
 
     Returns:
-        Optional[str]: the url endpoint if it exists and is valid, None otherwise.
+        str: the url endpoint if it exists and is valid, None otherwise.
     """
     return f"http://{SELDON_SERVICE_NAME}.{SELDON_NAMESPACE}:{SELDON_PORT}/v2/models/transformer/infer"
 
