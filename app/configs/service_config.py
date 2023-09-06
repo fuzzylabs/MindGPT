@@ -11,10 +11,10 @@ EMBED_MODEL_MAP = {
 }
 COLLECTION_NAME_MAP = {"mind_data": "Mind", "nhs_data": "NHS"}
 
-# Seldon configuration
-SELDON_SERVICE_NAME = "llm-default-transformer"
-SELDON_NAMESPACE = "matcha-seldon-workloads"
-SELDON_PORT = 9000
+# OpenLLM configuration
+OPENLLM_SERVICE_NAME = "openllm-mindgpt-svc"
+OPENLLM_NAMESPACE = "default"
+OPENLLM_PORT = 3000
 
 # Metric service configuration
 METRIC_SERVICE_NAME = "monitoring-service"

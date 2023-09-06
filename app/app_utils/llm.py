@@ -2,14 +2,14 @@
 import json
 import logging
 from typing import Any, Dict, List, TypedDict
-
+import re
 import requests
 import streamlit as st
 from configs.prompt_template import DEFAULT_CONTEXT, PROMPT_TEMPLATES
 from configs.service_config import (
-    SELDON_NAMESPACE,
-    SELDON_PORT,
-    SELDON_SERVICE_NAME,
+    OPENLLM_NAMESPACE,
+    OPENLLM_PORT,
+    OPENLLM_SERVICE_NAME,
 )
 
 
@@ -35,7 +35,9 @@ def get_prediction_endpoint() -> str:
     Returns:
         str: the url endpoint if it exists and is valid, None otherwise.
     """
-    return f"http://{SELDON_SERVICE_NAME}.{SELDON_NAMESPACE}:{SELDON_PORT}/v2/models/transformer/infer"
+    return (
+        f"http://{OPENLLM_SERVICE_NAME}.{OPENLLM_NAMESPACE}:{OPENLLM_PORT}/v1/generate"
+    )
 
 
 def _build_conversation_history_template(history_list: List[Dict[str, str]]) -> str:
@@ -68,6 +70,22 @@ def build_memory_dict(question: str, response: str) -> Dict[str, str]:
         Dict[str, str]: the memory dictionary.
     """
     return {"user_input": question, "ai_response": response}
+
+
+def clean_fastchat_t5_output(answer: str) -> str:
+    """Clean the output from the fastchat-t5 model.
+
+    Args:
+        answer (str): Output response from model
+
+    Returns:
+        str: Cleaned response.
+    """
+    # Remove <pad> tags, double spaces, trailing newline
+    answer = re.sub(r"<pad>\s+", "", answer)
+    answer = re.sub(r"  ", " ", answer)
+    answer = re.sub(r"\n$", "", answer)
+    return answer
 
 
 def _create_payload(
@@ -106,28 +124,8 @@ def _create_payload(
     logging.info(f"Prompt to LLM : {input_text}")
 
     return {
-        "inputs": [
-            {
-                "name": "array_inputs",
-                "shape": [-1],
-                "datatype": "string",
-                "data": str(input_text),
-            },
-            {
-                "name": "max_length",
-                "shape": [-1],
-                "datatype": "INT32",
-                "data": [max_length],
-                "parameters": {"content_type": "raw"},
-            },
-            {
-                "name": "temperature",
-                "shape": [-1],
-                "datatype": "INT32",
-                "data": [temperature],
-                "parameters": {"content_type": "raw"},
-            },
-        ]
+        "prompt": str(input_text),
+        "llm_config": {"temperature": temperature, "max_new_tokens": max_length},
     }
 
 
@@ -172,7 +170,9 @@ def query_llm(
     """
     with st.spinner("Loading response..."):
         payload = _create_payload(messages, temperature, max_length)
-        logging.info(payload)
+        logging.info(f"Payload:\n{payload}")
         summary_txt = _get_predictions(prediction_endpoint, payload)
+        summary_txt = clean_fastchat_t5_output(summary_txt)
+        logging.info(f"LLM Response:\n{summary_txt}")
 
     return summary_txt
