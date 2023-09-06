@@ -8,4 +8,4 @@ RUN pip3 install "openllm[flan-t5]"
 EXPOSE 3000
 
 ENTRYPOINT [ "openllm", "start" ]
-CMD [ "flan-t5", "--model-id", "google/flan-t5-xl", "--device", "0", "-p", "3000", "--verbose"]
+CMD [ "flan-t5", "--model-id", "lmsys/fastchat-t5-3b-v1.0", "--device", "0", "-p", "3000", "--verbose"]

@@ -8,391 +8,72 @@ sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
 
 import json
 import logging
-import os
-from typing import Any, Dict, List, Optional, Union, TypedDict
+from typing import Dict, Union
 
-import requests
 import streamlit as st
-from chromadb.api import API
-from chromadb.api.types import EmbeddingFunction
-from chromadb.utils import embedding_functions
-from requests.models import Response
-from utils.chroma_store import ChromaStore
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.StreamHandler()],
+from configs.app_config import CONVERSATIONAL_MEMORY_SIZE
+from configs.service_config import (
+    CHROMA_SERVER_HOST_NAME,
+    CHROMA_SERVER_PORT,
+    COLLECTION_NAME_MAP,
+    N_CLOSEST_MATCHES,
 )
 
-
-# Setup for chroma vector store
-CHROMA_SERVER_HOST_NAME = "chroma-service.default"
-CHROMA_SERVER_PORT = 8000
-DEFAULT_EMBED_MODEL = "base"  # ["base", "large", "xl"]
-N_CLOSEST_MATCHES = 3
-EMBED_MODEL_MAP = {
-    "xl": "hkunlp/instructor-xl",
-    "large": "hkunlp/instructor-large",
-    "base": "hkunlp/instructor-base",
-}
-COLLECTION_NAME_MAP = {"mind_data": "Mind", "nhs_data": "NHS"}
-
-# Seldon configuration
-OPENLLM_SERVICE_NAME = "openllm-mindgpt-svc"
-OPENLLM_NAMESPACE = "default"
-OPENLLM_PORT = 3000
-
-# Metric service configuration
-METRIC_SERVICE_NAME = "monitoring-service"
-METRIC_SERVICE_NAMESPACE = "default"
-METRIC_SERVICE_PORT = "5000"
-
-# Paragraph from https://www.nhs.uk/mental-health/conditions/depression-in-adults/overview/
-DEFAULT_CONTEXT = """Most people experience feelings of stress, anxiety or low mood during difficult times.
-A low mood may improve after a short period of time, rather than being a sign of depression."""
-
-DEFAULT_QUERY_INSTRUCTION = (
-    "Represent the question for retrieving supporting documents: "
+from ui_components import show_sidebar, create_feedback_components
+from app_utils.monitoring import (
+    post_response_to_metric_service,
+    get_metric_service_endpoint,
 )
-
-CONVERSATIONAL_MEMORY_SIZE = 3
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# Prompt Templates
-prompt_templates = {
-    "simple": "Context: {context}\n\nQuestion: {question}\n\n",
-    "complex": """Use the following pieces of context to answer the question at the end.
-If you don't know the answer, just say that you don't know, don't try to make up an answer.
-Use three sentences maximum and keep the answer as concise as possible.
-{context}
-Question: {question}
-Helpful Answer:""",
-    "advanced": """You are a highly skilled AI trained in language comprehension and summarisation.
-I would like you to read the following text and summarise it into a concise abstract paragraph. Use the following pieces of context to answer the question at the end.
-Aim to retain the most important points, providing a coherent and readable summary that could help a person understand the main points of the discussion without needing to read the entire text.
-Please avoid unnecessary details or tangential points.
-{context}
-Question: {question}
-Helpful Answer:""",
-    "conversational": """Use the conversation history and context provided to inform your response.
-
-Start of conversation history
-{history}
-End of conversation history
-
-Context: {context}
-
-Question: {question}
-""",
-}
-
-st.set_page_config(
-    page_title="MindGPT",
-    page_icon="🧠",
-    layout="wide",
-)
-
-st.title("MindGPT 🧠")
-st.caption("_made by [Fuzzy Labs](https://www.fuzzylabs.ai/)_")
-st.caption(
-    "MindGPT is not a digital counsellor and the answers provided may be inaccurate. If you or someone you know is in crisis or experiencing a mental health emergency, please contact your local emergency services or a helpline immediately such as https://www.mind.org.uk/need-urgent-help/using-this-tool/ . This chatbot is not designed to provide immediate crisis intervention or emergency assistance."
-)
-
-st.session_state.error_placeholder = st.empty()
+from app_utils.chroma import connect_vector_store, query_vector_store
+from app_utils.llm import build_memory_dict, query_llm, get_prediction_endpoint
 
 
-@st.cache_data(show_spinner=False)
-def _get_prediction_endpoint() -> Optional[str]:
-    """Get the endpoint for the currently deployed LLM model.
-
-    Returns:
-        Optional[str]: the url endpoint if it exists and is valid, None otherwise.
-    """
-    return (
-        f"http://{OPENLLM_SERVICE_NAME}.{OPENLLM_NAMESPACE}:{OPENLLM_PORT}/v1/generate"
+def setup() -> None:
+    """This function set up the app page title, logging and page config."""
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=[logging.StreamHandler()],
     )
 
-
-@st.cache_data(show_spinner=False)
-def _get_metric_service_endpoint() -> str:
-    """Get the endpoint for the currently deployed metric service.
-
-    Returns:
-        str: the url endpoint if it exists and is valid, None otherwise.
-    """
-    return f"http://{METRIC_SERVICE_NAME}.{METRIC_SERVICE_NAMESPACE}:{METRIC_SERVICE_PORT}/readability"
-
-
-@st.cache_data(show_spinner=False)
-def _get_embedding_function(embed_model_type: str) -> Union[EmbeddingFunction, None]:
-    """Load embedding function to be used by Chroma vector store.
-
-    Args:
-        embed_model_type (str): String representation of the embedding model.
-
-    Returns:
-        Union[EmbeddingFunction, None]: Embedding function if it exists, None otherwise.
-    """
-    # Create a embedding function
-    model_name = EMBED_MODEL_MAP.get(embed_model_type, None)
-    if model_name is None:
-        return None
-    return embedding_functions.InstructorEmbeddingFunction(
-        model_name=model_name, instruction=DEFAULT_QUERY_INSTRUCTION
+    st.set_page_config(
+        page_title="MindGPT",
+        page_icon="🧠",
+        layout="wide",
     )
 
-
-class MessagesType(TypedDict, total=False):
-    """The class specifies constraints about which keys map to which types in the payload messages.
-
-    This is required for mypy to understand the structure of the `messages` dictionary.
-
-    Args:
-        TypedDict (type): A class from the `typing` module to define types for specific dictionary keys.
-        total (bool, optional): this signify that not all keys are mandatory in the dictionary.
-    """
-
-    history: List[Dict[str, str]]
-    context: str
-    prompt_query: str
-
-
-def connect_vector_store(chroma_server_host: str, chroma_server_port: int) -> API:
-    """Connect to Chroma vector store.
-
-    Args:
-        chroma_server_host (str): Chroma server host name
-        chroma_server_port (int): Chroma server port
-
-    Returns:
-        API: Chroma client object.
-    """
-    try:
-        # Connect to vector store
-        chroma_client = ChromaStore(
-            chroma_server_hostname=chroma_server_host,
-            chroma_server_port=chroma_server_port,
-        )
-        return chroma_client
-    except Exception:
-        return None
-
-
-def query_vector_store(
-    chroma_client: API,
-    query_text: str,
-    collection_name: str,
-    n_results: int,
-    embedding_function: EmbeddingFunction,
-) -> str:
-    """Query vector store to fetch `n_results` closest documents.
-
-    Args:
-        chroma_client (API): Chroma vector store client.
-        query_text (str): Query text.
-        collection_name (str): Name of collection
-        n_results (int): Number of closest documents to fetch
-        embedding_function (EmbeddingFunction): Embedding function used while creating collection
-
-    Returns:
-        str: String containing the closest documents to the query.
-    """
-    result_dict = chroma_client.query_collection(
-        collection_name=collection_name,
-        query_texts=query_text,
-        n_results=n_results,
-        embedding_function=embedding_function,
-    )
-    documents = " ".join(result_dict["documents"][0])
-    return documents
-
-
-def _create_payload(
-    messages: MessagesType,
-    temperature: float,
-    max_length: int,
-) -> Dict[str, Union[str, Dict[str, float]]]:
-    """Create a payload from the user input to send to the LLM model.
-
-    Args:
-        messages (Dict[str, str]): List of previous messages from both the AI and user.
-        temperature (float): inference temperature
-        max_length (int): max response length in tokens
-
-    Returns:
-        Dict[str, Union[str, Dict[str, float]]]: the payload to send in the correct format.
-    """
-    context = messages.get("context", DEFAULT_CONTEXT)
-    history: List[Dict[str, str]] = messages.get("history", [])
-    question = messages["prompt_query"]
-
-    if st.session_state.prompt_template == "conversational":
-        if history:
-            history_string = _build_conversation_history_template(history)
-            template = prompt_templates["conversational"]
-            input_text = template.format(
-                history=history_string, question=question, context=context
-            )
-        else:
-            template = prompt_templates["simple"]
-            input_text = template.format(question=question, context=context)
-    else:
-        template = prompt_templates[st.session_state.prompt_template]
-        input_text = template.format(question=question, context=context)
-
-    logging.info(f"Prompt to LLM : {input_text}")
-
-    return {
-        "prompt": str(input_text),
-        "llm_config": {"temperature": temperature, "max_new_tokens": max_length},
-    }
-
-
-def _build_conversation_history_template(history_list: List[Dict[str, str]]) -> str:
-    """Build the conversation history as a string to be append to the prompt template.
-
-    Args:
-        history_list (List[Dict[str, str]]): the conversation history dictionary containing the questions posed by user and the response by the model.
-
-    Returns:
-        str: the conversation history string.
-    """
-    history_string = ""
-    for history in history_list:
-        user_input = history["user_input"]
-        ai_response = history["ai_response"]
-
-        history_string += f"\nUser: {user_input}\nAI: {ai_response}\n"
-
-    return history_string
-
-
-def _get_predictions(
-    prediction_endpoint: str, payload: Dict[str, Union[str, Dict[str, float]]]
-) -> str:
-    """Using the prediction endpoint and payload, make a prediction request to the deployed model.
-
-    Args:
-        prediction_endpoint (str): the url endpoint.
-        payload (Dict[str, Union[str, Dict[str, float]]]): the payload to send to the model.
-
-    Returns:
-        str: the predictions from the model.
-    """
-    response = requests.post(
-        url=prediction_endpoint,
-        data=json.dumps(payload),
-        headers={"Content-Type": "application/json"},
-    )
-    return str(json.loads(response.text)["responses"][0])
-
-
-def query_llm(
-    prediction_endpoint: str,
-    messages: MessagesType,
-    temperature: float,
-    max_length: int,
-) -> str:
-    """Query endpoint to fetch the summary.
-
-    Args:
-        prediction_endpoint (str): Prediction endpoint.
-        messages (MessagesType): Dict of message containing prompt and context.
-        temperature (float): inference temperature
-        max_length (int): max response length in tokens
-
-    Returns:
-        str: Summarised text.
-    """
-    with st.spinner("Loading response..."):
-        payload = _create_payload(messages, temperature, max_length)
-        logging.info(payload)
-        summary_txt = _get_predictions(prediction_endpoint, payload)
-    return summary_txt
-
-
-def post_response_to_metric_service(
-    metric_service_endpoint: str, response: str, dataset: str
-) -> Response:
-    """Send the LLM's response to the metric service for readability computation using a POST request.
-
-    Args:
-        metric_service_endpoint (str): the metric service endpoint where the readability is computed
-        response (str): the response produced by the LLM
-        dataset (str): the dataset that was used to generate the response.
-
-    Returns:
-        Response: the post request response
-    """
-    response_dict = {"response": response, "dataset": dataset.lower()}
-    result = requests.post(url=metric_service_endpoint, json=response_dict)
-
-    return result
-
-
-def accept_disclaimer() -> None:
-    """Set session state accept variable."""
-    st.session_state.accept = True
-
-
-def show_disclaimer() -> None:
-    """Show disclaimer on the sidebar."""
-    st.title("Disclaimer")
-    with open("app/disclaimer.txt") as f:
-        disclaimer_text = f.read()
-    st.sidebar.markdown(disclaimer_text)
-
-    st.button("I Accept", on_click=accept_disclaimer)
-
-
-def show_settings() -> None:
-    """Show inference settings on the sidebar."""
-    st.title("Settings")
-    st.session_state.temperature = st.slider(
-        "Temperature", min_value=0.1, max_value=1.0, value=0.1
-    )
-    st.session_state.max_length = st.slider(
-        "Max response length", min_value=50, max_value=500, value=300, step=1
-    )
-    st.session_state.prompt_template = st.select_slider(
-        "Prompt template",
-        options=["simple", "complex", "advanced", "conversational"],
-        value="simple",
+    st.title("MindGPT 🧠")
+    st.caption("_made by [Fuzzy Labs](https://www.fuzzylabs.ai/)_")
+    st.caption(
+        "MindGPT is not a digital counsellor and the answers provided may be inaccurate. If you or someone you know is in crisis or experiencing a mental health emergency, please contact your local emergency services or a helpline immediately such as https://www.mind.org.uk/need-urgent-help/using-this-tool/ . This chatbot is not designed to provide immediate crisis intervention or emergency assistance."
     )
 
-
-def show_sidebar() -> None:
-    """Show the sidebar."""
-    with st.sidebar:
-        if not st.session_state.accept:
-            show_disclaimer()
-        else:
-            show_settings()
+    st.session_state.error_placeholder = st.empty()
 
 
-def build_memory_dict(question: str, response: str) -> Dict[str, str]:
-    """Build the memory dictionary from user's question and the model's response.
+def user_consent() -> None:
+    """This function updates the session state based on the user's response to the disclaimer and data sharing consent."""
+    if "accept" not in st.session_state:
+        st.session_state.accept = False
 
-    Args:
-        question (str): the question asked by the user.
-        response (str): the response by the model.
+    if "accepted_or_declined_data_sharing_consent" not in st.session_state:
+        st.session_state.accepted_or_declined_data_sharing_consent = False
 
-    Returns:
-        Dict[str, str]: the memory dictionary.
-    """
-    return {"user_input": question, "ai_response": response}
+    if "data_sharing_consent" not in st.session_state:
+        st.session_state.data_sharing_consent = False
 
 
 def main() -> None:
     """Main streamlit app function."""
-    if "accept" not in st.session_state:
-        st.session_state.accept = False
+    setup()
+    user_consent()
+    show_sidebar()  # Show side bar base on the two session state variables, `accept` and `accepted_or_declined_data_sharing_consent`
 
-    show_sidebar()
-
-    if st.session_state.accept:
+    if (
+        st.session_state.accept
+        and st.session_state.accepted_or_declined_data_sharing_consent
+    ):
         # Initialise chat history
         if "messages" not in st.session_state:
             st.session_state.messages = []
@@ -422,17 +103,16 @@ def main() -> None:
             st.session_state.messages.append({"role": "user", "content": prompt})
 
             # Get seldon endpoint
-            prediction_endpoint = _get_prediction_endpoint()
+            prediction_endpoint = get_prediction_endpoint()
 
             # Get the metric service endpoint
-            metric_service_endpoint = _get_metric_service_endpoint()
+            metric_service_endpoint = get_metric_service_endpoint()
 
             # Get vector store client
             chroma_client = connect_vector_store(
                 chroma_server_host=CHROMA_SERVER_HOST_NAME,
                 chroma_server_port=CHROMA_SERVER_PORT,
             )
-            embed_function = _get_embedding_function(DEFAULT_EMBED_MODEL)
 
             if metric_service_endpoint is None:
                 logging.warn("Metric service endpoint is None, monitoring is disabled.")
@@ -448,6 +128,14 @@ def main() -> None:
                     full_response = "Here's what the NHS and Mind each have to say:\n\n"
                     message_placeholder = st.empty()
 
+                    # Placeholder for the thumbs up and thumbs down button
+                    feedback_placeholder = st.empty()
+
+                    readability_scores: Dict[str, Dict[str, Union[str, float]]] = {}
+
+                    # Placeholder for the thumbs up and thumbs down button
+                    feedback_placeholder = st.empty()
+
                     for collection, source in COLLECTION_NAME_MAP.items():
                         # Query vector store
                         context = query_vector_store(
@@ -455,7 +143,6 @@ def main() -> None:
                             query_text=prompt,
                             collection_name=collection,
                             n_results=N_CLOSEST_MATCHES,
-                            embedding_function=embed_function,
                         )
 
                         # Create a dict of prompt and context
@@ -492,9 +179,16 @@ def main() -> None:
 
                         if metric_service_endpoint:
                             result = post_response_to_metric_service(
-                                metric_service_endpoint, assistant_response, source
+                                f"{metric_service_endpoint}/readability",
+                                assistant_response,
+                                source,
                             )
                             logging.info(result.text)
+                            readability_scores[source] = {
+                                "score": float(json.loads(result.text)["score"]),
+                                "question": str(prompt),
+                                "response": str(assistant_response),
+                            }
 
                     # Remove first conversation in memory if either exceeds the size limit
                     if len(mind_memory) > CONVERSATIONAL_MEMORY_SIZE:
@@ -508,6 +202,15 @@ def main() -> None:
                     st.session_state.messages.append(
                         {"role": "assistant", "content": full_response}
                     )
+
+                    if metric_service_endpoint:
+                        with feedback_placeholder.container():  # Show thumbs for every answers generated.
+                            create_feedback_components(
+                                metric_service_endpoint,
+                                prompt,
+                                full_response,
+                                readability_scores,
+                            )
 
 
 if __name__ == "__main__":
