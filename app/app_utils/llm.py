@@ -147,9 +147,7 @@ def _get_predictions(
         data=json.dumps(payload),
         headers={"Content-Type": "application/json"},
     )
-    data = json.loads(json.loads(response.text)["outputs"][0]["data"][0])
-
-    return str(data["generated_text"])
+    return str(json.loads(response.text)["responses"][0])
 
 
 def query_llm(
