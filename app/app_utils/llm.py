@@ -1,8 +1,9 @@
 """Utility functions for interacting with the deployed LLM."""
 import json
 import logging
-from typing import Any, Dict, List, TypedDict
 import re
+from typing import Dict, List, TypedDict, Union
+
 import requests
 import streamlit as st
 from configs.prompt_template import DEFAULT_CONTEXT, PROMPT_TEMPLATES
@@ -92,7 +93,7 @@ def _create_payload(
     messages: MessagesType,
     temperature: float,
     max_length: int,
-) -> Dict[str, List[Dict[str, Any]]]:
+) -> Dict[str, Union[str, Dict[str, float]]]:
     """Create a payload from the user input to send to the LLM model.
 
     Args:
@@ -101,7 +102,7 @@ def _create_payload(
         max_length (int): max response length in tokens
 
     Returns:
-        Dict[str, List[Dict[str, Any]]]: the payload to send in the correct format.
+        Dict[str, Union[str, Dict[str, float]]]: the payload to send in the correct format.
     """
     context = messages.get("context", DEFAULT_CONTEXT)
     history: List[Dict[str, str]] = messages.get("history", [])
@@ -130,13 +131,13 @@ def _create_payload(
 
 
 def _get_predictions(
-    prediction_endpoint: str, payload: Dict[str, List[Dict[str, Any]]]
+    prediction_endpoint: str, payload: Dict[str, Union[str, Dict[str, float]]]
 ) -> str:
     """Using the prediction endpoint and payload, make a prediction request to the deployed model.
 
     Args:
         prediction_endpoint (str): the url endpoint.
-        payload (Dict[str, List[Dict[str, Any]]]): the payload to send to the model.
+        payload (Dict[str, Union[str, Dict[str, float]]]): the payload to send to the model.
 
     Returns:
         str: the predictions from the model.
