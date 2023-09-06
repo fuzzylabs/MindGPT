@@ -156,6 +156,90 @@ class SQLQueries:
         return sql_query
 
     @staticmethod
+    def create_user_feedback_relation_query() -> str:
+        """SQL query for creating the user_feedback relation with 6 columns.
+
+        Columns:
+            - id (Primary Key)
+            - time_stamp
+            - user_rating ("thumbs_up" or "thumbs_down")
+            - question
+            - response
+
+        Returns:
+            str: SQL query for creating the user_feedback relation
+        """
+        sql_query = """
+            CREATE TYPE "UserRating" AS ENUM ('thumbs_up', 'thumbs_down');
+
+            CREATE TABLE user_feedback (
+                id SERIAL PRIMARY KEY,
+                time_stamp TIMESTAMP,
+                user_rating "UserRating",
+                question TEXT,
+                full_response TEXT
+            );
+            """
+
+        return sql_query
+
+    @staticmethod
+    def insert_user_feedback_data() -> str:
+        """SQL query for inserting a row of data into the user_feedback relation.
+
+        Returns:
+            str: SQL query for inserting a row of data into the user_feedback relation.
+        """
+        sql_query = """
+            INSERT INTO user_feedback (time_stamp, user_rating, question, full_response)
+            VALUES (NOW(), %(user_rating)s, %(question)s, %(full_response)s);
+            """
+
+        return sql_query
+
+    @staticmethod
+    def create_readability_threshold_relation_query() -> str:
+        """SQL query for creating the readability_threshold relation with 6 columns.
+
+        Columns:
+            - id (Primary Key)
+            - time_stamp
+            - readability_score
+            - question
+            - response
+            - dataset
+
+        Returns:
+            str: SQL query for creating the user_feedback relation
+        """
+        sql_query = """
+            CREATE TABLE readability_threshold (
+                id SERIAL PRIMARY KEY,
+                time_stamp TIMESTAMP,
+                readability_score FLOAT(3),
+                question TEXT,
+                response TEXT,
+                dataset VARCHAR(50) REFERENCES datasets(name)
+            );
+            """
+
+        return sql_query
+
+    @staticmethod
+    def insert_readability_threshold_data() -> str:
+        """SQL query for inserting a row of data into the readability_threshold relation.
+
+        Returns:
+            str: SQL query for inserting a row of data into the readability_threshold relation.
+        """
+        sql_query = """
+            INSERT INTO readability_threshold (time_stamp, readability_score, question, response, dataset)
+            VALUES (NOW(), %(readability_score)s, %(question)s, %(response)s, %(dataset)s);
+            """
+
+        return sql_query
+
+    @staticmethod
     def relation_existence_query() -> str:
         """SQL query for checking whether the relation specified exists or not.
 
@@ -193,6 +277,8 @@ class DatabaseInterface:
     relation_names = {
         "readability",
         "embedding_drift",
+        "user_feedback",
+        "readability_threshold",
     }
     # The datasets relation MUST be created first as the other two relations reference to it.
 
@@ -314,6 +400,8 @@ class DatabaseInterface:
             "datasets": SQLQueries.create_datasets_relation_query(),
             "readability": SQLQueries.create_readability_relation_query(),
             "embedding_drift": SQLQueries.create_embedding_drift_relation_query(),
+            "user_feedback": SQLQueries.create_user_feedback_relation_query(),
+            "readability_threshold": SQLQueries.create_readability_threshold_relation_query(),
         }
         self.execute_query(str(query_map.get(relation_name)))
 
@@ -355,6 +443,41 @@ class DatabaseInterface:
             self.execute_query(
                 SQLQueries.insert_datasets_data(), {"name": dataset_name}
             )
+
+    def insert_user_feedback_data(
+        self, data: Dict[str, Union[str, float, bool]]
+    ) -> None:
+        """This function insert a row of data into to user_feedback relation.
+
+        Args:
+            data (Dict[str, Union[str, float, bool]]): a dictionary containing the user feedback data to be inserted to the relation.
+        """
+        self.execute_query(
+            SQLQueries.insert_user_feedback_data(),
+            {
+                "user_rating": data["user_rating"],
+                "question": data["question"],
+                "full_response": data["full_response"],
+            },
+        )
+
+    def insert_readability_threshold_data(
+        self, data: Dict[str, Union[str, float]]
+    ) -> None:
+        """This function insert a row of data into to readability_threshold relation.
+
+        Args:
+            data (Dict[str, str]]): a dictionary containing the readability threshold data to be inserted to the relation.
+        """
+        self.execute_query(
+            SQLQueries.insert_readability_threshold_data(),
+            {
+                "readability_score": data["readability_score"],
+                "question": data["question"],
+                "response": data["response"],
+                "dataset": data["dataset"],
+            },
+        )
 
     def query_relation(self, relation_name: str) -> List[Tuple[Any, ...]]:
         """This function queries a specific relation in the database, based on the provided relation name.

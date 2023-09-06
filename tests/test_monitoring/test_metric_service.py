@@ -4,7 +4,7 @@ from contextlib import nullcontext as does_not_raise
 import pytest
 from monitoring.metric_service.metric_service import (
     compute_readability,
-    validate_embedding_drift_data,
+    validate_data,
     validate_llm_response,
 )
 
@@ -58,123 +58,72 @@ def test_readability_score_for_good_sentences() -> None:
 
 
 @pytest.mark.parametrize(
-    "embedding_drift_data, expectation",
+    "test_data, expectation",
     [
         (
             {
-                "reference_dataset": "1.1",
-                "current_dataset": 1.2,
-                "distance": 0.1,
-                "drifted": True,
-                "dataset": "nhs",
+                "str": 1.1,
+                "float": 1.2,
+                "bool": True,
             },
             pytest.raises(TypeError),
         ),
         (
             {
-                "reference_dataset": 1.1,
-                "current_dataset": "str",
-                "distance": 0.1,
-                "drifted": True,
-                "dataset": "mind",
+                "str": "1.1",
+                "float": "1.2",
+                "bool": True,
             },
             pytest.raises(TypeError),
         ),
         (
             {
-                "reference_dataset": "1.1",
-                "current_dataset": "1.2",
-                "distance": False,
-                "drifted": True,
-                "dataset": "nhs",
+                "str": "1.1",
+                "float": 1.2,
+                "bool": "True",
             },
             pytest.raises(TypeError),
         ),
         (
             {
-                "reference_dataset": "1.1",
-                "current_dataset": "1.2",
-                "distance": 0.1,
-                "drifted": "True",
-                "dataset": "mind",
-            },
-            pytest.raises(TypeError),
-        ),
-        (
-            {
-                "reference_dataset": "1.1",
-                "current_dataset": "1.2",
-                "distance": 0.1,
-                "drifted": "True",
-                "dataset": 0.1,
-            },
-            pytest.raises(TypeError),
-        ),
-        (
-            {
-                "current_dataset": "1.2",
-                "distance": 0.1,
-                "drifted": "True",
-                "dataset": "nhs",
+                "wrong_key": "1.1",
+                "float": 1.2,
+                "bool": True,
             },
             pytest.raises(KeyError),
         ),
         (
             {
-                "reference_dataset": "1.1",
-                "distance": 0.1,
-                "drifted": "True",
-                "dataset": "nhs",
+                "str": "1.1",
+                "wrong_key": 1.2,
+                "bool": True,
             },
             pytest.raises(KeyError),
         ),
         (
             {
-                "reference_dataset": "1.1",
-                "current_dataset": "1.2",
-                "drifted": "True",
-                "dataset": "nhs",
+                "str": "1.1",
+                "float": 1.2,
+                "wrong_key": True,
             },
             pytest.raises(KeyError),
-        ),
-        (
-            {
-                "reference_dataset": "1.1",
-                "current_dataset": "1.2",
-                "distance": 0.1,
-                "dataset": "nhs",
-            },
-            pytest.raises(KeyError),
-        ),
-        (
-            {
-                "reference_dataset": "1.1",
-                "current_dataset": "1.2",
-                "distance": 0.1,
-                "drifted": True,
-            },
-            pytest.raises(KeyError),
-        ),
-        (
-            {
-                "reference_dataset": "1.1",
-                "current_dataset": "1.2",
-                "distance": 0.1,
-                "drifted": True,
-                "dataset": "nhs",
-            },
-            does_not_raise(),
         ),
     ],
 )
-def test_validate_embedding_drift_data(
-    embedding_drift_data: dict, expectation: pytest.raises
+def test_validate_user_feedback_data(
+    test_data: dict, expectation: pytest.raises
 ) -> None:
-    """Test whether the validate_embedding_drift_data function would raise the expected error when the embedding data contains incorrect data.
+    """Test whether the validate_data function would raise the expected error when the data dictionary passed in contains incorrect data.
 
     Args:
-        embedding_drift_data (dict): mock embedding drift data dictionary
+        test_data (dict): the mock data
         expectation (pytest.raises): exception to raise
     """
+    required_keys_types = {
+        "str": str,
+        "float": float,
+        "bool": bool,
+    }
+
     with expectation:
-        validate_embedding_drift_data(embedding_drift_data)
+        validate_data(test_data, required_keys_types)

@@ -14,7 +14,8 @@ from steps.data_preparation_steps.clean_data_step.clean_data_step import (
     is_lone_link,
     remove_nbsp,
     remove_new_line,
-    strip_string, remove_pattern,
+    remove_pattern,
+    strip_string,
 )
 
 
@@ -283,4 +284,3 @@ def test_remove_pattern():
 
     got = remove_pattern(pattern, "ab123cdef567g")  # Multiple instances
     assert expected == got
-

@@ -48,6 +48,7 @@ def nhs_mental_health_to_discard_arguments() -> set:
         {"class": "target_div"},
     )
 
+
 def get_mock_nhs_mental_health_scraper(arguments: set) -> NHSMentalHealthScraper:
     """Construct mock NHSMentalHealthScraper.
 
@@ -78,6 +79,7 @@ def get_mock_nhs_mental_health_scraper(arguments: set) -> NHSMentalHealthScraper
     with patch.object(HTMLSession, "get", side_effect=mock_get):
         return NHSMentalHealthScraper(url=url, tag=tag, attributes=attributes)
 
+
 @pytest.fixture
 def nhs_mental_health_scraper(
     nhs_mental_health_scraper_arguments: set,
@@ -95,7 +97,7 @@ def nhs_mental_health_scraper(
 
 @pytest.fixture
 def nhs_mental_health_scraper_discarded(
-    nhs_mental_health_to_discard_arguments: set
+    nhs_mental_health_to_discard_arguments: set,
 ) -> NHSMentalHealthScraper:
     """A fixture representing the NHSMentalHealthScraper class with discarded pages.
 
@@ -220,5 +222,9 @@ def test_discard(
     nhs_mental_health_scraper_discarded.scrape_recursively()
     nhs_mental_health_scraper_discarded.discard_non_content()
     test_df = pd.DataFrame([], columns=["text_scraped", "url"], index=pd.Int64Index([]))
-    assert expected_columns == set(nhs_mental_health_scraper_discarded.df.columns.tolist())
-    assert_frame_equal(nhs_mental_health_scraper_discarded.df[["text_scraped", "url"]], test_df)
+    assert expected_columns == set(
+        nhs_mental_health_scraper_discarded.df.columns.tolist()
+    )
+    assert_frame_equal(
+        nhs_mental_health_scraper_discarded.df[["text_scraped", "url"]], test_df
+    )
