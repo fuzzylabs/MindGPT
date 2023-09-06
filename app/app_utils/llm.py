@@ -1,15 +1,16 @@
 """Utility functions for interacting with the deployed LLM."""
 import json
 import logging
-from typing import Any, Dict, List, TypedDict
+import re
+from typing import Dict, List, TypedDict, Union
 
 import requests
 import streamlit as st
 from configs.prompt_template import DEFAULT_CONTEXT, PROMPT_TEMPLATES
 from configs.service_config import (
-    SELDON_NAMESPACE,
-    SELDON_PORT,
-    SELDON_SERVICE_NAME,
+    OPENLLM_NAMESPACE,
+    OPENLLM_PORT,
+    OPENLLM_SERVICE_NAME,
 )
 
 
@@ -35,7 +36,9 @@ def get_prediction_endpoint() -> str:
     Returns:
         str: the url endpoint if it exists and is valid, None otherwise.
     """
-    return f"http://{SELDON_SERVICE_NAME}.{SELDON_NAMESPACE}:{SELDON_PORT}/v2/models/transformer/infer"
+    return (
+        f"http://{OPENLLM_SERVICE_NAME}.{OPENLLM_NAMESPACE}:{OPENLLM_PORT}/v1/generate"
+    )
 
 
 def _build_conversation_history_template(history_list: List[Dict[str, str]]) -> str:
@@ -70,11 +73,27 @@ def build_memory_dict(question: str, response: str) -> Dict[str, str]:
     return {"user_input": question, "ai_response": response}
 
 
+def clean_fastchat_t5_output(answer: str) -> str:
+    """Clean the output from the fastchat-t5 model.
+
+    Args:
+        answer (str): Output response from model
+
+    Returns:
+        str: Cleaned response.
+    """
+    # Remove <pad> tags, double spaces, trailing newline
+    answer = re.sub(r"<pad>\s+", "", answer)
+    answer = re.sub(r"  ", " ", answer)
+    answer = re.sub(r"\n$", "", answer)
+    return answer
+
+
 def _create_payload(
     messages: MessagesType,
     temperature: float,
     max_length: int,
-) -> Dict[str, List[Dict[str, Any]]]:
+) -> Dict[str, Union[str, Dict[str, float]]]:
     """Create a payload from the user input to send to the LLM model.
 
     Args:
@@ -83,7 +102,7 @@ def _create_payload(
         max_length (int): max response length in tokens
 
     Returns:
-        Dict[str, List[Dict[str, Any]]]: the payload to send in the correct format.
+        Dict[str, Union[str, Dict[str, float]]]: the payload to send in the correct format.
     """
     context = messages.get("context", DEFAULT_CONTEXT)
     history: List[Dict[str, str]] = messages.get("history", [])
@@ -106,39 +125,19 @@ def _create_payload(
     logging.info(f"Prompt to LLM : {input_text}")
 
     return {
-        "inputs": [
-            {
-                "name": "array_inputs",
-                "shape": [-1],
-                "datatype": "string",
-                "data": str(input_text),
-            },
-            {
-                "name": "max_length",
-                "shape": [-1],
-                "datatype": "INT32",
-                "data": [max_length],
-                "parameters": {"content_type": "raw"},
-            },
-            {
-                "name": "temperature",
-                "shape": [-1],
-                "datatype": "INT32",
-                "data": [temperature],
-                "parameters": {"content_type": "raw"},
-            },
-        ]
+        "prompt": str(input_text),
+        "llm_config": {"temperature": temperature, "max_new_tokens": max_length},
     }
 
 
 def _get_predictions(
-    prediction_endpoint: str, payload: Dict[str, List[Dict[str, Any]]]
+    prediction_endpoint: str, payload: Dict[str, Union[str, Dict[str, float]]]
 ) -> str:
     """Using the prediction endpoint and payload, make a prediction request to the deployed model.
 
     Args:
         prediction_endpoint (str): the url endpoint.
-        payload (Dict[str, List[Dict[str, Any]]]): the payload to send to the model.
+        payload (Dict[str, Union[str, Dict[str, float]]]): the payload to send to the model.
 
     Returns:
         str: the predictions from the model.
@@ -148,9 +147,7 @@ def _get_predictions(
         data=json.dumps(payload),
         headers={"Content-Type": "application/json"},
     )
-    data = json.loads(json.loads(response.text)["outputs"][0]["data"][0])
-
-    return str(data["generated_text"])
+    return str(json.loads(response.text)["responses"][0])
 
 
 def query_llm(
@@ -172,7 +169,9 @@ def query_llm(
     """
     with st.spinner("Loading response..."):
         payload = _create_payload(messages, temperature, max_length)
-        logging.info(payload)
+        logging.info(f"Payload:\n{payload}")
         summary_txt = _get_predictions(prediction_endpoint, payload)
+        summary_txt = clean_fastchat_t5_output(summary_txt)
+        logging.info(f"LLM Response:\n{summary_txt}")
 
     return summary_txt
