@@ -8,7 +8,7 @@ from typing import Annotated, Dict, List, Optional
 import pandas as pd
 from bs4 import BeautifulSoup
 from config import DATA_DIR
-from requests_html import HTMLSession  # type: ignore
+from requests_html import HTMLSession
 from zenml import step
 from zenml.logger import get_logger
 

@@ -44,3 +44,4 @@ repos:
     hooks:
       - id: typos
         args: [--config=_typos.toml]
+        pass_filenames: false
