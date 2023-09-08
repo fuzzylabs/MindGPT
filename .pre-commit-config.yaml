@@ -2,7 +2,7 @@ fail_fast: false
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+    rev: v3.4.0
     hooks:
       - id: check-toml
       - id: check-yaml
@@ -19,20 +19,19 @@ repos:
       - id: requirements-txt-fixer
 
   - repo: https://github.com/psf/black
-    rev: 22.10.0
+    rev: 22.12.0
     hooks:
       - id: black
         args: [--config=pyproject.toml]
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    # Ruff version.
-    rev: "v0.0.257"
+    rev: "v0.0.287"
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix, "--config=pyproject.toml"] # enable autofix
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.1.1
+    rev: v1.5.1
     hooks:
       - id: mypy
         language: system
@@ -40,7 +39,14 @@ repos:
         exclude: ^tests/
 
   - repo: https://github.com/crate-ci/typos
-    rev: v1.16.1
+    rev: v1.16.11
     hooks:
       - id: typos
         args: [--config=_typos.toml]
+        pass_filenames: false
+
+  - repo: https://github.com/floatingpurr/sync_with_poetry
+    rev: "1.1.0"
+    hooks:
+      - id: sync_with_poetry
+        args: ["--db=.poetry-pre-commit-sync.json"]

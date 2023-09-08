@@ -12,7 +12,7 @@ from monitoring.metric_service.metric_service import (
 @pytest.mark.parametrize(
     "response, expectation",
     [
-        (int(123), pytest.raises(TypeError)),
+        (123, pytest.raises(TypeError)),
         (
             {"incorrect key": "mock response", "dataset": "mock_dataset"},
             pytest.raises(ValueError),
@@ -21,9 +21,9 @@ from monitoring.metric_service.metric_service import (
             {"response": "mock response", "incorrect key": "mock_dataset"},
             pytest.raises(ValueError),
         ),
-        ({"response": int(123), "dataset": "mock_dataset"}, pytest.raises(TypeError)),
+        ({"response": 123, "dataset": "mock_dataset"}, pytest.raises(TypeError)),
         ({"response": "", "dataset": "mock_dataset"}, pytest.raises(ValueError)),
-        ({"response": "mock response", "dataset": int(123)}, pytest.raises(TypeError)),
+        ({"response": "mock response", "dataset": 123}, pytest.raises(TypeError)),
         ({"response": "mock response", "dataset": ""}, pytest.raises(ValueError)),
         ({"response": "mock response", "dataset": "mock_dataset"}, does_not_raise()),
     ],

@@ -16,7 +16,7 @@ from steps.data_embedding_steps.compute_embedding_drift_step.compute_embedding_d
 @pytest.mark.parametrize(
     "reference_embeddings, current_embeddings, expectation",
     [
-        (int(123), [[1.0, 2.1, 3.2], [3.1, 4.2, 5.3]], pytest.raises(TypeError)),
+        (123, [[1.0, 2.1, 3.2], [3.1, 4.2, 5.3]], pytest.raises(TypeError)),
         (
             [[1.1, 2.2, 3.3], ["a", "a", True]],
             [[1.1, 2.2, 3.3], [3.1, 4.1, 5.1]],

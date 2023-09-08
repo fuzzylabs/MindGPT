@@ -25,7 +25,7 @@ def files_exist(filepaths: List[str], error_message: str) -> bool:
     for fname, exists in files_present:
         if not exists:
             raise FileNotFoundError(f"{error_message}: {fname} does not exist.")
-    return all([exists for _, exists in files_present])
+    return all(exists for _, exists in files_present)
 
 
 def get_active_branch_name() -> str:
@@ -35,12 +35,12 @@ def get_active_branch_name() -> str:
 
 def pull_data() -> None:
     """Pull the most recently pushed data from the storage bucket."""
-    sp.run("dvc pull", shell=True, cwd=PROJECT_ROOT_DIR)
+    sp.run("dvc pull", shell=True, cwd=PROJECT_ROOT_DIR, check=False)
 
 
 def push_data() -> None:
     """Push the current data to the bucket."""
-    sp.run("dvc push", shell=True, cwd=PROJECT_ROOT_DIR)
+    sp.run("dvc push", shell=True, cwd=PROJECT_ROOT_DIR, check=False)
 
 
 def add_csv_files_to_dvc(filenames: List[str]) -> None:
@@ -54,7 +54,7 @@ def add_csv_files_to_dvc(filenames: List[str]) -> None:
         error_message="Cannot add .csv files to dvc",
     ):
         files = "".join(f"data/{fname} " for fname in filenames)
-        sp.run(f"dvc add {files}", shell=True, cwd=PROJECT_ROOT_DIR)
+        sp.run(f"dvc add {files}", shell=True, cwd=PROJECT_ROOT_DIR, check=False)
 
 
 def add_and_commit_dvc_files_to_git(filenames: List[str]) -> None:
@@ -68,11 +68,12 @@ def add_and_commit_dvc_files_to_git(filenames: List[str]) -> None:
         error_message="Cannot add .dvc files to git",
     ):
         files = "".join(f"data/{fname} " for fname in filenames)
-        sp.run(f"git add {files}", shell=True, cwd=PROJECT_ROOT_DIR)
+        sp.run(f"git add {files}", shell=True, cwd=PROJECT_ROOT_DIR, check=False)
         sp.run(
             f'git commit {files} -m "Update dvc files"',
             shell=True,
             cwd=PROJECT_ROOT_DIR,
+            check=False,
         )
 
 
@@ -82,14 +83,14 @@ def push_and_tag_dvc_changes_to_git(tag: str) -> None:
     Args:
         tag: Used to form the data tag.
     """
-    sp.run("git push", shell=True, cwd=PROJECT_ROOT_DIR)
-    sp.run(f"git tag {tag}", shell=True, cwd=PROJECT_ROOT_DIR)
-    sp.run(f"git push origin {tag}", shell=True, cwd=PROJECT_ROOT_DIR)
+    sp.run("git push", shell=True, cwd=PROJECT_ROOT_DIR, check=False)
+    sp.run(f"git tag {tag}", shell=True, cwd=PROJECT_ROOT_DIR, check=False)
+    sp.run(f"git push origin {tag}", shell=True, cwd=PROJECT_ROOT_DIR, check=False)
 
 
 def checkout_data_files() -> None:
     """Checkout the data files consistent with the hash in the current .dvc files in the data/ directory."""
-    sp.run("dvc checkout", shell=True, cwd=PROJECT_ROOT_DIR)
+    sp.run("dvc checkout", shell=True, cwd=PROJECT_ROOT_DIR, check=False)
 
 
 def version_new_data(filename_roots: List[str]) -> None:
