@@ -1,0 +1,22 @@
+{
+  "pre-commit": {
+    "repo": "https://github.com/pre-commit/pre-commit-hooks",
+    "rev": "v${rev}"
+  },
+  "ruff": {
+    "repo": "https://github.com/charliermarsh/ruff-pre-commit",
+    "rev": "v${rev}"
+  },
+  "typos": {
+    "repo": "https://github.com/crate-ci/typos",
+    "rev": "v${rev}"
+  },
+  "mypy": {
+    "repo": "https://github.com/pre-commit/mirrors-mypy",
+    "rev": "v${rev}"
+  },
+  "black": {
+    "repo": "https://github.com/psf/black",
+    "rev": "${rev}"
+  }
+}
