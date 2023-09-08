@@ -43,7 +43,7 @@ class MockEmbeddingFunction(EmbeddingFunction):
         Returns:
             Embeddings: Return fixed embedding
         """
-        return [[float(1.0)] * 2 + [float(i)] for i in range(len(texts))]
+        return [[1.0] * 2 + [float(i)] for i in range(len(texts))]
 
 
 @pytest.mark.parametrize(
@@ -104,9 +104,7 @@ def test_add_texts(local_persist_api: API):
         "bdd740fb-0667-4ad1-9c80-317fa3b1799d",
     ]
     input_texts = ["a", "b"]
-    expected_embeddings = [
-        [float(1.0)] * 2 + [float(i)] for i in range(len(input_texts))
-    ]
+    expected_embeddings = [[1.0] * 2 + [float(i)] for i in range(len(input_texts))]
 
     store = ChromaStore()
     store._client = local_persist_api
