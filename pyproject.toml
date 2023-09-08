@@ -35,9 +35,11 @@ gunicorn = "^21.2.0"
 pre-commit = "^3.1.1"
 pytest = "^7.2.2"
 pytest-cov = "^4.0.0"
-mypy = "1.1.1"
+mypy = "^1.1.1"
 typos = "^1.16.1"
 matplotlib = "^3.7.2"
+black = "^22.10.0"
+ruff = "^0.0"
 
 [build-system]
 requires = ["poetry-core"]
