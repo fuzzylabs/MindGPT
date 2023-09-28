@@ -29,6 +29,7 @@ flask = "2.3.2"
 psycopg2 = "2.9.6"
 types-psycopg2 = "2.9.21.11"
 gunicorn = "^21.2.0"
+guardrails-ai = "^0.2.3"
 
 
 [tool.poetry.group.dev.dependencies]
